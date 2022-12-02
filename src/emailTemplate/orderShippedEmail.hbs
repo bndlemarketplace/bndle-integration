@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="UTF-8">
+  <meta content="width=device-width, initial-scale=1" name="viewport">
+  <meta name="x-apple-disable-message-reformatting">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta content="telephone=no" name="format-detection">
+  <title>Order update</title>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Karla:wght@200;300;400;600;700;800&family=League+Spartan:wght@100;200;300;400;500;600;700;800;900&display=swap"
+    rel="stylesheet">
+  <style>
+    body {
+      background-color: #F1EDE9;
+      font-family: 'Karla', sans-serif;
+    }
+  </style>
+
+</head>
+
+<body>
+  <div class="es-wrapper-color">
+
+    <table class="es-wrapper" width="100%" cellspacing="0" cellpadding="0" style="padding-top:50px;">
+      <tbody>
+        <tr>
+          <td class="esd-email-paddings" valign="top">
+            <table cellpadding="0" cellspacing="0" class="esd-header-popover es-header" align="center"
+              style="background: #99B18D; padding: 20px 30px 0;">
+              <tbody>
+                <tr>
+                  <td class="esd-stripe" align="center">
+                    <table class="es-header-body" align="center" cellpadding="0" cellspacing="0" width="700"
+                      style="background-color: transparent;">
+                      <tbody>
+                        <tr>
+                          <td class="esd-structure es-p20" align="left" style="width:50%;">
+                            <img class="adapt-img" src="https://i.ibb.co/H2CG9QZ/bndle-logo-slogan-invert-1.png"
+                              alt="bndle-logo-slogan-invert-1" border="0" style="display: block;">
+                          </td>
+                          <td class="esd-structure es-p20" align="center"
+                            style="padding-top: 25px; width:50%; padding-right: 40px;">
+                            <img src="https://i.ibb.co/VLpR7LT/Asset-15-3x-Copy.png" alt="Asset-15-3x-Copy" border="0">
+                          </td>
+                        </tr>
+                        <tr>
+                          <td class="esd-structure es-p20" align="left"
+                            style=" width: 100%; font-size:36px; font-weight:600; color: #fff; line-height:44px; padding-top:40px;">
+                            Your order has been shipped
+                          </td>
+
+                        </tr>
+                        <tr>
+                          <td class="esd-structure es-p20" align="center"
+                            style=" width: 100%; display: inline-block; padding-left: 0; font-size:45px; font-weight:600; color: #99B18D; line-height: 50px; padding-top:15px;">
+                            <img class="adapt-img"
+                              src="https://demo.stripocdn.email/content/guids/744d9145-39a1-4538-af6f-5c2e522629fb/images/asset_162x.png"
+                              alt="" style="display: block;" width="40">
+                          </td>
+
+                        </tr>
+
+                      </tbody>
+                    </table>
+                  </td>
+
+                </tr>
+              </tbody>
+            </table>
+            <table class="es-content" cellspacing="0" cellpadding="0" align="center" width="700" cellpadding="0"
+              cellspacing="0">
+              <tbody>
+                <tr>
+                  <td class="esd-stripe" align="center">
+                    <table class="es-content-body"
+                      style="background-color: #ffffff;  border-radius: 0 0 0 0; padding: 18px 30px 10px;" width="760"
+                      cellspacing="0" cellpadding="0" bgcolor="#ffffff" align="center">
+                      <tbody>
+                        <tr>
+                          <td class="esd-structure es-p30t es-p20r es-p20l" align="left"
+                            style="width:100%; display:inline-block;">
+                            <p
+                              style="width:100%; display:inline-block; font-size: 16px; font-weight: 400; color: #282B28; line-height: 24px;">
+                              Dear {{orderDetails.customerName}},<br /><br />
+                              Thanks for shopping at bndle and supporting independent brands.
+                            </p>
+                            <p
+                              style="width:100%; display:inline-block; font-size: 16px; font-weight: 600; color: #282B28; line-height: 24px;">
+                              Your order {{orderDetails.orderNo}} has been shipped.
+
+                            </p>
+
+                            <p
+                              style="width:100%; display:inline-block; margin-top: 0; padding-bottom: 30px; font-size: 16px; font-weight: 400; color: #282B28; line-height: 24px;">
+                              We hope you enjoyed your shopping experience with us and that you will visit us again
+                              soon.
+
+
+                            </p>
+                          </td>
+                          {{#each orderDetails.productDetails}}
+                          <td class="esd-structure es-p30t es-p20r es-p20l" align="left"
+                            style="width:100%; display:inline-block; margin-bottom:20px;">
+                            <table class="table table-sm" style="width:100%;">
+                              <thead style="background: #F1EDE9; 
+                                                            border-radius: 8px;">
+                                <tr>
+                                  <th
+                                    style="border:none; padding: 11px 22px;  border-radius: 8px 0 0 8px; text-align: left; color: #282B28; font-weight: bold; font-size: 14px; line-height: 20px;"
+                                    colspan="2" scope="col">Details of order</th>
+
+                                  <th colspan="2"
+                                    style="padding: 11px 22px; border-radius: 0 8px 8px 0; text-align: right; text-decoration: none;"
+                                    scope="col"><a href="#"
+                                      style="text-decoration:none; color: #282B28; font-weight: bold; font-size: 14px; line-height: 20px;">Contact
+                                      {{vendorName}}({{vendorEmail}})</a></th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                <tr>
+                                  <td scope="col"
+                                    style="border:none; padding: 11px 22px;  border-radius: 8px 0 0 8px; text-align: left; color: #282B28; font-weight: bold; font-size: 14px; line-height: 20px;">
+                                    Shipping address</td>
+                                  <td scope="col"
+                                    style="border:none; padding: 11px 22px;  border-radius: 8px 0 0 8px; text-align: left; color: #282B28; font-weight: bold; font-size: 14px; line-height: 20px;">
+                                    Billng address</td>
+                                  <td scope="col"
+                                    style="border:none; padding: 11px 22px;  border-radius: 8px 0 0 8px; text-align: left; color: #282B28; font-weight: bold; font-size: 14px; line-height: 20px;">
+                                    Shipping Method</td>
+                                  <td scope="col"
+                                    style="border:none; padding: 11px 22px;  border-radius: 8px 0 0 8px; text-align: left; color: #282B28; font-weight: bold; font-size: 14px; line-height: 20px;">
+                                    Tracking ID</td>
+                                </tr>
+                                <tr>
+                                  <td
+                                    style="padding: 15px 30px; vertical-align: top; text-align: left;font-size: 14px; font-weight: 400; color: #282B28;">
+                                    {{shippingInfo.building}}<br />
+                                    {{shippingInfo.street}}<br />
+                                    {{shippingInfo.city}}<br />
+                                    {{shippingInfo.postalCode}}<br />
+                                    T: {{shippingInfo.phone}}
+                                  </td>
+                                  <td
+                                    style="padding: 15px 30px; vertical-align: top; text-align: left;font-size: 14px; font-weight: 400; color: #282B28;">
+                                    {{billingInfo.building}}<br />
+                                    {{billingInfo.street}}<br />
+                                    {{billingInfo.city}}<br />
+                                    {{billingInfo.postalCode}}<br />
+                                    T: {{billingInfo.phone}}
+                                  </td>
+                                  <td
+                                    style="padding: 15px 30px; vertical-align: top; text-align: left;font-size: 14px; font-weight: 400; color: #282B28;">
+                                    {{shippingOption}}
+                                  </td>
+                                  <td
+                                    style="padding: 15px 30px; vertical-align: top; text-align: left;font-size: 14px; font-weight: 400; color: #282B28;">
+                                    <a href={{trackingUrl}} style="color:#0097A5;">
+                                      {{trackingId}}</a>
+                                  </td>
+                                </tr>
+
+                              </tbody>
+
+                            </table>
+                          </td>
+
+                          <td class="esd-structure es-p30t es-p20r es-p20l" align="left"
+                            style="width:100%; display:inline-block; margin-bottom:20px;">
+
+
+                            <table width="100%" cellpadding="0" cellspacing="0" style="min-width:100%;">
+                              <thead style="background: #F1EDE9; 
+                                                            border-radius: 8px;">
+                                <tr>
+                                  <th scope="col"
+                                    style="border:none; padding: 11px 22px;  border-radius: 8px 0 0 8px; text-align: left; color: #282B28; font-weight: bold; font-size: 14px; line-height: 20px;">
+                                    Items</th>
+                                  <th scope="col"
+                                    style="border:none; padding: 11px 22px;   text-align: center; color: #282B28; font-weight: bold; font-size: 14px; line-height: 20px;">
+                                    Qty</th>
+                                  <th scope="col"
+                                    style="border:none; padding: 11px 22px;   text-align: center; color: #282B28; font-weight: bold; font-size: 14px; line-height: 20px;">
+                                    VAT</th>
+                                  <th scope="col"
+                                    style="border:none; padding: 11px 22px;  border-radius: 8px 0 0 8px; text-align: right; color: #282B28; font-weight: bold; font-size: 14px; line-height: 20px;">
+                                    Total Price(VAT included)</th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                <tr>
+                                  <td
+                                    style="padding: 15px 20px; vertical-align: top; text-align: left;font-size: 14px; font-weight: 400; color: #282B28;">
+                                    {{productName}}</td>
+                                  <td
+                                    style="padding: 15px 20px; vertical-align: top; text-align: center;font-size: 14px; font-weight: 400; color: #282B28;">
+                                    {{quantity}}</td>
+                                  <td
+                                    style="padding: 15px 20px; vertical-align: top; text-align: center;font-size: 14px; font-weight: 400; color: #282B28;">
+                                    {{VAT}}%</td>
+                                  <td
+                                    style="padding: 15px 20px; vertical-align: top; text-align: right;font-size: 14px; font-weight: 400; color: #282B28;">
+                                    £{{price}}</td>
+                                </tr>
+                              </tbody>
+                            </table>
+                          </td>
+                          {{/each}}
+                        </tr>
+                      </tbody>
+                    </table>
+
+
+                    <table class="es-content" cellspacing="0" cellpadding="0" align="center" width="700" cellpadding="0"
+                      cellspacing="0">
+                      <tbody>
+                        <tr style="background-color:#fff; border-radius: 0 0 8px 8px; ">
+                          <td class="esd-structure es-p30t es-p20r es-p20l" align="center"
+                            style="padding: 0 50px 10px; 0">
+                            <table width="100%" cellpadding="0" cellspacing="0"
+                              style="min-width:100%; border-top: 1px solid #F1EDE9; padding-bottom: 0;">
+
+                              <tbody>
+                                <tr>
+                                  <td
+                                    style="padding: 20px 0 2px 0; text-align: right; font-size: 14px; font-weight: bold; color: #282B28; width: 100%; display: inline-block;">
+                                    Subtotal {{orderDetails.subtotal}}
+
+                                  </td>
+                                  <td
+                                    style="padding: 5px 0 2px 0; text-align: right; font-size: 14px; font-weight: bold; color: #282B28; width: 100%; display: inline-block;">
+                                    Shipping & Handling £{{orderDetails.shippingCostSum}}
+                                  </td>
+                                  <td
+                                    style="padding: 5px 0 2px 0; text-align: right; font-size: 14px; font-weight: bold; color: #0097A5; width: 100%; display: inline-block;">
+                                    Grand Total £{{orderDetails.totalAmount}}
+                                  </td>
+                                </tr>
+
+                              </tbody>
+                            </table>
+                          </td>
+                        </tr>
+                        <tr>
+                          <td class="esd-stripe" align="center" style="height:8px;"></td>
+                        </tr>
+                        <tr style="background-color:#fff; border-radius: 0 0 8px 8px;">
+                          <td class="esd-structure es-p30t es-p20r es-p20l" align="center"
+                            style="width:100%; display:inline-block; padding-bottom: 0;">
+                            <p
+                              style="width:100%; padding: 15px 20px; text-align: left; display:inline-block; font-size:12px;font-weight:400; font-size: 14px; color: #798177; line-height: 20px; margin-bottom: 0;">
+                              We hope to see you again soon<br /><br />
+                              Many Thanks<br />
+                              bndle Support Team
+                            </p>
+                            <p
+                              style="width:100%; text-align: center; display:inline-block; font-size:12px;font-weight:400; font-size: 14px; color: #798177; line-height: 20px; margin-bottom: 0;">
+                              Please don’t reply to this email.
+                            </p>
+                          </td>
+                          <td class="esd-structure es-p20" align="center"
+                            style=" width: 25%; display: inline-block; padding-left: 0; font-size:45px; font-weight:600; color: #99B18D; line-height: 50px; padding-top:0;">
+                            <img class="adapt-img"
+                              src="https://demo.stripocdn.email/content/guids/744d9145-39a1-4538-af6f-5c2e522629fb/images/bubble.png"
+                              alt="" style="display: block;" width="55">
+                          </td>
+                        </tr>
+                      </tbody>
+                    </table>
+                    <table cellpadding="0" cellspacing="0" class="es-content" align="center">
+                      <tbody>
+                        <tr>
+                          <td class="esd-stripe" align="center" style="padding-bottom:30px;">
+                            <table class="es-content-body" align="center" width="700"
+                              style="background-color: transparent; margin: 0 auto;">
+                              <tbody>
+                                <tr>
+                                  <td align="center" width="100%" class="esd-block-text es-infoblock"
+                                    style="width:100%; display:inline-block; padding-top: 15px;">
+                                    <p
+                                      style="width:100%; display:inline-block; color: #AEAFAD; font-size: 14px; line-height: 24px; font-weight: 600; margin-bottom:0;">
+                                      One destination for every life stage</p>
+                                    <p
+                                      style="width:100%; display:inline-block; color: #AEAFAD; font-family: 'League Spartan', sans-serif; font-size: 20px; line-height:32px; font-weight: 600; margin-top: 0;">
+                                      Connect with us @wearebndle</p>
+                                  </td>
+                                </tr>
+                                <tr style="text-align:center;">
+                                  <td align="center" style="display:inline-block;" valign="top" class="es-p20r"><a
+                                      style="margin:0 15px;" target="_blank"
+                                      href="https://www.facebook.com/wearebndle"><img title="Facebook"
+                                        src="https://demo.stripocdn.email/content/guids/744d9145-39a1-4538-af6f-5c2e522629fb/images/facebooklogo.png"
+                                        alt="Fb" width="20"></a></td>
+                                  <td align="center" style="display:inline-block;" valign="top" class="es-p20r"><a
+                                      style="margin:0 15px;" target="_blank"
+                                      href="https://www.instagram.com/wearebndle/"><img title="Twitter"
+                                        src="https://demo.stripocdn.email/content/guids/744d9145-39a1-4538-af6f-5c2e522629fb/images/instagramlogo.png"
+                                        alt="Tw" width="20"></a></td>
+                                  <td align="center" style="display:inline-block;" valign="top" class="es-p20r"><a
+                                      style="margin:0 15px;" target="_blank" href="https://twitter.com/wearebndle"><img
+                                        title="Instagram"
+                                        src="https://demo.stripocdn.email/content/guids/744d9145-39a1-4538-af6f-5c2e522629fb/images/twitter.png"
+                                        alt="Inst" width="20"></a></td>
+                                </tr>
+                              </tbody>
+                            </table>
+                          </td>
+                        </tr>
+                      </tbody>
+                    </table>
+
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+  </div>
+</body>
+
+</html>
