@@ -3,6 +3,7 @@ const catchAsync = require('../../utils/catchAsync');
 const ApiError = require('../../utils/ApiError');
 const wooCommerceService = require('../../services/woocommerce/wooCommerceService');
 const wixService = require('../../services/wix/wixService');
+const squarespaceService = require('../../services/squarespace/squarespaceService');
 
 const initialProductSyncShopify = catchAsync(async (req, res) => {
   const vendorId = req.body.vendorID;
@@ -10,6 +11,7 @@ const initialProductSyncShopify = catchAsync(async (req, res) => {
   // else if(req.body.productSource == 'woocommerce')
   if (req.body.productSource === 'wix') await wixService.wixProductSync(vendorId);
   // else await wooCommerceService.wooCommerceProductSync(vendorId);
+  if (req.body.productSource === 'squarespace') await squarespaceService.squarespaceProductSync(vendorId);
 
   return res.status(200).jsend.success({ message: 'success' });
 });

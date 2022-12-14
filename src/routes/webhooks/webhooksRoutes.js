@@ -21,4 +21,6 @@ router.route('/:id/wix/products/update').post(webhookController.updateProductWeb
 router.route('/:id/wix/orders/fullfillmentCreate').post(webhookController.wixOrderFullfillmentCreateWebhook);
 router.route('/:id/wix/orders/cancel').post(webhookController.wixOrderCancel);
 
+// squarespace webhooks
+router.route('/:id/squarespace/orders').post(webhookController.squarespaceOrderWebhook);
 module.exports = router;
