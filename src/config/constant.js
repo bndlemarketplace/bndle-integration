@@ -7,7 +7,7 @@ module.exports = {
       socialLoginTypeEnum: ['facebook', 'google', 'apple'],
       typeOfAccountEnum: ['email', 'apple', 'google', 'facebook'],
       defaultTypeOfAccount: 'email',
-      connectionTypeEnum: ['shopify', 'wix', 'squareSpace', 'woocommerce'],
+      connectionTypeEnum: ['shopify', 'wix', 'woocommerce', 'squarespace'],
     },
     customer: {
       genderEnum: {
@@ -26,7 +26,7 @@ module.exports = {
       // 'bndleAndPartners', 'exclusives', 'newStuff'],
     },
     product: {
-      productSourceEnum: ['direct', 'shopify', 'wix', 'woocommerce', 'squareSpace'],
+      productSourceEnum: ['direct', 'shopify', 'wix', 'woocommerce', 'squarespace'],
       statusproductEnum: ['active', 'inactive', 'publish', 'unpublish'],
       STATUS: ['PUBLISHED', 'UNPUBLISHED', 'ENABLED', 'DISABLED', 'REJECTED', 'IMPORTED'],
       venderStatus: ['ENABLED', 'DISABLED'],

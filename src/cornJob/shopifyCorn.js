@@ -70,6 +70,20 @@ const mapOptionWithBndle = async (options, subCat, vendorId) => {
   return { canMap, mappedOption };
 };
 
+const mapWeightUnit = (unit) => { // map units of shopify
+  switch (unit) {
+    case 'GRAMS': return 'g';
+    case 'GRAM': return 'g';
+    case 'KILOGRAMS': return 'kg';
+    case 'KILOGRAM': return 'kg';
+    case 'OUNCES': return 'oz';
+    case 'OUNCE': return 'oz';
+    case 'POUNDS': return 'lb';
+    case 'POUND': return 'lb';
+    default: return '';
+  }
+}
+
 const mapWithBndleVariant = async (options, subCat, vendorId, vendorOptionMapping) => {
   let subCategory = subCat;
   const subcatArray = ['Maternity', 'Shoes'];
@@ -381,7 +395,7 @@ const publishProductToShopify = async (productsId) => {
           option2,
           option3,
           weight: variant.weight,
-          weight_unit: variant.weightUnit,
+          weight_unit: mapWeightUnit(variant.weightUnit),
           inventory_management: 'shopify',
         };
         // console.log(el.options);
@@ -740,7 +754,7 @@ const pushProductToShopify = async () => {
           option2,
           option3,
           weight: variant.weight,
-          weight_unit: variant.weightUnit,
+          weight_unit: mapWeightUnit(variant.weightUnit),
         };
         variantArray.push(variantsObj);
       }
@@ -902,7 +916,7 @@ const createUpdateProduct = async (product, mode, userId) => {
               inventoryQuantity: variant.inventory_quantity,
               openingQuantity: variant.old_inventory_quantity,
               weight: variant.weight,
-              weightUnit: variant.weight_unit,
+              weightUnit: mapWeightUnit(variant.weight_unit),
               images: mappedVariantImages,
               isDeleted: false,
               isDefault: false,

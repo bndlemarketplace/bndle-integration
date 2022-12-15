@@ -4,6 +4,7 @@ const cornServices = require('../../cornJob/shopifyCorn');
 const catchAsync = require('../../utils/catchAsync');
 const ApiError = require('../../utils/ApiError');
 const wixService = require('../../services/wix/wixService');
+const squarespaceService = require('../../services/squarespace/squarespaceService');
 const logger = require('../../config/logger');
 const User = require('../../models/user.model');
 const woocommerceService = require('../../services/woocommerce/wooCommerceService');
@@ -196,6 +197,20 @@ const wixOrderCancel = catchAsync(async (req, res) => {
   await wixService.cancelOrderStatus(parsedData.order);
 });
 
+const squarespaceOrderWebhook = catchAsync(async (req, res) => {
+  logger.info(`=========== Squarespace Order webhook===================`);
+  const { id } = req.params;
+  const parsedData = req.body;
+  console.log('====body====', parsedData, id);
+  logger.info(`=========== Squarespace Order parsedData=================== ${parsedData}`);
+
+  if (parsedData && parsedData.data && parsedData.data.update === 'CANCELED') {
+    await squarespaceService.cancelOrderStatus(parsedData.data);
+  } else {
+    await squarespaceService.updateOrderStatus(parsedData.data);
+  }
+});
+
 const woocommerceOrderUpdate = catchAsync(async (req, res) => {
   console.log(`===========woocommerce order update===================`);
 
@@ -214,6 +229,7 @@ const woocommerceOrderUpdate = catchAsync(async (req, res) => {
   // }
   res.status(200).jsend.success({});
 });
+
 module.exports = {
   createProductWebhook,
   updateProductWebhook,
@@ -228,5 +244,6 @@ module.exports = {
   wixOrderFullfillmentCreateWebhook,
   wixOrderCancel,
   fulfillmentUpdate,
+  squarespaceOrderWebhook,
   woocommerceOrderUpdate,
 };

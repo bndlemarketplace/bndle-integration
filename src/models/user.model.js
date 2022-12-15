@@ -128,6 +128,7 @@ const userSchema = mongoose.Schema(
       accessToken: { type: String, trim: true, index: true, unique: true, sparse: true },
       refreshToken: { type: String, trim: true, index: true, unique: true, sparse: true },
       shopName: { type: String, trim: true, index: true, unique: true, sparse: true }, // required for shopify4
+      clientId:{ type: String, trim: true, index: true, unique: true, sparse: true }, // for squarespace
       urls: {},
     },
     webhookSchema: {
