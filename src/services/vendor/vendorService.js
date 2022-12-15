@@ -51,7 +51,38 @@ const deleteRemoteWebhooksService = async (vendor) => {
   return { message: 'success' };
 };
 
+const registerAllWoocommerceWebhooks = async (vendor) => {
+  try {
+    const platform = platformServiceFactory('woocommerce');
+
+    // products
+    // await platform.webhooks.registerWebhook(
+    //   vendor,
+    //   'Add product',
+    //   'product.created',
+    //   process.env.APP_BASE_URL + `v1/webhooks/${vendor._id}/woocommerce/products/create`
+    // );
+    await platform.webhooks.registerWebhook(
+      vendor,
+      'Update order',
+      'order.updated',
+      process.env.APP_BASE_URL + `v1/webhooks/${vendor._id}/woocommerce/orders/update`
+    );
+
+     await platform.webhooks.registerWebhook(
+      vendor,
+      'Product update',
+      'product.updated',
+      process.env.APP_BASE_URL + `v1/webhooks/${vendor._id}/woocommerce/products/update`
+    );
+    return 'webhook registered successfully';
+  } catch (error) {
+    return 
+  }
+};
+
 module.exports = {
   registerAllWebhooksService,
   deleteRemoteWebhooksService,
+  registerAllWoocommerceWebhooks,
 };

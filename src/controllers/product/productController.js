@@ -13,6 +13,8 @@ const initialProductSyncShopify = catchAsync(async (req, res) => {
   // else await wooCommerceService.wooCommerceProductSync(vendorId);
   if (req.body.productSource === 'squarespace') await squarespaceService.squarespaceProductSync(vendorId);
 
+  if (req.body.productSource === 'woocommerce') await wooCommerceService.wooCommerceProductSync(vendorId);
+ 
   return res.status(200).jsend.success({ message: 'success' });
 });
 
