@@ -1,11 +1,13 @@
 
 const httpStatus = require('http-status');
+const mongoose = require('mongoose');
 const ApiError = require('../../utils/ApiError');
 const logger = require('../../config/logger');
 const constVer = require('../../config/constant');
 const cornServices = require('../../cornJob/shopifyCorn');
 const { Product, ProductVariants, VenderOrder, Order, User } = require('../../models');
 const emailService = require('../emailService');
+const { AddJobPublishProductToShopify } = require('../../lib/jobs/queue/addToQueue');
 const SQObject = require('./index');
 
 const registerWebhooks = async (userId) => {
@@ -94,50 +96,14 @@ const squarespaceProductSync = async (userId) => {
 
 const productVariantSync = async (product, dbProduct) => {
     // for create variant of product
+    const sqObj = new SQObject();
+
     if (product.variants && product.variants.length) {
 
         for (let index = 0; index < product.variants.length; index++) { // loop all variants
             const variant = product.variants[index];
 
-            let mappedOption = [];
-            for (const attr in variant.attributes) {
-                mappedOption.push({
-                    name: attr,
-                    value: variant.attributes[attr]
-                })
-            };
-
-            let mappedVariantImages = [];
-            if (variant.image) {
-                mappedVariantImages.push({
-                    bndleImageId: variant.image.id,
-                    bndleProductId: dbProduct._id.toString(),
-                    position: variant.image.orderIndex,
-                    variantPlatformSrc: variant.image.url,
-                    src: variant.image.url,
-                })
-            }
-
-
-            const variantObj = {
-                productId: dbProduct._id,
-                venderProductPlatformVariantId: variant.id,
-                price: variant.pricing.basePrice.value,
-                position: index + 1,
-                options: mappedOption,
-                venderSku: variant.sku,
-                sku: variant.sku,
-                title: variant.attributes ? Object.values(variant.attributes).join(' ') : '',
-                inventoryQuantity: variant.stock.quantity,
-                openingQuantity: variant.stock.quantity,
-                weight: variant.shippingMeasurements.weight.value,
-                weightUnit: variant.shippingMeasurements.weight.unit,
-                images: mappedVariantImages,
-                isDeleted: false,
-                isDefault: product.variants.length === 1 ? true : false,
-                isEnable: true,
-                isCompatible: true
-            };
+            const variantObj = sqObj.adapter.convertPlatformVariantToRemoteVariant(variant, product, dbProduct, index);
 
             await ProductVariants.findOneAndUpdate({ venderProductPlatformVariantId: variant.id, }, variantObj, {
                 upsert: true,
@@ -282,8 +248,8 @@ const cancelOrderStatus = async (order) => {
                     const updatedVariant = await ProductVariants.findOneAndUpdate(
                         { _id: orderProduct.variantRef },
                         {
-                            inventoryQuantity: variantEl.quantity,
-                            openingQuantity: variantEl.quantity,
+                            inventoryQuantity: variantEl.isUnlimited ? constVer.model.product.quantityLimit + "" : variantEl.quantity,
+                            openingQuantity: variantEl.isUnlimited ? constVer.model.product.quantityLimit + "" : variantEl.quantity,
                         },
                         {
                             upsert: true,
@@ -376,8 +342,86 @@ const updateOrderStatus = async (order) => {
     }
 };
 
+const updateAllVendorProducts = async (req, res) => {
+    try {
+        const allVendors = await User.find({ connectionType: constVer.model.product.productSourceEnum[4] }, { credentials: 1, name: 1, connectionType: 1 }).lean();
+        let vendor;
+
+        for (let i = 0; i < allVendors.length; i++) {
+            vendor = allVendors[i];
+            const sqObj = new SQObject();
+            let getNext = true;
+            let cursor = '';
+
+            while (getNext) {
+
+                const { pagination, products } = await sqObj.product.get.all(vendor, cursor);
+                getNext = pagination && pagination.hasNextPage && products.length ? true : false;
+                cursor = pagination.nextPageCursor;
+
+                if (products.length) {
+                    let product;
+                    for (let index = 0; index < products.length; index++) {
+                        product = products[index];
+
+                        const dbProduct = await Product.findOne({ venderProductPlatformId: product.id });
+                        if (dbProduct) {
+                            const productObj = sqObj.adapter.updateRemoteProductFromPlatformProduct(product, dbProduct);
+                            // create product
+                            const dbProductRes = await Product.findOneAndUpdate(
+                                { venderProductPlatformId: productObj.venderProductPlatformId, productSource: constVer.model.product.productSourceEnum[4] },
+                                productObj,
+                                {
+                                    upsert: true,
+                                    new: true,
+                                }
+                            );
+
+                            logger.info(`dbProduct ${dbProductRes}`);
+
+                            if (dbProductRes) {
+                                // for create variant of product
+                                if (product.variants && product.variants.length) {
+
+                                    const dbVariants = await ProductVariants.find({ productId: mongoose.Types.ObjectId(dbProduct._id) });
+
+                                    for (let index = 0; index < product.variants.length; index++) { // loop all variants
+
+                                        const variant = product.variants[index];
+                                        const dbVariant = dbVariants.find((v) => v.venderProductPlatformVariantId === variant.id);
+                                        const variantObj = sqObj.adapter.updateRemoteVariantFromPlatformVariant(variant, dbVariant, dbProduct);
+
+                                        await ProductVariants.findOneAndUpdate({ venderProductPlatformVariantId: variant.id }, variantObj, {
+                                            upsert: true,
+                                            new: true,
+                                        });
+                                    }
+                                }
+
+                                try {
+                                    if (dbProduct.status === 'PUBLISHED') {
+                                        AddJobPublishProductToShopify(dbProduct._id);
+                                    }
+                                    // await cornServices.publishProductToShopify(dbProduct._id);
+
+                                } catch (err) {
+                                    logger.error(err);
+                                    throw new ApiError(httpStatus.BAD_REQUEST, 'something went wrong with push product to shopify');
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    } catch (e) {
+        logger.error(e);
+    }
+};
+
 module.exports = {
     squarespaceProductSync,
     updateOrderStatus,
-    cancelOrderStatus
+    cancelOrderStatus,
+    updateAllVendorProducts,
 }
