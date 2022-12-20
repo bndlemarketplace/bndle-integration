@@ -38,6 +38,7 @@ module.exports = {
         trending: 'TRENDING',
         sale: 'SALE',
       },
+      quantityLimit: 10000,
     },
     order: {
       orderStatus: {
@@ -75,4 +76,7 @@ module.exports = {
       vendor: ['getUsers'],
     },
   },
+  qeueue: {
+    default_attempts: 3
+  }
 };

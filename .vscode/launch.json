@@ -12,6 +12,7 @@
                 "<node_internals>/**"
             ],
             "program": "${workspaceFolder}/src/index.js"
+            // "program": "${workspaceFolder}/src/lib/jobs/queues/process.js"
         }
     ]
 }

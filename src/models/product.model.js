@@ -98,6 +98,10 @@ const productSchema = mongoose.Schema(
           type: String,
           trim: true,
         },
+        vendorImageId: {
+          type: String,
+          trim: true,
+        },
         position: {
           type: Number,
           required: true,

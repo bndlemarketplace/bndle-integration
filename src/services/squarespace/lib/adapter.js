@@ -1,5 +1,54 @@
 const constVer = require('../../../config/constant');
 class Adapter {
+
+  convertPlatformVariantToRemoteVariant(variant, platformProduct, dbProduct, index) {
+
+    let mappedOption = [];
+    for (const attr in variant.attributes) {
+      mappedOption.push({
+        name: attr,
+        value: variant.attributes[attr]
+      })
+    };
+
+    let mappedVariantImages = [];
+    if (variant.image) {
+      mappedVariantImages.push({
+        bndleImageId: '',
+        bndleProductId: dbProduct._id.toString(),
+        vendorImageId: variant.image.id,
+        position: variant.image.orderIndex,
+        variantPlatformSrc: variant.image.url,
+        src: variant.image.url,
+      })
+    }
+
+    const variantObj = {
+      productId: dbProduct._id,
+      venderProductPlatformVariantId: variant.id,
+      price: variant.pricing.basePrice.value,
+      position: index + 1,
+      options: mappedOption,
+      venderSku: variant.sku,
+      sku: variant.sku,
+      title: variant.attributes ? Object.values(variant.attributes).join('/') : '',
+      inventoryQuantity: variant.stock.unlimited ? constVer.model.product.quantityLimit + "" : variant.stock.quantity,
+      openingQuantity: variant.stock.unlimited ? constVer.model.product.quantityLimit + "" : variant.stock.quantity,
+      weight: variant.shippingMeasurements.weight.value,
+      weightUnit: variant.shippingMeasurements.weight.unit,
+      images: mappedVariantImages,
+      isDeleted: false,
+      isDefault: platformProduct.variants.length === 1 ? true : false,
+      isEnable: true,
+      isCompatible: true
+    };
+    return variantObj;
+  }
+
+  convertRemoteVariantToPlatformVariant() {
+
+  }
+
   convertRemoteProductToPlatformProduct(product) {
     const platformProduct = {}; // should be a platfrom product model instance    
 
@@ -14,8 +63,9 @@ class Adapter {
       for (let i = 0; i < product.images.length; i++) {
         const img = product.images[i];
         const imgObj = {
-          bndleImageId: img.id,
-          bndleProductId: product.id,
+          bndleImageId: '',
+          bndleProductId: product._id,
+          vendorImageId: img.id,
           src: img.url,
           position: i + 1,//not available
         };
@@ -71,6 +121,47 @@ class Adapter {
     const remoteOrder = {}; // should be a remote order model instance
 
     return remoteOrder;
+  }
+
+  updateRemoteProductFromPlatformProduct(platformProduct, dbProduct) {
+    let imgArr = []; // update only images as for now
+    let imgObj = {};
+
+    (platformProduct.images || []).forEach((img, i) => {
+      imgObj = {
+        bndleImageId: '',
+        bndleProductId: platformProduct.id,
+        vendorImageId: img.id,
+        src: img.url,
+        position: i + 1,//not available
+      };
+      imgArr.push(imgObj);
+    })
+    dbProduct.images = imgArr;
+
+    return dbProduct;
+  }
+
+  updateRemoteVariantFromPlatformVariant(platformVariant, dbVariant, dbProduct) {
+    let imgArr = [];  // update only images and stock as for now
+
+    if (platformVariant && platformVariant.image) { // only single image for variant in squarepace
+      const imgObj = {
+        bndleImageId: '',
+        bndleProductId: dbProduct._id.toString(),
+        vendorImageId: platformVariant.image.id,
+        position: platformVariant.image.orderIndex,
+        variantPlatformSrc: platformVariant.image.url,
+        src: platformVariant.image.url,
+      }
+      imgArr.push(imgObj);
+    }
+    dbVariant.images = imgArr;
+
+    dbVariant.openingQuantity = platformVariant.stock.unlimited ? constVer.model.product.quantityLimit + "" : platformVariant.stock.quantity;
+    dbVariant.inventoryQuantity = platformVariant.stock.unlimited ? constVer.model.product.quantityLimit + "" : platformVariant.stock.quantity;
+
+    return dbVariant;
   }
 }
 
