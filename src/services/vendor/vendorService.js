@@ -66,14 +66,14 @@ const registerAllWoocommerceWebhooks = async (vendor) => {
       vendor,
       'Update order',
       'order.updated',
-      process.env.APP_BASE_URL + `v1/webhooks/${vendor._id}/woocommerce/orders/update`
+      process.env.APP_INTEGRATION_BASE_URL + `v1/webhooks/${vendor._id}/woocommerce/orders/update`
     );
 
      await platform.webhooks.registerWebhook(
       vendor,
       'Product update',
       'product.updated',
-      process.env.APP_BASE_URL + `v1/webhooks/${vendor._id}/woocommerce/products/update`
+      process.env.APP_INTEGRATION_BASE_URL + `v1/webhooks/${vendor._id}/woocommerce/products/update`
     );
     return 'webhook registered successfully';
   } catch (error) {
