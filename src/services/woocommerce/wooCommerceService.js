@@ -12,7 +12,7 @@ const vendorService = require('../vendor/vendorService');
 const woocommerceProduct = async (userData, id) => {
   return axios({
     method: 'get',
-    url: `${userData.shopName}/wp-json/wc/v3/products/${id}?consumer_key=${userData.apiKey}&consumer_secret=${userData.apiSecret}`,
+    url: `https://${userData.shopName}/wp-json/wc/v3/products/${id}?consumer_key=${userData.apiKey}&consumer_secret=${userData.apiSecret}`,
     headers: { 'Content-Type': 'application/json' },
   });
 };
@@ -20,7 +20,7 @@ const woocommerceProduct = async (userData, id) => {
 const woocommerceProductVariant = async (userData, id) => {
   return axios({
     method: 'get',
-    url: `${userData.shopName}/wp-json/wc/v3/products/${id}/variations?consumer_key=${userData.apiKey}&consumer_secret=${userData.apiSecret}`,
+    url: `https://${userData.shopName}/wp-json/wc/v3/products/${id}/variations?consumer_key=${userData.apiKey}&consumer_secret=${userData.apiSecret}`,
     headers: { 'Content-Type': 'application/json' },
   });
 };
@@ -188,7 +188,7 @@ const wooCommerceProductSync = async (userId) => {
     do {
       let product = await axios({
         method: 'get',
-        url: `${userData.credentials.shopName}/wp-json/wc/v3/products?consumer_key=${userData.credentials.apiKey}&consumer_secret=${userData.credentials.apiSecret}&offset=${offset}&per_page=${limit}`,
+        url: `https://${userData.credentials.shopName}/wp-json/wc/v3/products?consumer_key=${userData.credentials.apiKey}&consumer_secret=${userData.credentials.apiSecret}&offset=${offset}&per_page=${limit}`,
         headers: { 'Content-Type': 'application/json' },
       });
       // .then(async (response) => {
@@ -361,7 +361,7 @@ const convertRemoteProductVariantToPlatformProductVariant = async (product, user
   try {
     axios({
       method: 'get',
-      url: `${userData.credentials.shopName}/wp-json/wc/v3/products/${product.id}/variations?consumer_key=${userData.credentials.apiKey}&consumer_secret=${userData.credentials.apiSecret}`,
+      url: `https://${userData.credentials.shopName}/wp-json/wc/v3/products/${product.id}/variations?consumer_key=${userData.credentials.apiKey}&consumer_secret=${userData.credentials.apiSecret}`,
       headers: { 'Content-Type': 'application/json' },
     }).then(async (response) => {
       // handle success
