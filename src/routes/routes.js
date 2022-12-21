@@ -25,11 +25,11 @@ const defaultRoutes = [
 ];
 
 // test 
-// router.route('/check').get(updateAllVendorProducts);
-// router.route('/checktodos').get(((req, res) => {
-//   AddJobCallTodos(req.body.id);
-//   res.json('done')
-// }));
+router.route('/check').get(updateAllVendorProducts);
+router.route('/checktodos').get(((req, res) => {
+  AddJobCallTodos(req.body.id);
+  res.json('done')
+}));
 
 defaultRoutes.forEach((route) => {
   router.use(route.path, route.route);

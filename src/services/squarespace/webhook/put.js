@@ -2,7 +2,7 @@ const squareSpaceRequest = require("../lib/request");
 const { SQUARESPACE_APIURL, APP_INTEGRATION_BASE_URL } = process.env;
 
 const subscribe = async (vendor) => {
-    const url = `${SQUARESPACE_APIURL}/${vendor.credentials.apiVersion}/webhook_subscriptions`;
+    const url = `${SQUARESPACE_APIURL}/1.0/webhook_subscriptions`;
     const data = {
         endpointUrl: `${APP_INTEGRATION_BASE_URL}/v1/webhooks/${vendor._id}/squarespace/orders`,
         topics: [
