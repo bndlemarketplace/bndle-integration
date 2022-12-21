@@ -81,11 +81,19 @@
                         <tr>
                           <td class="esd-structure es-p30t es-p20r es-p20l" align="left"
                             style="width:100%; display:inline-block;">
-                            <p
+                            {{#if orderDetails.customerName}}
+                             <p
                               style="width:100%; display:inline-block; font-size: 16px; font-weight: 400; color: #282B28; line-height: 24px;">
                               Dear {{orderDetails.customerName}},<br /><br />
                               Thanks for shopping at bndle and supporting independent brands.
                             </p>
+                            {{else}}
+                             <p
+                              style="width:100%; display:inline-block; font-size: 16px; font-weight: 400; color: #282B28; line-height: 24px;">
+                              Dear,<br /><br />
+                              Thanks for shopping at bndle and supporting independent brands.
+                            </p>
+                            {{/if}}
                             <p
                               style="width:100%; display:inline-block; font-size: 16px; font-weight: 600; color: #282B28; line-height: 24px;">
                               Your order {{orderDetails.orderNo}} has been shipped.

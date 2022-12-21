@@ -315,6 +315,9 @@ const createUpdateProduct = async (productId, mode, userId) => {
         };
         await LoggerService.createLogger(loggerPayload);
       }
+      if (dbProduct && dbProduct.status === 'PUBLISHED') {
+        await cornServices.publishProductToShopify(dbProduct._id, 'PUBLISHED');
+      }
     }
   } catch (err) {
     console.log(err);
@@ -651,7 +654,7 @@ async function productVariantSync(product, accessToken, dbProduct, mode) {
                       // weight: variantEl.variant.weight,
                       inventoryQuantity: variantEl.stock && variantEl.stock.quantity,
                       openingQuantity: variantEl.stock && variantEl.stock.quantity,
-                      // images: variantImg,
+                      images: variantImg,
                       // isDeleted: false,
                     };
                   } else {

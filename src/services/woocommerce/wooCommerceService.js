@@ -423,7 +423,7 @@ const convertRemoteProductVariantToPlatformProductVariant = async (product, user
               inventoryQuantity: variant.stock_quantity,
               openingQuantity: variant.stock_quantity,
               weight: variant.weight ? variant.weight : 0,
-              images: [],
+              images: mappedVariantImages,
               isDeleted: false,
               isCompatible: true,
               isEnable: true,
@@ -453,7 +453,7 @@ const convertRemoteProductVariantToPlatformProductVariant = async (product, user
               inventoryQuantity: variant.stock_quantity,
               openingQuantity: variant.stock_quantity,
               // weight: product.weight ? product.weight : 0,
-              // images: [],
+              images: mappedVariantImages,
               // isDeleted: false,
               // variantType: product.type,
             };
@@ -621,6 +621,9 @@ const createUpdateProduct = async (product, userId) => {
         level: constVer.model.logger.levelEnum[1],
       };
       await LoggerService.createLogger(loggerPayload);
+    }
+    if (dbProduct && dbProduct.status === 'PUBLISHED') {
+      await cornServices.publishProductToShopify(dbProduct._id, 'PUBLISHED');
     }
   }
 };

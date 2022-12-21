@@ -971,7 +971,7 @@ const createUpdateProduct = async (product, mode, userId) => {
       };
       await LoggerService.createLogger(loggerPayload);
     }
-    if (dbProduct.status === 'PUBLISHED') {
+    if (dbProduct && dbProduct.status === 'PUBLISHED') {
       publishProductToShopify(dbProduct._id);
     }
   } catch (err) {
