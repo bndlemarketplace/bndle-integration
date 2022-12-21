@@ -1,15 +1,16 @@
 const squareSpaceRequest = require('../lib/request');
+const { SQUARESPACE_APIURL } = process.env;
 
 const one = async (vendor, remoteOrderId) => {
-    const url = `${vendor.platform.credentials.apiUrl + vendor.platform.credentials.apiVersion}/commerce/orders/${remoteOrderId}`;
-    const response = await squareSpaceRequest('get', url, vendor.platform.credentials.apiKey, vendor.platform.credentials.apiSecret);
+    const url = `${SQUARESPACE_APIURL}/${vendor.credentials.apiVersion}/commerce/orders/${remoteOrderId}`;
+    const response = await squareSpaceRequest('get', url, vendor.credentials.apiKey, vendor.credentials.apiSecret);
 
-    return response.data.result;
+    return response.data;
 };
 
 const all = async (vendor) => {
-    const url = `${vendor.platform.credentials.apiUrl + vendor.platform.credentials.apiVersion}/commerce/orders`;
-    const response = await squareSpaceRequest('get', url, vendor.platform.credentials.apiKey, vendor.platform.credentials.apiSecret);
+    const url = `${SQUARESPACE_APIURL}/${vendor.credentials.apiVersion}/commerce/orders`;
+    const response = await squareSpaceRequest('get', url, vendor.credentials.apiKey, vendor.credentials.apiSecret);
 
     return response.data;
 };

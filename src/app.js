@@ -10,6 +10,7 @@ const httpStatus = require('http-status');
 const jsend = require('jsend');
 const config = require('./config/config');
 const morgan = require('./config/morgan');
+const tasks = require('./lib/jobs/cronjobs/init');
 const { jwtStrategy } = require('./config/passport');
 const { authLimiter } = require('./middlewares/rateLimiter');
 const { errorConverter, errorHandler } = require('./middlewares/error');
@@ -51,6 +52,11 @@ passport.use('jwt', jwtStrategy);
 
 // v1 api routes
 app.use('/v1', routes);
+
+// initatlize crons
+tasks.connect(tasks.agenda);
+// initilize queues
+require('./lib/jobs/queue/process');
 
 // send back a 404 error for any unknown api request
 app.use((req, res, next) => {
