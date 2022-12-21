@@ -236,6 +236,14 @@
                                     Subtotal {{orderDetails.subtotal}}
 
                                   </td>
+                                   {{#if orderDetails.discountPercentage}}
+                                  <tr>
+                                    <td
+                                      style="padding: 5px 0 2px 0; text-align: right; font-size: 14px; font-weight: bold; color: #282B28; width: 100%; display: inline-block;">
+                                      Discount({{orderDetails.discountPercentage}}%) - £{{orderDetails.discountAmount}}
+                                    </td>
+                                  </tr>
+                                  {{/if}}
                                   <td
                                     style="padding: 5px 0 2px 0; text-align: right; font-size: 14px; font-weight: bold; color: #282B28; width: 100%; display: inline-block;">
                                     Shipping & Handling £{{orderDetails.shippingCostSum}}
