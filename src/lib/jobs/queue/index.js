@@ -31,5 +31,5 @@ const productPublishShopifyQueue = new Queue("PUBLISH_SHOPIFY_PRODUCT_ID", opts)
 
 module.exports = {
   productPublishShopifyQueue,
-  todosQueue
+  // todosQueue
 };
