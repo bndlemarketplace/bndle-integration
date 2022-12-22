@@ -61,7 +61,7 @@ const squarespaceProductSync = async (userId) => {
                                 }
                             );
 
-                            logger.info(`dbProduct ${dbProduct}`);
+                            logger.info(`dbProduct added ${dbProduct._id}`);
 
                             if (dbProduct) {
                                 // for create variant of product
