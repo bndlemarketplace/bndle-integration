@@ -27,7 +27,7 @@ const opts = {
 };
 
 const productPublishShopifyQueue = new Queue("PUBLISH_SHOPIFY_PRODUCT_ID", opts);
-const todosQueue = new Queue("TO_DO_LIST", opts);
+// const todosQueue = new Queue("TO_DO_LIST", opts);
 
 module.exports = {
   productPublishShopifyQueue,
