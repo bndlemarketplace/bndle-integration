@@ -1,6 +1,7 @@
 
 const httpStatus = require('http-status');
 const mongoose = require('mongoose');
+const { APP_INTEGRATION_BASE_URL } = process.env;
 const ApiError = require('../../utils/ApiError');
 const logger = require('../../config/logger');
 const constVer = require('../../config/constant');
@@ -16,8 +17,27 @@ const registerWebhooks = async (userId) => {
         const userData = await User.findById(userId);
         if (userData) {
             const sqObj = new SQObject();
-            await sqObj.webhook.put.subscribe(userData);
-            logger.info('webhook suubscribed for vendorId ' + userData.name);
+            let flag = true;
+            let webhook;
+            const data = {
+                endpointUrl: `${APP_INTEGRATION_BASE_URL}v1/webhooks/${userData._id}/squarespace/orders`,
+                topics: [
+                    "order.create", "order.update"
+                ]
+            }
+
+            const ifAlreadyReg = await sqObj.webhook.get.all(userData);
+
+            if (ifAlreadyReg && ifAlreadyReg.webhookSubscriptions && ifAlreadyReg.webhookSubscriptions.length) {
+                webhook = ifAlreadyReg.webhookSubscriptions.find((i) => i.endpointUrl === data.endpointUrl);
+                flag = false;
+            }
+            if (flag) {
+                await sqObj.webhook.put.subscribe(userData, data);
+                logger.info('webhook suubscribed for vendorId ' + userData.name);
+            } else {
+                logger.info('Webhook already subscriped webhookId ' + webhook.id);
+            }
         }
     } catch (e) {
         logger.info('webhook not registered for userId ' + userId);
@@ -424,4 +444,5 @@ module.exports = {
     updateOrderStatus,
     cancelOrderStatus,
     updateAllVendorProducts,
+    registerWebhooks,
 }
