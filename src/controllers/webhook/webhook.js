@@ -203,6 +203,7 @@ const squarespaceOrderWebhook = catchAsync(async (req, res) => {
   const parsedData = req.body;
   console.log('====body====', parsedData, id);
   logger.info(`=========== Squarespace Order parsedData=================== ${parsedData}`);
+  res.status(200).jsend.success({});
 
   if (parsedData && parsedData.data && parsedData.data.update === 'CANCELED') {
     await squarespaceService.cancelOrderStatus(parsedData.data);
@@ -210,6 +211,12 @@ const squarespaceOrderWebhook = catchAsync(async (req, res) => {
     await squarespaceService.updateOrderStatus(parsedData.data);
   }
 });
+
+const squarespaceWebhookRegister = catchAsync(async (req, res) => {
+  logger.info('----------register webhook squarespace--------------')
+  await squarespaceService.registerWebhooks(req.params.id);
+  res.status(200).jsend.success({});
+})
 
 const woocommerceOrderUpdate = catchAsync(async (req, res) => {
   console.log(`===========woocommerce order update===================`);
@@ -245,5 +252,6 @@ module.exports = {
   wixOrderCancel,
   fulfillmentUpdate,
   squarespaceOrderWebhook,
+  squarespaceWebhookRegister,
   woocommerceOrderUpdate,
 };
