@@ -28,4 +28,5 @@ router.route('/:id/wix/orders/cancel').post(webhookController.wixOrderCancel);
 
 // squarespace webhooks
 router.route('/:id/squarespace/orders').post(webhookController.squarespaceOrderWebhook);
+router.route('/:id/squarespace/register').post(webhookController.squarespaceWebhookRegister);
 module.exports = router;

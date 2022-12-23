@@ -1,6 +1,7 @@
 
 const httpStatus = require('http-status');
 const mongoose = require('mongoose');
+const { APP_INTEGRATION_BASE_URL } = process.env;
 const ApiError = require('../../utils/ApiError');
 const logger = require('../../config/logger');
 const constVer = require('../../config/constant');
@@ -16,12 +17,31 @@ const registerWebhooks = async (userId) => {
         const userData = await User.findById(userId);
         if (userData) {
             const sqObj = new SQObject();
-            await sqObj.webhook.put.subscribe(userData);
-            logger.info('webhook suubscribed for vendorId ' + userData.name);
+            let flag = true;
+            let webhook;
+            const data = {
+                endpointUrl: `${APP_INTEGRATION_BASE_URL}v1/webhooks/${userData._id}/squarespace/orders`,
+                topics: [
+                    "order.create", "order.update"
+                ]
+            }
+
+            const ifAlreadyReg = await sqObj.webhook.get.all(userData);
+
+            if (ifAlreadyReg && ifAlreadyReg.webhookSubscriptions && ifAlreadyReg.webhookSubscriptions.length) {
+                webhook = ifAlreadyReg.webhookSubscriptions.find((i) => i.endpointUrl === data.endpointUrl);
+                flag = false;
+            }
+            if (flag) {
+                await sqObj.webhook.put.subscribe(userData, data);
+                logger.info('webhook suubscribed for vendorId ' + userData.name);
+            } else {
+                logger.info('Webhook already subscriped webhookId ' + webhook.id);
+            }
         }
     } catch (e) {
-        logger.info('webhook not registered for userId ' + userId);
-        logger.info(e);
+        logger.info('Error: webhook not registered for userId ' + userId);
+        logger.info(e.message);
     }
 }
 
@@ -32,6 +52,7 @@ const squarespaceProductSync = async (userId) => {
             if (userData.autoProductSynced === true) {
                 throw new ApiError(httpStatus.BAD_REQUEST, 'already product synced');
             }
+
             await registerWebhooks(userId);
 
             (async () => {
@@ -61,7 +82,7 @@ const squarespaceProductSync = async (userId) => {
                                 }
                             );
 
-                            logger.info(`dbProduct ${dbProduct}`);
+                            logger.info(`dbProduct added ${dbProduct._id}`);
 
                             if (dbProduct) {
                                 // for create variant of product
@@ -353,69 +374,83 @@ const updateAllVendorProducts = async (req, res) => {
             let getNext = true;
             let cursor = '';
 
-            while (getNext) {
+            try {
 
-                const { pagination, products } = await sqObj.product.get.all(vendor, cursor);
-                getNext = pagination && pagination.hasNextPage && products.length ? true : false;
-                cursor = pagination.nextPageCursor;
+                while (getNext) {
 
-                if (products.length) {
-                    let product;
-                    for (let index = 0; index < products.length; index++) {
-                        product = products[index];
+                    const { pagination, products } = await sqObj.product.get.all(vendor, cursor);
+                    getNext = pagination && pagination.hasNextPage && products.length ? true : false;
+                    cursor = pagination.nextPageCursor;
 
-                        const dbProduct = await Product.findOne({ venderProductPlatformId: product.id });
-                        if (dbProduct) {
-                            const productObj = sqObj.adapter.updateRemoteProductFromPlatformProduct(product, dbProduct);
-                            // create product
-                            const dbProductRes = await Product.findOneAndUpdate(
-                                { venderProductPlatformId: productObj.venderProductPlatformId, productSource: constVer.model.product.productSourceEnum[4] },
-                                productObj,
-                                {
-                                    upsert: true,
-                                    new: true,
-                                }
-                            );
+                    if (products.length) {
+                        let product;
+                        for (let index = 0; index < products.length; index++) {
+                            product = products[index];
 
-                            logger.info(`dbProduct ${dbProductRes}`);
-
-                            if (dbProductRes) {
-                                // for create variant of product
-                                if (product.variants && product.variants.length) {
-
-                                    const dbVariants = await ProductVariants.find({ productId: mongoose.Types.ObjectId(dbProduct._id) });
-
-                                    for (let index = 0; index < product.variants.length; index++) { // loop all variants
-
-                                        const variant = product.variants[index];
-                                        const dbVariant = dbVariants.find((v) => v.venderProductPlatformVariantId === variant.id);
-                                        const variantObj = sqObj.adapter.updateRemoteVariantFromPlatformVariant(variant, dbVariant, dbProduct);
-
-                                        await ProductVariants.findOneAndUpdate({ venderProductPlatformVariantId: variant.id }, variantObj, {
-                                            upsert: true,
-                                            new: true,
-                                        });
+                            const dbProduct = await Product.findOne({ venderProductPlatformId: product.id });
+                            if (dbProduct) {
+                                const productObj = sqObj.adapter.updateRemoteProductFromPlatformProduct(product, dbProduct);
+                                // create product
+                                const dbProductRes = await Product.findOneAndUpdate(
+                                    { venderProductPlatformId: productObj.venderProductPlatformId, productSource: constVer.model.product.productSourceEnum[4] },
+                                    productObj,
+                                    {
+                                        upsert: true,
+                                        new: true,
                                     }
-                                }
+                                );
 
-                                try {
-                                    if (dbProduct.status === 'PUBLISHED') {
-                                        AddJobPublishProductToShopify(dbProduct._id);
+                                logger.info(`dbProduct upated in cron ${dbProductRes._id}`);
+
+                                if (dbProductRes) {
+                                    // for create variant of product
+                                    if (product.variants && product.variants.length) {
+
+                                        const dbVariants = await ProductVariants.find({ productId: mongoose.Types.ObjectId(dbProduct._id) });
+
+                                        for (let index = 0; index < product.variants.length; index++) { // loop all variants
+
+                                            const variant = product.variants[index];
+                                            const dbVariant = dbVariants.find((v) => v.venderProductPlatformVariantId === variant.id);
+                                            const variantObj = sqObj.adapter.updateRemoteVariantFromPlatformVariant(variant, dbVariant, dbProduct);
+
+                                            await ProductVariants.findOneAndUpdate({ venderProductPlatformVariantId: variant.id }, variantObj, {
+                                                upsert: true,
+                                                new: true,
+                                            });
+
+                                            logger.info(`dbProduct varinats updated in cron, venderProductPlatformVariantId: ${variant.id}`);
+                                        }
                                     }
-                                    // await cornServices.publishProductToShopify(dbProduct._id);
 
-                                } catch (err) {
-                                    logger.error(err);
-                                    throw new ApiError(httpStatus.BAD_REQUEST, 'something went wrong with push product to shopify');
+                                    try {
+                                        if (dbProduct.status === 'PUBLISHED') {
+                                            AddJobPublishProductToShopify(dbProduct._id);
+                                        }
+                                        // await cornServices.publishProductToShopify(dbProduct._id);
+
+                                    } catch (err) {
+                                        logger.error(err);
+                                        throw new ApiError(httpStatus.BAD_REQUEST, 'something went wrong with push product to shopify');
+                                    }
                                 }
                             }
                         }
                     }
                 }
             }
+            catch (e) {
+                logger.error(e);
+                logger.error('SQ Error while running cron vendor product update: ' + ((e || {}).config || {}).url);
+                logger.error('SQ Error while running cron vendor product update: ' + (((e || {}).response || {}).data || {}).message);
+                continue;
+            }
         }
+
     } catch (e) {
         logger.error(e);
+        logger.error('SQ Error while running cron vendor product update: ' + ((e || {}).config || {}).url);
+        logger.error('SQ Error while running cron vendor product update: ' + (((e || {}).response || {}).data || {}).message);
     }
 };
 
@@ -424,4 +459,5 @@ module.exports = {
     updateOrderStatus,
     cancelOrderStatus,
     updateAllVendorProducts,
+    registerWebhooks,
 }

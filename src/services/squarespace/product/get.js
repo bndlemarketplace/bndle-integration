@@ -8,9 +8,11 @@ const one = async (vendor, remoteProductId) => {
 };
 
 const all = async (vendor, cursor) => {
-    const url = `${SQUARESPACE_APIURL}/1.0/commerce/products?cursor=${cursor}`;
-    const response = await squareSpaceRequest('get', url, vendor.credentials.apiKey, vendor.credentials.apiSecret);
-    return response.data;
+    try {
+        const url = `${SQUARESPACE_APIURL}/1.0/commerce/products?cursor=${cursor}`;
+        const response = await squareSpaceRequest('get', url, vendor.credentials.apiKey, vendor.credentials.apiSecret);
+        return response.data;
+    } catch (e) { throw e; }
 };
 
 module.exports = {

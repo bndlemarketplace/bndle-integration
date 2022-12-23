@@ -11,17 +11,17 @@ const AddJobPublishProductToShopify = async (productId) => {
     }
   );
 }
-const AddJobCallTodos = async (id) => {
-  return todosQueue.add(
-    { id: id },
-    {
-      jobId: id,
-      attempts: constVar.qeueue.default_attempts,
-    }
-  );
-}
+// const AddJobCallTodos = async (id) => {
+//   return todosQueue.add(
+//     { id: id },
+//     {
+//       jobId: id,
+//       attempts: constVar.qeueue.default_attempts,
+//     }
+//   );
+// }
 
 module.exports = {
   AddJobPublishProductToShopify,
-  AddJobCallTodos
+  // AddJobCallTodos
 }

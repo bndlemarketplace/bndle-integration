@@ -4,13 +4,15 @@ class Adapter {
   convertPlatformVariantToRemoteVariant(variant, platformProduct, dbProduct, index) {
 
     let mappedOption = [];
-    for (const attr in variant.attributes) {
+    let titleArr = [];
+    platformProduct.variantAttributes.forEach((attr) => {
       mappedOption.push({
         name: attr,
         value: variant.attributes[attr]
       })
-    };
-
+      titleArr.push(variant.attributes[attr]);
+    })
+    
     let mappedVariantImages = [];
     if (variant.image) {
       mappedVariantImages.push({
@@ -31,7 +33,8 @@ class Adapter {
       options: mappedOption,
       venderSku: variant.sku,
       sku: variant.sku,
-      title: variant.attributes ? Object.values(variant.attributes).join('/') : '',
+      // title: variant.attributes ? Object.values(variant.attributes).join('/') : '',
+      title: titleArr.length ? titleArr.join('/') : '',
       inventoryQuantity: variant.stock.unlimited ? constVer.model.product.quantityLimit + "" : variant.stock.quantity,
       openingQuantity: variant.stock.unlimited ? constVer.model.product.quantityLimit + "" : variant.stock.quantity,
       weight: variant.shippingMeasurements.weight.value,
