@@ -135,7 +135,9 @@ const mapWithBndleVariant = async (options, subCat, vendorId, vendorOptionMappin
       // }
       // optionObj.value = bndleValue;
       // mappedOption.push(optionObj);
-      mappedOption = options;
+      // mappedOption = options;
+      // mappedOption = JSON.parse(JSON.stringify(options));
+      mappedOption.push(option);
     }
   }
   return { mapStatus, mappedOption };
