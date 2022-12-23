@@ -5,17 +5,14 @@ class Adapter {
 
     let mappedOption = [];
     let titleArr = [];
-    for (const attr in variant.attributes) {
+    platformProduct.variantAttributes.forEach((attr) => {
       mappedOption.push({
         name: attr,
         value: variant.attributes[attr]
       })
-    };
-
-    (platformProduct.variantAttributes || []).forEach((vt) => {
-      titleArr.push(variant.attributes[vt]);
+      titleArr.push(variant.attributes[attr]);
     })
-
+    
     let mappedVariantImages = [];
     if (variant.image) {
       mappedVariantImages.push({
