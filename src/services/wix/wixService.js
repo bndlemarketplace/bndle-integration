@@ -11,6 +11,8 @@ const s3upload = require('../../utils/s3-bucket');
 const emailService = require('../emailService');
 const VendorOrder = require('../../models/vendorOrder.model');
 const cornServices = require('../../cornJob/shopifyCorn');
+const LoggerService = require('../../services/logger.service');
+
 const wixProductSync = async (userId) => {
   try {
     const userData = await User.findById(userId);
