@@ -600,8 +600,7 @@ async function productVariantSync(product, accessToken, dbProduct, mode) {
                 const choices = optionEl.choices[index];
                 // console.log(choices)
                 if (
-                  choices.value == variantEl.choices[keysEl] ||
-                  (isColor && choices.description === variantEl.choices[keysEl] && productOptions.length === 1)
+                  choices.value == variantEl.choices[keysEl] || (isColor && choices.description === variantEl.choices[keysEl] && productOptions.length)
                 ) {
                   if (choices.media?.items.length > 0) {
                     for (let index = 0; index < choices.media.items.length; index++) {
