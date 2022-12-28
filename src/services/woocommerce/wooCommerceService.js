@@ -213,6 +213,7 @@ const wooCommerceProductSync = async (userId) => {
         page = false;
       }
     } while (page !== false);
+    await User.findByIdAndUpdate(userId, { autoProductSynced: true });
   } catch (err) {
     console.log(err);
     throw new ApiError(500, 'something went wrong');
@@ -585,7 +586,7 @@ const createUpdateProduct = async (product, userId) => {
     const productObj = {
       venderProductPlatformId: product.id,
       productSource: constVer.model.product.productSourceEnum[3],
-      title: product.name,
+      title: product.title,
       description: product.description,
       vendorId: userId,
       vendorName: userData.name,
