@@ -12,7 +12,7 @@ class Adapter {
       })
       titleArr.push(variant.attributes[attr]);
     })
-    
+
     let mappedVariantImages = [];
     if (variant.image) {
       mappedVariantImages.push({
@@ -65,14 +65,22 @@ class Adapter {
     if (product.images.length) {
       for (let i = 0; i < product.images.length; i++) {
         const img = product.images[i];
-        const imgObj = {
-          bndleImageId: '',
-          bndleProductId: product._id,
-          vendorImageId: img.id,
-          src: img.url,
-          position: i + 1,//not available
-        };
-        mappedImages.push(imgObj);
+
+        let ifDuplicateImag = (product.variants || []).find((v) => {
+          if (v.image && v.image.id) {
+            return v.image.id === img.id;
+          }
+        })
+        if (!ifDuplicateImag) { // if duplicate image in productimages and variant images then do not add in images
+          const imgObj = {
+            bndleImageId: '',
+            bndleProductId: product._id,
+            vendorImageId: img.id,
+            src: img.url,
+            position: i + 1,//not available
+          };
+          mappedImages.push(imgObj);
+        }
       }
     }
 
@@ -131,14 +139,22 @@ class Adapter {
     let imgObj = {};
 
     (platformProduct.images || []).forEach((img, i) => {
-      imgObj = {
-        bndleImageId: '',
-        bndleProductId: platformProduct.id,
-        vendorImageId: img.id,
-        src: img.url,
-        position: i + 1,//not available
-      };
-      imgArr.push(imgObj);
+
+      let ifDuplicateImag = (platformProduct.variants || []).find((v) => {
+        if (v.image && v.image.id) {
+          return v.image.id === img.id;
+        }
+      })
+      if (!ifDuplicateImag) { // if duplicate image in productimages and variant images then do not add in images
+        imgObj = {
+          bndleImageId: '',
+          bndleProductId: platformProduct.id,
+          vendorImageId: img.id,
+          src: img.url,
+          position: i + 1,//not available
+        };
+        imgArr.push(imgObj);
+      }
     })
     dbProduct.images = imgArr;
 
