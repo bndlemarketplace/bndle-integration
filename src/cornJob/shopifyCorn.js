@@ -38,31 +38,40 @@ const mapOptionWithBndle = async (options, subCat, vendorId) => {
 
   for (let optionIndex = 0; optionIndex < options.length; optionIndex++) {
     const option = options[optionIndex];
+    if (option.name === 'Size' || option.name === 'Age') {
+      const vendorOptionIndex = vendorOptionMapping.findIndex((vendorOption) => {
+        // console.log(vendorOption.vendorOptionName, option.name);
+        // console.log(vendorOption.subCategory, subCategory);
+        return vendorOption.vendorOptionName === option.name && vendorOption.subCategory === subCategory;
+      });
 
-    const vendorOptionIndex = vendorOptionMapping.findIndex((vendorOption) => {
-      // console.log(vendorOption.vendorOptionName, option.name);
-      // console.log(vendorOption.subCategory, subCategory);
-      return vendorOption.vendorOptionName === option.name && vendorOption.subCategory === subCategory;
-    });
+      if (vendorOptionIndex == -1) {
+        mapStatus = false;
+        canMap = false;
+      } else {
+        optionObj = {};
+        optionObj.values = [];
+        optionObj.name = vendorOptionMapping[vendorOptionIndex].bundleOptionName;
+        // console.log(vendorOptionMapping);
+        // console.log(vendorOptionIndex, '======================');
 
-    if (vendorOptionIndex == -1) {
-      mapStatus = false;
-      canMap = false;
+        await option.values.forEach((value) => {
+          const vendorValue = value;
+          const bndleValue = vendorOptionMapping[vendorOptionIndex].valueMapping[vendorValue];
+          if (bndleValue === undefined) {
+            mapAllVariant = false;
+          } else {
+            optionObj.values.push(bndleValue);
+          }
+        });
+        mappedOption.push(optionObj);
+      }
     } else {
       optionObj = {};
       optionObj.values = [];
-      optionObj.name = vendorOptionMapping[vendorOptionIndex].bundleOptionName;
-      // console.log(vendorOptionMapping);
-      // console.log(vendorOptionIndex, '======================');
-
+      optionObj.name = option.name;
       await option.values.forEach((value) => {
-        const vendorValue = value;
-        const bndleValue = vendorOptionMapping[vendorOptionIndex].valueMapping[vendorValue];
-        if (bndleValue === undefined) {
-          mapAllVariant = false;
-        } else {
-          optionObj.values.push(bndleValue);
-        }
+        optionObj.values.push(value);
       });
       mappedOption.push(optionObj);
     }
@@ -86,35 +95,49 @@ const mapWeightUnit = (unit) => { // map units of shopify
 
 const mapWithBndleVariant = async (options, subCat, vendorId, vendorOptionMapping) => {
   let subCategory = subCat;
+  console.log('===options, subCat, vendorOptionMapping==', options, subCat, vendorOptionMapping);
   const subcatArray = ['Maternity', 'Shoes'];
   if (!subcatArray.includes(subCategory)) {
     subCategory = 'Others';
   }
   let mapStatus = true;
-  const mappedOption = [];
+  let mappedOption = [];
   // let vendorOptionMapping = await Mapping.findOne({ vendorId: vendorId });
   vendorOptionMapping = vendorOptionMapping.optionMapping;
 
   for (let index = 0; index < options.length; index++) {
     const option = options[index];
-
-    const vendorOptionIndex = vendorOptionMapping.findIndex((vendorOption) => {
-      // console.log(vendorOption.vendorOptionName, option.name);
-      // console.log(vendorOption.subCategory, subCategory);
-      return vendorOption.vendorOptionName === option.name && vendorOption.subCategory === subCategory;
-    });
-    // console.log(vendorOptionIndex);
-    if (vendorOptionIndex === -1) {
-      mapStatus = false;
-    } else {
-      const optionObj = {};
-      optionObj.name = vendorOptionMapping[vendorOptionIndex].bundleOptionName;
-      const bndleValue = vendorOptionMapping[vendorOptionIndex].valueMapping[option.value];
-      if (bndleValue === undefined) {
+    if (option.name === 'Size' || option.name === 'Age') {
+      const vendorOptionIndex = vendorOptionMapping.findIndex((vendorOption) => {
+        // console.log(vendorOption.vendorOptionName, option.name);
+        // console.log(vendorOption.subCategory, subCategory);
+        return vendorOption.vendorOptionName === option.name && vendorOption.subCategory === subCategory;
+      });
+      console.log('vendorOptionIndex', vendorOptionIndex);
+      if (vendorOptionIndex === -1) {
         mapStatus = false;
+      } else {
+        const optionObj = {};
+        optionObj.name = vendorOptionMapping[vendorOptionIndex].bundleOptionName;
+        const bndleValue = vendorOptionMapping[vendorOptionIndex].valueMapping[option.value];
+        if (bndleValue === undefined) {
+          mapStatus = false;
+        }
+        optionObj.value = bndleValue;
+        mappedOption.push(optionObj);
       }
-      optionObj.value = bndleValue;
-      mappedOption.push(optionObj);
+    } else {
+      // const optionObj = {};
+      // optionObj.name = vendorOptionMapping[vendorOptionIndex].valueMapping[option.name];
+      // const bndleValue = vendorOptionMapping[vendorOptionIndex].valueMapping[option.value];
+      // if (bndleValue === undefined) {
+      //   mapStatus = false;
+      // }
+      // optionObj.value = bndleValue;
+      // mappedOption.push(optionObj);
+      // mappedOption = options;
+      // mappedOption = JSON.parse(JSON.stringify(options));
+      mappedOption.push(option);
     }
   }
   return { mapStatus, mappedOption };
