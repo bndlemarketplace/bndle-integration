@@ -385,16 +385,32 @@ const convertRemoteProductVariantToPlatformProductVariant = async (product, user
           }
 
           let mappedVariantImages = [];
+          let imageCheck;
+          let imgObj;
           if (variant.image) {
-            // const s3url = await s3upload.downloadImgAndUploadToS3(variant.image.src);
-            const imgObj = {
-              bndleImageId: variant.image.id,
-              bndleProductId: product.id,
-              src: variant.image.src,
-            };
-            mappedVariantImages.push(imgObj);
+            if (product && product.images.length) {
+              imgObj = {
+                bndleImageId: variant.image.id,
+                bndleProductId: product.id,
+              };
+              imageCheck = product.images.find((currentDbImage) => {
+                return currentDbImage.src === variant.image.src;
+              });
+              if (imageCheck === undefined) {
+                // const s3url = await s3upload.downloadImgAndUploadToS3(img.src);
+                // imgObj.src = s3url;
+                imgObj.src = variant.image.src;
+                mappedVariantImages.push(imgObj);
+              }
+            } else {
+              imgObj = {
+                bndleImageId: variant.image.id,
+                bndleProductId: product.id,
+                src: variant.image.src,
+              };
+              mappedVariantImages.push(imgObj);
+            }
           }
-
           let attribute = [];
           let title;
 
@@ -534,14 +550,16 @@ const createUpdateProduct = async (product, userId) => {
     // for map image data to fit in our db
     const mappedImages = [];
     if (product.images.length > 0) {
-      await product.images.forEach(async (img) => {
+      await product.images.forEach((img) => {
         const imgObj = {
           bndleImageId: img.id,
           bndleProductId: product.id,
         };
         let imageCheck;
-        if (currentDbProduct) {
-          imageCheck = currentDbProduct.images.find(async (currentDbImage) => currentDbImage.ProductPlatformSrc === img.src);
+        if (currentDbProduct && currentDbProduct.images.length) {
+          imageCheck = currentDbProduct.images.find((currentDbImage) => {
+            return currentDbImage.src === img.src;
+          });
           if (imageCheck === undefined) {
             // const s3url = await s3upload.downloadImgAndUploadToS3(img.src);
             // imgObj.src = s3url;
@@ -614,6 +632,9 @@ const createUpdateProduct = async (product, userId) => {
     // for create variant of product
     if (dbProduct) {
       await convertRemoteProductVariantToPlatformProductVariant(product, userData, dbProduct);
+      if (dbProduct && dbProduct.status === 'PUBLISHED') {
+        await cornServices.publishProductToShopify(dbProduct._id, 'PUBLISHED');
+      }
     } else {
       const loggerPayload = {
         title: 'Product publish',
@@ -622,9 +643,6 @@ const createUpdateProduct = async (product, userId) => {
         level: constVer.model.logger.levelEnum[1],
       };
       await LoggerService.createLogger(loggerPayload);
-    }
-    if (dbProduct && dbProduct.status === 'PUBLISHED') {
-      await cornServices.publishProductToShopify(dbProduct._id, 'PUBLISHED');
     }
   }
 };
