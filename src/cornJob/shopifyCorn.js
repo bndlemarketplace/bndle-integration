@@ -665,7 +665,8 @@ const publishProductToShopify = async (productsId) => {
                 ) {
                   updatedVariant = await ProductVariants.findOneAndUpdate(
                     { _id: mongoVariant.mongoVariantId },
-                    { bndleVariantId: bndleVariant.id, bndleInventoryItemId: bndleVariant.inventory_item_id }
+                    { bndleVariantId: bndleVariant.id, bndleInventoryItemId: bndleVariant.inventory_item_id },
+                    { new: true }
                   );
                   if (updatedVariant.images.length > 0) {
                     let src = updatedVariant.images[0].src;
