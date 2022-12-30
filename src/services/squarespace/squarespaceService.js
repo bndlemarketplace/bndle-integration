@@ -30,7 +30,7 @@ const registerWebhooks = async (userId) => {
 
             if (ifAlreadyReg && ifAlreadyReg.webhookSubscriptions && ifAlreadyReg.webhookSubscriptions.length) {
                 webhook = ifAlreadyReg.webhookSubscriptions.find((i) => i.endpointUrl === data.endpointUrl);
-                flag = false;
+                flag = webhook ? false : true;
             }
             if (flag) {
                 await sqObj.webhook.put.subscribe(userData, data);
