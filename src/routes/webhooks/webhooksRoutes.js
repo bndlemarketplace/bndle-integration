@@ -17,8 +17,16 @@ router.route('/:id/orders/partially_fulfilled').post(webhookController.orderPart
 router.route('/:id/wix/products/create').post(webhookController.createProductWebhookWix);
 router.route('/:id/wix/products/update').post(webhookController.updateProductWebhookWix);
 
+/* Woocommerce webhook routes */
+// router.route('/:id/woocommerce/products/create').post(webhookController.createProductWebhookWooCommerce);
+router.route('/:id/woocommerce/products/update').post(webhookController.updateProductWebhookWooCommerce);
+router.route('/:id/woocommerce/orders/update').post(webhookController.woocommerceOrderUpdate);
+
 /* Wix order webhook */
 router.route('/:id/wix/orders/fullfillmentCreate').post(webhookController.wixOrderFullfillmentCreateWebhook);
 router.route('/:id/wix/orders/cancel').post(webhookController.wixOrderCancel);
 
+// squarespace webhooks
+router.route('/:id/squarespace/orders').post(webhookController.squarespaceOrderWebhook);
+router.route('/:id/squarespace/register').post(webhookController.squarespaceWebhookRegister);
 module.exports = router;

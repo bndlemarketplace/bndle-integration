@@ -27,6 +27,9 @@ router.route('/:id/webhooks/delete-remote-webhooks').get(vendorController.delete
 router.route('/register-webhooks').post(vendorController.registerWebhooks);
 // router.route('/:id/webhooks/get-all').get(vendorController.)
 
+ /* Woocommerce webhook register */
+router.route('/:id/webhooks/woocommerce/register-all').get(vendorController.registerAllWoocommerceWebhooks);
+
 module.exports = router;
 /**
  * @swagger

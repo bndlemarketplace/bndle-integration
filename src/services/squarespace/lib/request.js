@@ -6,8 +6,8 @@ const send = async (method, url, key, secret, params = null, data = null) => {
     url,
     headers: {
       'Content-Type': 'application/json',
-      Authorization: key,
-      'Idempotency-Key': secret
+      'Authorization': `Bearer ${key}`,
+      // 'Idempotency-Key': secret
     },
   };
 
