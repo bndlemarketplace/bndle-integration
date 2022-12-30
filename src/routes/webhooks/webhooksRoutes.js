@@ -11,7 +11,7 @@ router.route('/:id/orders/updated').post(webhookController.orderUpdateWebhook);
 router.route('/:id/fulfillments/update').post(webhookController.fulfillmentUpdate);
 router.route('/:id/orders/cancelled').post(webhookController.orderCancelledWebhook);
 router.route('/:id/orders/fulfilled').post(webhookController.orderFulfilledWebhook);
-router.route('/:id/orders/partially_fulfilled').post(webhookController.orderPartiallyFulfilledWebhook);
+router.route('/:id/orders/partially-fulfilled').post(webhookController.orderPartiallyFulfilledWebhook);
 
 /* Wix webhook routes */
 router.route('/:id/wix/products/create').post(webhookController.createProductWebhookWix);
