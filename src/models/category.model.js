@@ -18,6 +18,8 @@ const categorySchema = mongoose.Schema(
             count: { type: Number },
           },
         ],
+        VAT: { type: Number },
+        count: { type: Number },
       },
     ],
     categoryType: {

@@ -740,6 +740,7 @@ const unpublishProductFromShopify = async (productsId) => {
           },
         ]);
         if (categoryData[0].data.count > 0) {
+          const count = await Product.countDocuments({ productCategory: product.productCategory, status: 'PUBLISHED' });
           await Category.findOneAndUpdate(
             {
               secondaryCategories: { $exists: true },
@@ -747,8 +748,31 @@ const unpublishProductFromShopify = async (productsId) => {
               'secondaryCategories.tertiaryCategories.count': { $gt: 0 },
               'secondaryCategories.tertiaryCategories.tertiaryCategory': product.productCategory,
             },
-            { $inc: { 'secondaryCategories.$[].tertiaryCategories.$[xxx].count': -1 } },
+            { $set: { 'secondaryCategories.$[].tertiaryCategories.$[xxx].count': count } },
             { arrayFilters: [{ 'xxx.tertiaryCategory': product.productCategory }] }
+          );
+        }
+      } else {
+        categoryData = await Category.aggregate([
+          {
+            $unwind: '$secondaryCategories',
+          },
+          {
+            $match: {
+              'secondaryCategories.secondaryCategory': product.subCategory,
+            },
+          },
+        ]);
+        const count = await Product.countDocuments({ subCategory: product.subCategory, status: 'PUBLISHED' });
+        if (categoryData[0].secondaryCategories.count > 0) {
+          await Category.updateOne(
+            {
+              secondaryCategories: { $exists: true },
+              primaryCategory: product.category,
+              'secondaryCategories.secondaryCategory': product.subCategory,
+            },
+            { $set: { 'secondaryCategories.$[xxx].count': count } },
+            { arrayFilters: [{ 'xxx.secondaryCategory': product.subCategory }] }
           );
         }
       }
