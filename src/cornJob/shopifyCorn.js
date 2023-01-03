@@ -4,7 +4,7 @@ const logger = require('../config/logger');
 const ApiError = require('../utils/ApiError');
 const constVer = require('../config/constant');
 const User = require('../models/user.model');
-const { Product, ProductVariants, Mapping } = require('../models');
+const { Product, ProductVariants, Mapping, Category } = require('../models');
 const restifyConfig = require('../config/restifyConfig');
 const LoggerService = require('../services/logger.service');
 const { s3Url } = require('../config/restifyConfig');
@@ -457,6 +457,14 @@ const publishProductToShopify = async (productsId) => {
       const lifeStage = el.lifeStage; // ? el.lifeStage : 'Newborn';
       // console.log(3);
 
+      console.log("====category==",category,productType)
+      if (el.bndleId == '') {
+        await Category.updateOne(
+          { 'secondaryCategories.tertiaryCategories.tertiaryCategory': el.productCategory },
+          { $inc: { 'secondaryCategories.$[].tertiaryCategories.$[xxx].count': 1 } },
+          { arrayFilters: [{ 'xxx.tertiaryCategory': el.productCategory }] }
+        );
+      }
       const productObj = {
         title: `${el.title}`,
         body_html: el.description,
