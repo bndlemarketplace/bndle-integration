@@ -457,14 +457,12 @@ const publishProductToShopify = async (productsId) => {
       const lifeStage = el.lifeStage; // ? el.lifeStage : 'Newborn';
       // console.log(3);
 
-      console.log("====category==",category,productType)
-      if (el.bndleId == '') {
+        console.log("====category==",category,productType)
         await Category.updateOne(
           { 'secondaryCategories.tertiaryCategories.tertiaryCategory': el.productCategory },
           { $inc: { 'secondaryCategories.$[].tertiaryCategories.$[xxx].count': 1 } },
           { arrayFilters: [{ 'xxx.tertiaryCategory': el.productCategory }] }
         );
-      }
       const productObj = {
         title: `${el.title}`,
         body_html: el.description,
@@ -716,6 +714,44 @@ const unpublishProductFromShopify = async (productsId) => {
 
     for (let productIndex = 0; productIndex < products.length; productIndex++) {
       const product = products[productIndex];
+
+      if (product.category !== 'Support') {
+        const categoryData = await Category.aggregate([
+          {
+            $unwind: '$secondaryCategories',
+          },
+          {
+            $match: {
+              'secondaryCategories.secondaryCategory': product.subCategory,
+            },
+          },
+          {
+            $project: {
+              data: '$secondaryCategories.tertiaryCategories',
+            },
+          },
+          {
+            $unwind: '$data',
+          },
+          {
+            $match: {
+              'data.tertiaryCategory': product.productCategory,
+            },
+          },
+        ]);
+        if (categoryData[0].data.count > 0) {
+          await Category.findOneAndUpdate(
+            {
+              secondaryCategories: { $exists: true },
+              primaryCategory: product.category,
+              'secondaryCategories.tertiaryCategories.count': { $gt: 0 },
+              'secondaryCategories.tertiaryCategories.tertiaryCategory': product.productCategory,
+            },
+            { $inc: { 'secondaryCategories.$[].tertiaryCategories.$[xxx].count': -1 } },
+            { arrayFilters: [{ 'xxx.tertiaryCategory': product.productCategory }] }
+          );
+        }
+      }
 
       if (product.bndleId !== '') {
         const productObj = { status: 'draft' };
