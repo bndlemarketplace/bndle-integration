@@ -23,7 +23,7 @@ const opts = {
         });
     }
   },
-  limiter: { max: 1, duration: 20000 } // max, duration, bouceBack, groupKey
+  // limiter: { max: 1, duration: 20000 } // max, duration, bouceBack, groupKey
 };
 
 const productPublishShopifyQueue = new Queue("PUBLISH_SHOPIFY_PRODUCT_ID", opts);

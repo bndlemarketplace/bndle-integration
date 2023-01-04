@@ -160,6 +160,7 @@ const updateProductWebhookWix = catchAsync(async (req, res) => {
 
 const updateProductWebhookWooCommerce = catchAsync(async (req, res) => {
   logger.info(`===========update webhook woocommerce===================`);
+  res.status(200).jsend.success({});
   const { product } = req.body;
   const { id } = req.params;
   if (product && product.id) {
@@ -171,7 +172,6 @@ const updateProductWebhookWooCommerce = catchAsync(async (req, res) => {
       }
     }
   }
-  res.status(200).jsend.success({});
 });
 
 const wixOrderFullfillmentCreateWebhook = catchAsync(async (req, res) => {
@@ -220,6 +220,7 @@ const squarespaceWebhookRegister = catchAsync(async (req, res) => {
 
 const woocommerceOrderUpdate = catchAsync(async (req, res) => {
   console.log(`===========woocommerce order update===================`);
+  res.status(200).jsend.success({});
 
   const product = req.body;
   const { id } = req.params;
@@ -234,7 +235,6 @@ const woocommerceOrderUpdate = catchAsync(async (req, res) => {
   //     }
   //   }
   // }
-  res.status(200).jsend.success({});
 });
 
 module.exports = {
