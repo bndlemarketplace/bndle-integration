@@ -4,7 +4,7 @@ const logger = require('../config/logger');
 const ApiError = require('../utils/ApiError');
 const constVer = require('../config/constant');
 const User = require('../models/user.model');
-const { Product, ProductVariants, Mapping } = require('../models');
+const { Product, ProductVariants, Mapping, Category } = require('../models');
 const restifyConfig = require('../config/restifyConfig');
 const LoggerService = require('../services/logger.service');
 const { s3Url } = require('../config/restifyConfig');
@@ -457,6 +457,12 @@ const publishProductToShopify = async (productsId) => {
       const lifeStage = el.lifeStage; // ? el.lifeStage : 'Newborn';
       // console.log(3);
 
+        console.log("====category==",category,productType)
+        await Category.updateOne(
+          { 'secondaryCategories.tertiaryCategories.tertiaryCategory': el.productCategory },
+          { $inc: { 'secondaryCategories.$[].tertiaryCategories.$[xxx].count': 1 } },
+          { arrayFilters: [{ 'xxx.tertiaryCategory': el.productCategory }] }
+        );
       const productObj = {
         title: `${el.title}`,
         body_html: el.description,
@@ -708,6 +714,68 @@ const unpublishProductFromShopify = async (productsId) => {
 
     for (let productIndex = 0; productIndex < products.length; productIndex++) {
       const product = products[productIndex];
+
+      if (product.category !== 'Support') {
+        const categoryData = await Category.aggregate([
+          {
+            $unwind: '$secondaryCategories',
+          },
+          {
+            $match: {
+              'secondaryCategories.secondaryCategory': product.subCategory,
+            },
+          },
+          {
+            $project: {
+              data: '$secondaryCategories.tertiaryCategories',
+            },
+          },
+          {
+            $unwind: '$data',
+          },
+          {
+            $match: {
+              'data.tertiaryCategory': product.productCategory,
+            },
+          },
+        ]);
+        if (categoryData[0].data.count > 0) {
+          const count = await Product.countDocuments({ productCategory: product.productCategory, status: 'PUBLISHED' });
+          await Category.findOneAndUpdate(
+            {
+              secondaryCategories: { $exists: true },
+              primaryCategory: product.category,
+              'secondaryCategories.tertiaryCategories.count': { $gt: 0 },
+              'secondaryCategories.tertiaryCategories.tertiaryCategory': product.productCategory,
+            },
+            { $set: { 'secondaryCategories.$[].tertiaryCategories.$[xxx].count': count } },
+            { arrayFilters: [{ 'xxx.tertiaryCategory': product.productCategory }] }
+          );
+        }
+      } else {
+        categoryData = await Category.aggregate([
+          {
+            $unwind: '$secondaryCategories',
+          },
+          {
+            $match: {
+              'secondaryCategories.secondaryCategory': product.subCategory,
+            },
+          },
+        ]);
+        const count = await Product.countDocuments({ subCategory: product.subCategory, status: 'PUBLISHED' });
+        if (categoryData[0].secondaryCategories.count > 0) {
+          await Category.updateOne(
+            {
+              secondaryCategories: { $exists: true },
+              primaryCategory: product.category,
+              'secondaryCategories.secondaryCategory': product.subCategory,
+            },
+            { $set: { 'secondaryCategories.$[xxx].count': count } },
+            { arrayFilters: [{ 'xxx.secondaryCategory': product.subCategory }] }
+          );
+        }
+      }
 
       if (product.bndleId !== '') {
         const productObj = { status: 'draft' };
