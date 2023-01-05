@@ -780,6 +780,7 @@ const unpublishProductFromShopify = async (productsId) => {
         if (isExist) {
           await Category.updateOne(
             {
+              primaryCategory: product.category,
               secondaryCategories: { $exists: true },
               'secondaryCategories.secondaryCategory': product.subCategory,
             },
@@ -790,6 +791,7 @@ const unpublishProductFromShopify = async (productsId) => {
         } else {
           await Category.updateOne(
             {
+              primaryCategory: product.category,
               secondaryCategories: { $exists: true },
               'secondaryCategories.secondaryCategory': currentProduct[0].subCategory,
             },
