@@ -14,6 +14,6 @@ module.exports = async function ({ data }) {
     }
   } catch (err) {
     logger.info(err);
-    throw new Error("Unhandled error in tasks/publishProductToShopify2Processor.js", err);
+    throw new Error("Unhandled error in tasks/publishProductToShopifyProcessor.js", err);
   }
 };

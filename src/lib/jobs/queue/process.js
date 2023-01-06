@@ -8,9 +8,10 @@
 
 // the processor to define/link
 const publishProductToShopifyProcessor = require("../tasks/publishProductToShopifyProcessor");
+const publishProductToShopify2Processor = require("../tasks/publishProductToShopify2Processor");
 // const testProcessor = require("../tasks/testprocessor");
 // the producer
-const { productPublishShopifyQueue, todosQueue } = require(".");
+const { productPublishShopifyQueue, productPublishShopifyQueue2 } = require(".");
 
 const logger = require("../../../config/logger");
 
@@ -49,10 +50,13 @@ const activeQueues = [
     queue: productPublishShopifyQueue,
     processor: publishProductToShopifyProcessor
   },
-  // {
-  //   queue: todosQueue,
-  //   processor: testProcessor
-  // }
+  {
+    queue: productPublishShopifyQueue2,
+    processor: publishProductToShopify2Processor
+  }, // {
+    //   queue: todosQueue,
+    //   processor: testProcessor
+    // }
 ];
 
 activeQueues.forEach(handler => {
