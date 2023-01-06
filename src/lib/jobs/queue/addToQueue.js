@@ -1,4 +1,4 @@
-const { productPublishShopifyQueue, todosQueue } = require(".");
+const { productPublishShopifyQueue, productPublishShopifyQueue2 } = require(".");
 const constVar  = require("../../../config/constant");
 
 const AddJobPublishProductToShopify = async (productId) => {
@@ -11,6 +11,18 @@ const AddJobPublishProductToShopify = async (productId) => {
     }
   );
 }
+
+const AddJobPublishProductToShopify2 = async (productId) => {
+  return productPublishShopifyQueue2.add(
+    { id: productId },
+    {
+      // jobId: productId,
+      attempts: constVar.qeueue.default_attempts,
+      // timeout: DEFAULT_TIMEOUT,
+    }
+  );
+}
+
 // const AddJobCallTodos = async (id) => {
 //   return todosQueue.add(
 //     { id: id },
@@ -23,5 +35,6 @@ const AddJobPublishProductToShopify = async (productId) => {
 
 module.exports = {
   AddJobPublishProductToShopify,
-  // AddJobCallTodos
+  AddJobPublishProductToShopify2,
+  // AddJobCallTodos,
 }

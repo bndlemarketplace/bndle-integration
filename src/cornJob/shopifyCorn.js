@@ -16,6 +16,8 @@ const Order = require('../models/order.model');
 const product = require('../models/product.model');
 const platformServiceFactory = require('../services/fulfilmentPlatformServiceFactory');
 const { registerAllWebhooksService } = require('../services/vendor/vendorService');
+const { AddJobPublishProductToShopify2 } = require('../lib/jobs/queue/addToQueue');
+
 const locationId = restifyConfig.locationId;
 
 const client = new Shopify(restifyConfig.shopifyConfig);
@@ -1159,7 +1161,8 @@ const createUpdateProduct = async (product, mode, userId) => {
       await LoggerService.createLogger(loggerPayload);
     }
     if (dbProduct && dbProduct.status === 'PUBLISHED') {
-      publishProductToShopify(dbProduct._id);
+        AddJobPublishProductToShopify2(dbProduct._id);
+      // publishProductToShopify(dbProduct._id);
     }
   } catch (err) {
     console.log(err);
