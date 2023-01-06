@@ -4,7 +4,7 @@ const logger = require('../config/logger');
 const ApiError = require('../utils/ApiError');
 const constVer = require('../config/constant');
 const User = require('../models/user.model');
-const { Product, ProductVariants, Mapping } = require('../models');
+const { Product, ProductVariants, Mapping, Category } = require('../models');
 const restifyConfig = require('../config/restifyConfig');
 const LoggerService = require('../services/logger.service');
 const { s3Url } = require('../config/restifyConfig');
@@ -16,6 +16,8 @@ const Order = require('../models/order.model');
 const product = require('../models/product.model');
 const platformServiceFactory = require('../services/fulfilmentPlatformServiceFactory');
 const { registerAllWebhooksService } = require('../services/vendor/vendorService');
+// const { AddJobPublishProductToShopify2 } = require('../lib/jobs/queue/addToQueue');
+
 const locationId = restifyConfig.locationId;
 
 const client = new Shopify(restifyConfig.shopifyConfig);
@@ -457,6 +459,57 @@ const publishProductToShopify = async (productsId) => {
       const lifeStage = el.lifeStage; // ? el.lifeStage : 'Newborn';
       // console.log(3);
 
+        console.log("====category==",category,productType)
+        await Category.updateOne(
+          { 'secondaryCategories.tertiaryCategories.tertiaryCategory': el.productCategory },
+          { $inc: { 'secondaryCategories.$[].tertiaryCategories.$[xxx].count': 1 } },
+          { arrayFilters: [{ 'xxx.tertiaryCategory': el.productCategory }] }
+        );
+        const categoryData = await Category.aggregate([
+          {
+            $unwind: '$secondaryCategories',
+          },
+          {
+            $match: {
+              primaryCategory: el.category,
+              'secondaryCategories.secondaryCategory': el.subCategory,
+            },
+          },
+          {
+            $project: {
+              data: '$secondaryCategories',
+            },
+          },
+          {
+            $unwind: '$data',
+          },
+        ]);
+        const isExist = categoryData[0].data.tertiaryCategories.some((t) => t.count > 0);
+        if (isExist) {
+          await Category.updateOne(
+            {
+              secondaryCategories: { $exists: true },
+              'secondaryCategories.secondaryCategory': el.subCategory,
+              'secondaryCategories.tertiaryCategories.tertiaryCategory': el.productCategory,
+            },
+            {
+              $set: { 'secondaryCategories.$[xxx].count': 1 },
+            },
+            { arrayFilters: [{ 'xxx.secondaryCategory': el.subCategory }] }
+          );
+        } else {
+          await Category.updateOne(
+            {
+              secondaryCategories: { $exists: true },
+              'secondaryCategories.secondaryCategory': el.subCategory,
+              'secondaryCategories.tertiaryCategories.tertiaryCategory': el.productCategory,
+            },
+            {
+              $set: { 'secondaryCategories.$[xxx].count': 0 },
+            },
+            { arrayFilters: [{ 'xxx.secondaryCategory': el.subCategory }] }
+          );
+        }
       const productObj = {
         title: `${el.title}`,
         body_html: el.description,
@@ -708,6 +761,118 @@ const unpublishProductFromShopify = async (productsId) => {
 
     for (let productIndex = 0; productIndex < products.length; productIndex++) {
       const product = products[productIndex];
+
+      if (product.category !== 'Support') {
+        const categoryData = await Category.aggregate([
+          {
+            $unwind: '$secondaryCategories',
+          },
+          {
+            $match: {
+              'secondaryCategories.secondaryCategory': product.subCategory,
+            },
+          },
+          {
+            $project: {
+              data: '$secondaryCategories.tertiaryCategories',
+            },
+          },
+          {
+            $unwind: '$data',
+          },
+          {
+            $match: {
+              'data.tertiaryCategory': product.productCategory,
+            },
+          },
+        ]);
+        if (categoryData[0].data.count > 0) {
+          const count = await Product.countDocuments({
+            productCategory: product.productCategory,
+            status: 'PUBLISHED',
+            isDeleted: false,
+          });
+          await Category.findOneAndUpdate(
+            {
+              secondaryCategories: { $exists: true },
+              primaryCategory: product.category,
+              'secondaryCategories.tertiaryCategories.count': { $gt: 0 },
+              'secondaryCategories.tertiaryCategories.tertiaryCategory': product.productCategory,
+            },
+            { $set: { 'secondaryCategories.$[].tertiaryCategories.$[xxx].count': count } },
+            { arrayFilters: [{ 'xxx.tertiaryCategory': product.productCategory }] }
+          );
+        }
+        const secondaryCatData = await Category.aggregate([
+          {
+            $unwind: '$secondaryCategories',
+          },
+          {
+            $match: {
+              primaryCategory: product.category,
+              'secondaryCategories.secondaryCategory': product.subCategory,
+            },
+          },
+          {
+            $project: {
+              data: '$secondaryCategories',
+            },
+          },
+          {
+            $unwind: '$data',
+          },
+        ]);
+        const isExist = secondaryCatData[0].data.tertiaryCategories.some((t) => t.count > 0);
+        console.log("==isExist===",isExist)
+        if (isExist) {
+          await Category.updateOne(
+            {
+              secondaryCategories: { $exists: true },
+              'secondaryCategories.secondaryCategory': product.subCategory,
+              'secondaryCategories.tertiaryCategories.tertiaryCategory': product.productCategory,
+            },
+            {
+              $set: { 'secondaryCategories.$[xxx].count': 1 },
+            },
+            { arrayFilters: [{ 'xxx.secondaryCategory': product.subCategory }] }
+          );
+        } else {
+          await Category.updateOne(
+            {
+              secondaryCategories: { $exists: true },
+              'secondaryCategories.secondaryCategory': product.subCategory,
+              'secondaryCategories.tertiaryCategories.tertiaryCategory': product.productCategory,
+            },
+            {
+              $set: { 'secondaryCategories.$[xxx].count': 0 },
+            },
+            { arrayFilters: [{ 'xxx.secondaryCategory': product.subCategory }] }
+          );
+        }
+      } else {
+        secondaryCatData = await Category.aggregate([
+          {
+            $unwind: '$secondaryCategories',
+          },
+          {
+            $match: {
+              'secondaryCategories.secondaryCategory': product.subCategory,
+            },
+          },
+        ]);
+        const count = await Product.countDocuments({ subCategory: product.subCategory, status: 'PUBLISHED', isDeleted: false });
+        if (secondaryCatData[0].secondaryCategories.count > 0) {
+          await Category.updateOne(
+            {
+              secondaryCategories: { $exists: true },
+              primaryCategory: product.category,
+              'secondaryCategories.secondaryCategory': product.subCategory,
+            },
+            { $set: { 'secondaryCategories.$[xxx].count': count } },
+            { arrayFilters: [{ 'xxx.secondaryCategory': product.subCategory }] }
+          );
+        }
+      }
 
       if (product.bndleId !== '') {
         const productObj = { status: 'draft' };
@@ -996,6 +1161,7 @@ const createUpdateProduct = async (product, mode, userId) => {
       await LoggerService.createLogger(loggerPayload);
     }
     if (dbProduct && dbProduct.status === 'PUBLISHED') {
+        // AddJobPublishProductToShopify2(dbProduct._id);
       publishProductToShopify(dbProduct._id);
     }
   } catch (err) {
