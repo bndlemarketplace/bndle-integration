@@ -462,8 +462,12 @@ const publishProductToShopify = async (productsId) => {
         console.log("====category==",category,productType)
         await Category.updateOne(
           { 'secondaryCategories.tertiaryCategories.tertiaryCategory': el.productCategory },
-          { $inc: { 'secondaryCategories.$[].tertiaryCategories.$[xxx].count': 1 } },
-          { arrayFilters: [{ 'xxx.tertiaryCategory': el.productCategory }] }
+          { $inc: { 'secondaryCategories.$[y].tertiaryCategories.$[xxx].count': 1 } },
+          { arrayFilters: [
+            { 'y.secondaryCategory': el.subCategory },
+            { 'xxx.tertiaryCategory': el.productCategory },
+          ]
+        }
         );
         const categoryData = await Category.aggregate([
           {
