@@ -1122,7 +1122,7 @@ const createUpdateProduct = async (product, mode, userId) => {
             variantObj = {
               // productId: dbProduct._id,
               // venderProductPlatformVariantId: variant.id,
-              // price: variant.price,
+              price: variant.price,
               // position: variant.position,
               // options: mappedOption,
               // venderSku: variant.sku,
