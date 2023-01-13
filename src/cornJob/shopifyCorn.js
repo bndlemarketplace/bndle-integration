@@ -1137,7 +1137,7 @@ const createUpdateProduct = async (product, mode, userId) => {
               openingQuantity: variant.old_inventory_quantity,
               // weight: variant.weight,
               // weightUnit: variant.weight_unit,
-              // images: mappedVariantImages,
+              images: mappedVariantImages,
               // isDeleted: false,
               // isDefault: false,
               // isEnable: false,
