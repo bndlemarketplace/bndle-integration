@@ -529,6 +529,8 @@ const convertRemoteProductVariantToPlatformProductVariant = async (product, user
           }
         }
       }
+    }).catch(err=>{
+      console.log("==woocommerce err==",err)
     });
   } catch (error) {
     throw new ApiError(402, error.message);
