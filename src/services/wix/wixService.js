@@ -647,7 +647,7 @@ async function productVariantSync(product, accessToken, dbProduct, mode) {
                     variantObj = {
                       productId: dbProduct._id,
                       venderProductPlatformVariantId: variantEl.id,
-                      // price: variantEl.variant.priceData.price,
+                      price: variantEl.variant.priceData.price,
                       // options: mappedOption,
                       // sku: variantEl.variant.sku,
                       // title: title,
@@ -691,7 +691,7 @@ async function productVariantSync(product, accessToken, dbProduct, mode) {
           variantObj = {
             productId: dbProduct._id,
             venderProductPlatformVariantId: variantEl.id,
-            // price: variantEl.variant.priceData.price,
+            price: variantEl.variant.priceData.price,
             // options: mappedOption,
             // sku: variantEl.variant.sku,
             // title: title,
