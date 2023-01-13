@@ -16,7 +16,7 @@ const Order = require('../models/order.model');
 const product = require('../models/product.model');
 const platformServiceFactory = require('../services/fulfilmentPlatformServiceFactory');
 const { registerAllWebhooksService } = require('../services/vendor/vendorService');
-// const { AddJobPublishProductToShopify2 } = require('../lib/jobs/queue/addToQueue');
+const { AddJobPublishProductToShopify2 } = require('../lib/jobs/queue/addToQueue');
 
 const locationId = restifyConfig.locationId;
 
