@@ -462,8 +462,12 @@ const publishProductToShopify = async (productsId) => {
         console.log("====category==",category,productType)
         await Category.updateOne(
           { 'secondaryCategories.tertiaryCategories.tertiaryCategory': el.productCategory },
-          { $inc: { 'secondaryCategories.$[].tertiaryCategories.$[xxx].count': 1 } },
-          { arrayFilters: [{ 'xxx.tertiaryCategory': el.productCategory }] }
+          { $inc: { 'secondaryCategories.$[y].tertiaryCategories.$[xxx].count': 1 } },
+          { arrayFilters: [
+            { 'y.secondaryCategory': el.subCategory },
+            { 'xxx.tertiaryCategory': el.productCategory },
+          ]
+        }
         );
         const categoryData = await Category.aggregate([
           {
@@ -1122,7 +1126,7 @@ const createUpdateProduct = async (product, mode, userId) => {
             variantObj = {
               // productId: dbProduct._id,
               // venderProductPlatformVariantId: variant.id,
-              // price: variant.price,
+              price: variant.price,
               // position: variant.position,
               // options: mappedOption,
               // venderSku: variant.sku,
@@ -1161,8 +1165,8 @@ const createUpdateProduct = async (product, mode, userId) => {
       await LoggerService.createLogger(loggerPayload);
     }
     if (dbProduct && dbProduct.status === 'PUBLISHED') {
-        // AddJobPublishProductToShopify2(dbProduct._id);
-      publishProductToShopify(dbProduct._id);
+        AddJobPublishProductToShopify2(dbProduct._id);
+      // publishProductToShopify(dbProduct._id);
     }
   } catch (err) {
     console.log(err);
