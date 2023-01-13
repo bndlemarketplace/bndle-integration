@@ -1165,8 +1165,8 @@ const createUpdateProduct = async (product, mode, userId) => {
       await LoggerService.createLogger(loggerPayload);
     }
     if (dbProduct && dbProduct.status === 'PUBLISHED') {
-        // AddJobPublishProductToShopify2(dbProduct._id);
-      publishProductToShopify(dbProduct._id);
+        AddJobPublishProductToShopify2(dbProduct._id);
+      // publishProductToShopify(dbProduct._id);
     }
   } catch (err) {
     console.log(err);
