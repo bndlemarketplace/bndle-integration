@@ -431,7 +431,9 @@ const updateAllVendorProducts = async (req, res) => {
 
                                     } catch (err) {
                                         logger.error(err);
-                                        throw new ApiError(httpStatus.BAD_REQUEST, 'something went wrong with push product to shopify');
+                                        logger.error('something went wrong with push product to shopify for product ' + dbProduct._id);
+                                        continue;
+                                        // throw new ApiError(httpStatus.BAD_REQUEST, 'something went wrong with push product to shopify');
                                     }
                                 }
                             }
