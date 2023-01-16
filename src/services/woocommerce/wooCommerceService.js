@@ -357,7 +357,7 @@ const convertRemoteOrderToPlatformOrder = async (order) => {
 
 const convertRemoteProductVariantToPlatformProductVariant = async (product, userData, dbProduct) => {
   try {
-    axios({
+   return axios({
       method: 'get',
       url: `https://${userData.credentials.shopName}/wp-json/wc/v3/products/${product.id}/variations?consumer_key=${userData.credentials.apiKey}&consumer_secret=${userData.credentials.apiSecret}`,
       headers: { 'Content-Type': 'application/json' },
