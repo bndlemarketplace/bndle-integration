@@ -4,6 +4,8 @@ const ApiError = require('../../utils/ApiError');
 const wooCommerceService = require('../../services/woocommerce/wooCommerceService');
 const wixService = require('../../services/wix/wixService');
 const squarespaceService = require('../../services/squarespace/squarespaceService');
+const { User, Product } = require('../../models');
+const shopifyRequest = require('../../services/shopify/lib/request');
 
 const initialProductSyncShopify = catchAsync(async (req, res) => {
   const vendorId = req.body.vendorID;
@@ -37,7 +39,62 @@ const publishProductToShopify = catchAsync(async (req, res) => {
   }
 });
 
+const productUpdateShopify = async (req,res) => {
+  try {
+    let ids;
+    const vendorId = req.body.vendorId;
+    // console.log("==vendorId==",vendorId)
+    ids = req.body.productId;
+    // console.log('---ids', ids);
+    const dbProducts = await Product.find({
+      _id: ids,
+    }).lean();
+    const user = await User.findOne({
+      _id: vendorId,
+      connectionType: { $in: ['shopify', 'wix', 'woocommerce', 'squarespace'] },
+    }).lean();
+    if (user.connectionType === 'wix') {
+      for (let index = 0; index < dbProducts.length; index++) {
+        const dbProduct = dbProducts[index];
+        // console.log("==dbProduct===wix",dbProduct)
+        await wixService.createUpdateProduct(dbProduct.venderProductPlatformId, 'update', vendorId);
+      }
+    }
+    if(user.connectionType === 'woocommerce'){
+      for (let index = 0; index < dbProducts.length; index++) {
+        const dbProduct = dbProducts[index];
+        // console.log('==dbProduct==woocommerce', dbProduct);
+        let product = await wooCommerceService.woocommerceProduct(user.credentials, dbProduct.venderProductPlatformId);
+        product = product.data;
+        // console.log('=product=', product);
+        await wooCommerceService.createUpdateProduct( product, vendorId)
+      }
+    }
+    if (user.connectionType === 'shopify') {
+      for (let index = 0; index < dbProducts.length; index++) {
+        const dbProduct = dbProducts[index];
+        // console.log('==dbProduct===shopify', dbProduct);
+        const url = `https://${user.credentials.shopName}/admin/api/2022-01/products/${dbProduct.venderProductPlatformId}.json`;
+        const response = await shopifyRequest('get', url, user.credentials.accessToken).catch((e) => {
+          console.log(e);
+        });
+
+        const product = response.data.product;
+        if (dbProduct.status === 'PUBLISHED') {
+          await cornServices.createUpdateProduct(product, 'update', vendorId);
+        } else {
+          await cornServices.createUpdateProduct(product, 'create', vendorId);
+        }
+      }
+    }
+    return res.status(200).jsend.success({ message: 'success' });
+  } catch (err) {
+    console.log(err);
+  }
+};
+
 module.exports = {
   initialProductSyncShopify,
   publishProductToShopify,
+  productUpdateShopify
 };
