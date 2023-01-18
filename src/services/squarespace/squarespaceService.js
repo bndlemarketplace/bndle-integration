@@ -363,9 +363,12 @@ const updateOrderStatus = async (order) => {
     }
 };
 
-const updateAllVendorProducts = async (req, res) => {
+const updateAllVendorProducts = async (vendorId = '', productId = '') => {
     try {
-        const allVendors = await User.find({ connectionType: constVer.model.product.productSourceEnum[4] }, { credentials: 1, name: 1, connectionType: 1 }).lean();
+        const allVendors = vendorId ?
+            await User.find({ _id: vendorId, connectionType: constVer.model.product.productSourceEnum[4] }, { credentials: 1, name: 1, connectionType: 1 }).lean() :
+            await User.find({ connectionType: constVer.model.product.productSourceEnum[4] }, { credentials: 1, name: 1, connectionType: 1 }).lean();
+
         let vendor;
 
         for (let i = 0; i < allVendors.length; i++) {
@@ -375,14 +378,16 @@ const updateAllVendorProducts = async (req, res) => {
             let cursor = '';
 
             try {
-
                 while (getNext) {
 
-                    const { pagination, products } = await sqObj.product.get.all(vendor, cursor);
+                    const { pagination, products } = productId ?
+                        await sqObj.product.get.one(vendor, productId) :
+                        await sqObj.product.get.all(vendor, cursor);
+
                     getNext = pagination && pagination.hasNextPage && products.length ? true : false;
                     cursor = pagination.nextPageCursor;
 
-                    if (products.length) {
+                    if (products && products.length) {
                         let product;
                         for (let index = 0; index < products.length; index++) {
                             product = products[index];
@@ -392,7 +397,10 @@ const updateAllVendorProducts = async (req, res) => {
                                 const productObj = sqObj.adapter.updateRemoteProductFromPlatformProduct(product, dbProduct);
                                 // create product
                                 const dbProductRes = await Product.findOneAndUpdate(
-                                    { venderProductPlatformId: productObj.venderProductPlatformId, productSource: constVer.model.product.productSourceEnum[4] },
+                                    {
+                                        venderProductPlatformId: productObj.venderProductPlatformId,
+                                        productSource: constVer.model.product.productSourceEnum[4],
+                                    },
                                     productObj,
                                     {
                                         upsert: true,
@@ -405,10 +413,10 @@ const updateAllVendorProducts = async (req, res) => {
                                 if (dbProductRes) {
                                     // for create variant of product
                                     if (product.variants && product.variants.length) {
-
                                         const dbVariants = await ProductVariants.find({ productId: mongoose.Types.ObjectId(dbProduct._id) });
 
-                                        for (let index = 0; index < product.variants.length; index++) { // loop all variants
+                                        for (let index = 0; index < product.variants.length; index++) {
+                                            // loop all variants
 
                                             const variant = product.variants[index];
                                             const dbVariant = dbVariants.find((v) => v.venderProductPlatformVariantId === variant.id);
@@ -428,7 +436,6 @@ const updateAllVendorProducts = async (req, res) => {
                                             AddJobPublishProductToShopify(dbProduct._id);
                                         }
                                         // await cornServices.publishProductToShopify(dbProduct._id);
-
                                     } catch (err) {
                                         logger.error(err);
                                         logger.error('something went wrong with push product to shopify for product ' + dbProduct._id);
@@ -440,15 +447,15 @@ const updateAllVendorProducts = async (req, res) => {
                         }
                     }
                 }
-            }
-            catch (e) {
+            } catch (e) {
                 logger.error(e);
                 logger.error('SQ Error while running cron vendor product update: ' + ((e || {}).config || {}).url);
-                logger.error('SQ Error while running cron vendor product update: ' + (((e || {}).response || {}).data || {}).message);
+                logger.error(
+                    'SQ Error while running cron vendor product update: ' + (((e || {}).response || {}).data || {}).message
+                );
                 continue;
             }
         }
-
     } catch (e) {
         logger.error(e);
         logger.error('SQ Error while running cron vendor product update: ' + ((e || {}).config || {}).url);
