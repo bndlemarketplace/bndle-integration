@@ -87,6 +87,12 @@ const productUpdateShopify = async (req,res) => {
         }
       }
     }
+    if (user.connectionType === 'squarespace') {
+      for (let index = 0; index < dbProducts.length; index++) {
+        const dbProduct = dbProducts[index];
+        await squarespaceService.updateAllVendorProducts(vendorId, dbProduct.venderProductPlatformId);
+      }
+    }
     return res.status(200).jsend.success({ message: 'success' });
   } catch (err) {
     console.log(err);

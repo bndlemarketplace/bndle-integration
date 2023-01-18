@@ -363,97 +363,112 @@ const updateOrderStatus = async (order) => {
     }
 };
 
-const updateAllVendorProducts = async (req, res) => {
-    try {
-        const allVendors = await User.find({ connectionType: constVer.model.product.productSourceEnum[4] }, { credentials: 1, name: 1, connectionType: 1 }).lean();
-        let vendor;
+const updateAllVendorProducts = async (vendorId, productId) => {
+  try {
+    let allVendors;
+    if (vendorId) {
+      allVendors = await User.find(
+        { _id: vendorId, connectionType: constVer.model.product.productSourceEnum[4] },
+        { credentials: 1, name: 1, connectionType: 1 }
+      ).lean();
+    } else {
+      allVendors = await User.find(
+        { connectionType: constVer.model.product.productSourceEnum[4] },
+        { credentials: 1, name: 1, connectionType: 1 }
+      ).lean();
+    }
+    let vendor;
+    for (let i = 0; i < allVendors.length; i++) {
+      vendor = allVendors[i];
+      const sqObj = new SQObject();
+      let getNext = true;
+      let cursor = '';
 
-        for (let i = 0; i < allVendors.length; i++) {
-            vendor = allVendors[i];
-            const sqObj = new SQObject();
-            let getNext = true;
-            let cursor = '';
+      try {
+        let data;
+        while (getNext) {
+          if (productId) {
+             data = await sqObj.product.get.one(vendor, productId);
+          } else {
+             data = await sqObj.product.get.all(vendor, cursor);
+          }
+          getNext = data && data.pagination && data.pagination.hasNextPage && data.products.length ? true : false;
+          cursor = data && data.pagination && data.pagination.nextPageCursor;
 
-            try {
+          if (data && data.products && data.products.length) {
+            let product;
+            for (let index = 0; index < data.products.length; index++) {
+              product = data.products[index];
 
-                while (getNext) {
+              const dbProduct = await Product.findOne({ venderProductPlatformId: product.id });
+              if (dbProduct) {
+                const productObj = sqObj.adapter.updateRemoteProductFromPlatformProduct(product, dbProduct);
+                // create product
+                const dbProductRes = await Product.findOneAndUpdate(
+                  {
+                    venderProductPlatformId: productObj.venderProductPlatformId,
+                    productSource: constVer.model.product.productSourceEnum[4],
+                  },
+                  productObj,
+                  {
+                    upsert: true,
+                    new: true,
+                  }
+                );
 
-                    const { pagination, products } = await sqObj.product.get.all(vendor, cursor);
-                    getNext = pagination && pagination.hasNextPage && products.length ? true : false;
-                    cursor = pagination.nextPageCursor;
+                logger.info(`dbProduct upated in cron ${dbProductRes._id}`);
 
-                    if (products.length) {
-                        let product;
-                        for (let index = 0; index < products.length; index++) {
-                            product = products[index];
+                if (dbProductRes) {
+                  // for create variant of product
+                  if (product.variants && product.variants.length) {
+                    const dbVariants = await ProductVariants.find({ productId: mongoose.Types.ObjectId(dbProduct._id) });
 
-                            const dbProduct = await Product.findOne({ venderProductPlatformId: product.id });
-                            if (dbProduct) {
-                                const productObj = sqObj.adapter.updateRemoteProductFromPlatformProduct(product, dbProduct);
-                                // create product
-                                const dbProductRes = await Product.findOneAndUpdate(
-                                    { venderProductPlatformId: productObj.venderProductPlatformId, productSource: constVer.model.product.productSourceEnum[4] },
-                                    productObj,
-                                    {
-                                        upsert: true,
-                                        new: true,
-                                    }
-                                );
+                    for (let index = 0; index < product.variants.length; index++) {
+                      // loop all variants
 
-                                logger.info(`dbProduct upated in cron ${dbProductRes._id}`);
+                      const variant = product.variants[index];
+                      const dbVariant = dbVariants.find((v) => v.venderProductPlatformVariantId === variant.id);
+                      const variantObj = sqObj.adapter.updateRemoteVariantFromPlatformVariant(variant, dbVariant, dbProduct);
 
-                                if (dbProductRes) {
-                                    // for create variant of product
-                                    if (product.variants && product.variants.length) {
+                      await ProductVariants.findOneAndUpdate({ venderProductPlatformVariantId: variant.id }, variantObj, {
+                        upsert: true,
+                        new: true,
+                      });
 
-                                        const dbVariants = await ProductVariants.find({ productId: mongoose.Types.ObjectId(dbProduct._id) });
-
-                                        for (let index = 0; index < product.variants.length; index++) { // loop all variants
-
-                                            const variant = product.variants[index];
-                                            const dbVariant = dbVariants.find((v) => v.venderProductPlatformVariantId === variant.id);
-                                            const variantObj = sqObj.adapter.updateRemoteVariantFromPlatformVariant(variant, dbVariant, dbProduct);
-
-                                            await ProductVariants.findOneAndUpdate({ venderProductPlatformVariantId: variant.id }, variantObj, {
-                                                upsert: true,
-                                                new: true,
-                                            });
-
-                                            logger.info(`dbProduct varinats updated in cron, venderProductPlatformVariantId: ${variant.id}`);
-                                        }
-                                    }
-
-                                    try {
-                                        if (dbProduct.status === 'PUBLISHED') {
-                                            AddJobPublishProductToShopify(dbProduct._id);
-                                        }
-                                        // await cornServices.publishProductToShopify(dbProduct._id);
-
-                                    } catch (err) {
-                                        logger.error(err);
-                                        logger.error('something went wrong with push product to shopify for product ' + dbProduct._id);
-                                        continue;
-                                        // throw new ApiError(httpStatus.BAD_REQUEST, 'something went wrong with push product to shopify');
-                                    }
-                                }
-                            }
-                        }
+                      logger.info(`dbProduct varinats updated in cron, venderProductPlatformVariantId: ${variant.id}`);
                     }
-                }
-            }
-            catch (e) {
-                logger.error(e);
-                logger.error('SQ Error while running cron vendor product update: ' + ((e || {}).config || {}).url);
-                logger.error('SQ Error while running cron vendor product update: ' + (((e || {}).response || {}).data || {}).message);
-                continue;
-            }
-        }
+                  }
 
-    } catch (e) {
+                  try {
+                    if (dbProduct.status === 'PUBLISHED') {
+                      AddJobPublishProductToShopify(dbProduct._id);
+                    }
+                    // await cornServices.publishProductToShopify(dbProduct._id);
+                  } catch (err) {
+                    logger.error(err);
+                    logger.error('something went wrong with push product to shopify for product ' + dbProduct._id);
+                    continue;
+                    // throw new ApiError(httpStatus.BAD_REQUEST, 'something went wrong with push product to shopify');
+                  }
+                }
+              }
+            }
+          }
+        }
+      } catch (e) {
         logger.error(e);
         logger.error('SQ Error while running cron vendor product update: ' + ((e || {}).config || {}).url);
-        logger.error('SQ Error while running cron vendor product update: ' + (((e || {}).response || {}).data || {}).message);
+        logger.error(
+          'SQ Error while running cron vendor product update: ' + (((e || {}).response || {}).data || {}).message
+        );
+        continue;
+      }
     }
+  } catch (e) {
+    logger.error(e);
+    logger.error('SQ Error while running cron vendor product update: ' + ((e || {}).config || {}).url);
+    logger.error('SQ Error while running cron vendor product update: ' + (((e || {}).response || {}).data || {}).message);
+  }
 };
 
 module.exports = {
