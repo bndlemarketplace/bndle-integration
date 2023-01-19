@@ -296,17 +296,14 @@ const convertRemoteOrderToPlatformOrder = async (order) => {
       // eslint-disable-next-line no-plusplus
       if (product.variations.length) {
         // eslint-disable-next-line no-await-in-loop
-        let productVariant = await woocommerceProductVariant(
-          vendor.credentials,
-          orderProduct.vendorProductId
-        );
+        let productVariant = await woocommerceProductVariant(vendor.credentials, orderProduct.vendorProductId);
         productVariant = productVariant.data;
         // eslint-disable-next-line no-plusplus
         for (let pIndex = 0; pIndex < productVariant.length; pIndex++) {
           const variantEl = productVariant[pIndex];
           // eslint-disable-next-line no-await-in-loop
           await ProductVariants.findOneAndUpdate(
-           { venderProductPlatformVariantId: variantEl.id },
+            { venderProductPlatformVariantId: variantEl.id },
             {
               inventoryQuantity: variantEl.stock_quantity && variantEl.stock_quantity,
               openingQuantity: variantEl.stock_quantity && variantEl.stock_quantity,
@@ -319,7 +316,7 @@ const convertRemoteOrderToPlatformOrder = async (order) => {
         }
       } else {
         await ProductVariants.findOneAndUpdate(
-          { _id: orderProduct.productRef  },
+          { _id: orderProduct.productRef },
           {
             inventoryQuantity: product.stock_quantity && product.stock_quantity,
             openingQuantity: product.stock_quantity && product.stock_quantity,
@@ -331,7 +328,7 @@ const convertRemoteOrderToPlatformOrder = async (order) => {
         );
       }
       try {
-        await cornServices.publishProductToShopify(orderProduct.productRef,'PUBLISHED');
+        await cornServices.publishProductToShopify(orderProduct.productRef, 'PUBLISHED');
       } catch (err) {
         console.log('====errrr===', err);
         // logger.error(err);
@@ -360,7 +357,7 @@ const convertRemoteOrderToPlatformOrder = async (order) => {
 
 const convertRemoteProductVariantToPlatformProductVariant = async (product, userData, dbProduct) => {
   try {
-    axios({
+   return axios({
       method: 'get',
       url: `https://${userData.credentials.shopName}/wp-json/wc/v3/products/${product.id}/variations?consumer_key=${userData.credentials.apiKey}&consumer_secret=${userData.credentials.apiSecret}`,
       headers: { 'Content-Type': 'application/json' },
@@ -462,7 +459,7 @@ const convertRemoteProductVariantToPlatformProductVariant = async (product, user
             platformProductVariant = {
               productId: dbProduct._id,
               venderProductPlatformVariantId: variant.id,
-              // price: variant.price ? variant.price : 0,
+              price: variant.price ? variant.price : 0,
               // options: mappedOptions,
               // sku: variant.sku ? variant.sku : '',
               // title: dbProduct.title,
@@ -511,7 +508,7 @@ const convertRemoteProductVariantToPlatformProductVariant = async (product, user
           platformProductVariant = {
             productId: dbProduct._id,
             // venderProductPlatformVariantId: variant.id,
-            // price: product.price ? product.price : 0,
+            price: product.price ? product.price : 0,
             // options: [],
             // sku: product.sku ? product.sku : '',
             // title: product.title,
@@ -532,6 +529,8 @@ const convertRemoteProductVariantToPlatformProductVariant = async (product, user
           }
         }
       }
+    }).catch(err=>{
+      console.log("==woocommerce err==",err)
     });
   } catch (error) {
     throw new ApiError(402, error.message);
