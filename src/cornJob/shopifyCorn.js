@@ -325,6 +325,19 @@ const initialProductSync = async (userId) => {
   }
 };
 
+const updateImagesIfNotUploaded = async (bndleProductId, dbImages) => {
+  const imgArr = [];
+  for (var i = 0; i < dbImages.length; i++) {
+    try {
+      dbImages[i].product_id = bndleProductId;
+      imgArr.push(await client.productImage.create(bndleProductId, dbImages[i]));
+      return imgArr;
+    } catch (e) {
+      logger.error(e);
+    }
+  }
+}
+
 // push product on status change to public
 const publishProductToShopify = async (productsId) => {
   try {
@@ -604,6 +617,13 @@ const publishProductToShopify = async (productsId) => {
             // console.log(JSON.stringify(bndleProduct));
             // console.log(5);
             logger.info(`${bndleProduct.title} product updated`);
+            bndleProduct.images = []
+
+            if(bndleProduct && bndleProduct.images.length !== mappedImages.length) {
+              logger.info('patch called - start to upload images in shopify');
+              bndleProduct.images = await updateImagesIfNotUploaded(bndleProduct.id, mappedImages) //patch - sometimes the images are not uploaded in shopify
+            }
+
             const updatedProduct = await Product.findOneAndUpdate({ _id: el._id }, { bndleId: bndleProduct.id });
             await client.productListing.create(bndleProduct.id, { product_listing: { product_id: bndleProduct.id } });
             await bndleProduct.variants.forEach(async (bndleVariant) => {
@@ -690,6 +710,11 @@ const publishProductToShopify = async (productsId) => {
             logger.info(`${bndleProduct.title} product created`);
             // console.log(bndleProduct.id);
             // console.log({ product_listing: { product_id: bndleProduct.id } });
+            if(bndleProduct && bndleProduct.images.length !== mappedImages.length) {
+              logger.info('patch called - start to upload images in shopify');
+              bndleProduct.images = await updateImagesIfNotUploaded(bndleProduct.id, mappedImages) //patch - sometimes the images are not uploaded in shopify
+            }
+            
             const updatedProduct = await Product.findOneAndUpdate(
               { _id: el._id },
               { bndleId: bndleProduct.id },
@@ -1172,6 +1197,10 @@ const createUpdateProduct = async (product, mode, userId) => {
     console.log(err);
   }
 };
+
+const deleteProduct = async (product, userId) => {
+
+}
 
 const updateOrderStatus = async (order, id) => {
   try {

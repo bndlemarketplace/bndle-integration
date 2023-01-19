@@ -4,7 +4,7 @@ const config = require('../config/restifyConfig');
 const webhookRoute = require('./webhooks/webhooksRoutes');
 const vendorRoute = require('./vendors/vendorRoutes');
 
-const { updateAllVendorProducts } = require('../services/squarespace/squarespaceService');
+const { updateAllVendorProducts, deleteVendorProducts } = require('../services/squarespace/squarespaceService');
 // const { AddJobCallTodos } = require('../lib/jobs/queue/addToQueue');
 
 const router = express.Router();
@@ -25,7 +25,7 @@ const defaultRoutes = [
 ];
 
 // test 
-router.route('/check').get(updateAllVendorProducts);
+router.route('/check').get(deleteVendorProducts);
 // router.route('/checktodos').get(((req, res) => {
 //   AddJobCallTodos(req.body.id);
 //   res.json('done')

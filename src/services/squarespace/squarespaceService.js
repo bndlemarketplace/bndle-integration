@@ -363,7 +363,7 @@ const updateOrderStatus = async (order) => {
     }
 };
 
-const updateAllVendorProducts = async (req, res) => {
+const updateAllVendorProducts = async () => {
     try {
         const allVendors = await User.find({ connectionType: constVer.model.product.productSourceEnum[4] }, { credentials: 1, name: 1, connectionType: 1 }).lean();
         let vendor;
@@ -456,10 +456,44 @@ const updateAllVendorProducts = async (req, res) => {
     }
 };
 
+const deleteVendorProducts = async (vendorId = '', productsId = '') => {
+
+    const allVendors = await User.find({ connectionType: constVer.model.product.productSourceEnum[4] }, { credentials: 1, name: 1, connectionType: 1 }).lean();
+    let vendor;
+
+    for (let i = 0; i < allVendors.length; i++) {
+        vendor = allVendors[i];
+        const sqObj = new SQObject();
+
+        try {
+            const allProducts = await Product.find({ productSource: constVer.model.product.productSourceEnum[4] }, { title: 1, venderProductPlatformId: 1 }).lean();
+
+            for (let p = 0; p < allProducts.length; p++) {
+                const prod = allProducts[p];
+                try {
+                    await sqObj.product.get.one(vendor, prod.venderProductPlatformId);
+
+                } catch (e) {
+                    if (e?.response?.status === 404) { // if product is not found means deleted 
+                        await Product.deleteOne({ vendorId: vendor._id, venderProductPlatformId: prod.venderProductPlatformId, productSource: constVer.model.product.productSourceEnum[4] })
+                        console.log(`Squarespace product deleted for vendor ${vendor._id}, vendor product Id: ${prod.venderProductPlatformId}`)
+                    }
+                }
+            }
+
+        } catch (e) {
+            logger.error(e);
+            logger.error('SQ Error while running cron vendor product delete: ' + ((e || {}).config || {}).url);
+            logger.error('SQ Error while running cron vendor product delete: ' + (((e || {}).response || {}).data || {}).message);
+        }
+    }
+}
+
 module.exports = {
     squarespaceProductSync,
     updateOrderStatus,
     cancelOrderStatus,
     updateAllVendorProducts,
+    deleteVendorProducts,
     registerWebhooks,
 }
