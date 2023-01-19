@@ -1,4 +1,5 @@
 const Shopify = require('shopify-api-node');
+const axios = require('axios');
 const httpStatus = require('http-status');
 const logger = require('../config/logger');
 const ApiError = require('../utils/ApiError');
@@ -1386,6 +1387,19 @@ const fulfillmentUpdate = async (order) => {
   }
 };
 
+const deleteProductById = async (bndleId) => {
+  try {
+    const result = await axios({
+      method: 'DELETE',
+      url: `https://${restifyConfig.shopifyConfig.shopName}/admin/api/2022-07/products/${bndleId}.json`,
+      headers: { 'X-Shopify-Access-Token': restifyConfig.shopifyConfig.accessToken },
+    });
+    return result;
+  } catch (error) {
+    throw new ApiError(httpStatus.BAD_REQUEST, 'something went wrong with delete product to shopify');
+  }
+};
+
 module.exports = {
   // connectToShopify,
   pushProductToShopify,
@@ -1395,4 +1409,5 @@ module.exports = {
   unpublishProductFromShopify,
   updateOrderStatus,
   fulfillmentUpdate,
+  deleteProductById,
 };

@@ -21,6 +21,7 @@ router.route('/:id/wix/products/update').post(webhookController.updateProductWeb
 // router.route('/:id/woocommerce/products/create').post(webhookController.createProductWebhookWooCommerce);
 router.route('/:id/woocommerce/products/update').post(webhookController.updateProductWebhookWooCommerce);
 router.route('/:id/woocommerce/orders/update').post(webhookController.woocommerceOrderUpdate);
+router.route('/:id/woocommerce/products/delete').post(webhookController.deleteProductWebhookWooCommerce)
 
 /* Wix order webhook */
 router.route('/:id/wix/orders/fullfillmentCreate').post(webhookController.wixOrderFullfillmentCreateWebhook);

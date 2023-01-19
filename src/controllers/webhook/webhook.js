@@ -8,7 +8,7 @@ const squarespaceService = require('../../services/squarespace/squarespaceServic
 const logger = require('../../config/logger');
 const User = require('../../models/user.model');
 const woocommerceService = require('../../services/woocommerce/wooCommerceService');
-
+const productService = require('../../services/product.service');
 // module.exports = {
 
 const createProductWebhook = catchAsync(async (req, res) => {
@@ -237,6 +237,21 @@ const woocommerceOrderUpdate = catchAsync(async (req, res) => {
   // }
 });
 
+const deleteProductWebhookWooCommerce = catchAsync(async (req, res) => {
+  try {
+    console.log(`===========woocommerce product delete===================`);
+    res.status(200).jsend.success({});
+  
+    const product = req.body;
+    const { id } = req.params;
+    const productId = product.id.toString()
+    await productService.deleteProduct(productId, id);
+    
+  } catch (error) {
+    console.log("error",error)
+  }
+});
+
 module.exports = {
   createProductWebhook,
   updateProductWebhook,
@@ -254,4 +269,5 @@ module.exports = {
   squarespaceOrderWebhook,
   squarespaceWebhookRegister,
   woocommerceOrderUpdate,
+  deleteProductWebhookWooCommerce,
 };
