@@ -1055,7 +1055,7 @@ const createUpdateProduct = async (product, mode, userId) => {
     if (mode === 'update') {
       dbProduct = await Product.findOneAndUpdate(
         { venderProductPlatformId: productObj.venderProductPlatformId },
-        { image: productObj.images }
+        { images: productObj.images }
         // { upsert: true, new: true } // if by any chance we miss create webhook
       );
     }
