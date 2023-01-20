@@ -139,6 +139,22 @@ const updateProductWebhookWix = catchAsync(async (req, res) => {
   }
 });
 
+const deleteProductWebhookWix = catchAsync(async (req, res) => {
+  try {
+    logger.info(`===========delete product webhook===================`);
+    res.status(200).jsend.success({});
+    const { id } = req.params;
+
+    const data = jwt.decode(req.body);
+    let parsedData = JSON.parse(data.data);
+    parsedData = JSON.parse(parsedData.data);
+    console.log("==parsedData==>",parsedData)
+    await productService.deleteProduct(parsedData.productId, id);
+  } catch (err) {
+    console.log(err);
+  }
+});
+
 // const createProductWebhookWooCommerce = catchAsync(async (req, res) => {
 //   console.log(`===========create webhook woocommerce===================`);
 
@@ -270,4 +286,5 @@ module.exports = {
   squarespaceWebhookRegister,
   woocommerceOrderUpdate,
   deleteProductWebhookWooCommerce,
+  deleteProductWebhookWix,
 };

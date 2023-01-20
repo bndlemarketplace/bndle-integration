@@ -16,6 +16,7 @@ router.route('/:id/orders/partially-fulfilled').post(webhookController.orderPart
 /* Wix webhook routes */
 router.route('/:id/wix/products/create').post(webhookController.createProductWebhookWix);
 router.route('/:id/wix/products/update').post(webhookController.updateProductWebhookWix);
+router.route('/:id/wix/products/delete').post(webhookController.deleteProductWebhookWix);
 
 /* Woocommerce webhook routes */
 // router.route('/:id/woocommerce/products/create').post(webhookController.createProductWebhookWooCommerce);
