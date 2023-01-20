@@ -17,6 +17,16 @@ const orderSchema = mongoose.Schema(
       totalAmount: { type: Number },
       status: { type: String },
     },
+    discount: {
+      promocodeId: {
+        type: mongoose.SchemaTypes.ObjectId,
+        ref: 'promocode',
+        default: null,
+        trim: true,
+      },
+      percentage: { type: Number },
+      discountAmount: { type: Number },
+    },
     statusHistory: [
       {
         status: {
@@ -40,6 +50,16 @@ const orderSchema = mongoose.Schema(
           ref: 'vendorOrder',
           default: null,
           trim: true,
+        },
+        discount: {
+          promocodeId: {
+            type: mongoose.SchemaTypes.ObjectId,
+            ref: 'promocode',
+            default: null,
+            trim: true,
+          },
+          percentage: { type: Number },
+          discountAmount: { type: Number },
         },
         subOrderCode: {
           type: String,
@@ -147,6 +167,9 @@ const orderSchema = mongoose.Schema(
             refundAmount: {
               type: Number,
               default: 0,
+            },
+            isCancelled: {
+              type: Boolean,
             },
           },
         ],

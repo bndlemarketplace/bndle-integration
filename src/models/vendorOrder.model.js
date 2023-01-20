@@ -9,6 +9,16 @@ const vendorOrderSchema = mongoose.Schema(
       default: null,
       trim: true,
     },
+    discount: {
+      promocodeId: {
+        type: mongoose.SchemaTypes.ObjectId,
+        ref: 'promocode',
+        default: null,
+        trim: true,
+      },
+      percentage: { type: Number },
+      discountAmount: { type: Number },
+    },
     subOrderId: {
       type: mongoose.SchemaTypes.ObjectId,
       ref: 'vendorOrder',
@@ -35,6 +45,10 @@ const vendorOrderSchema = mongoose.Schema(
     },
     shippingDate: {
       type: Date,
+    },
+    lastStatus: {
+      type: String,
+      default: '',
     },
     returnItems: [
       {
@@ -89,6 +103,9 @@ const vendorOrderSchema = mongoose.Schema(
         refundAmount: {
           type: Number,
           default: 0,
+        },
+        isCancelled: {
+          type: Boolean,
         },
       },
     ],
@@ -267,6 +284,9 @@ const vendorOrderSchema = mongoose.Schema(
       postalCode: {
         type: String,
         required: false,
+      },
+      isReturned: {
+        type: Boolean,
       },
     },
     returnLabelUrl: {
