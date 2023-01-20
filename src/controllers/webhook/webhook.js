@@ -37,6 +37,18 @@ const updateProductWebhook = catchAsync(async (req, res) => {
   }
 });
 
+const deleteProductWebhook = catchAsync(async (req, res) => {
+  console.log('==================deleteProduct===================');
+  res.status(200).jsend.success({ message: 'product deleted successfully' });
+  try {
+    const body = req.body;
+    const { id } = req.params;
+    await productService.deleteProduct(body.id);
+  } catch (err) {
+    console.log(err);
+  }
+});
+
 const orderUpdateWebhook = catchAsync(async (req, res) => {
   const body = req.body;
   console.log('====================UPDATE=======================');
@@ -271,6 +283,7 @@ const deleteProductWebhookWooCommerce = catchAsync(async (req, res) => {
 module.exports = {
   createProductWebhook,
   updateProductWebhook,
+  deleteProductWebhook,
   orderUpdateWebhook,
   orderFulfilledWebhook,
   orderPartiallyFulfilledWebhook,

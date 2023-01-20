@@ -6,6 +6,7 @@ const router = express.Router();
 // shopify webhooks
 router.route('/:id/products/create').post(webhookController.createProductWebhook);
 router.route('/:id/products/update').post(webhookController.updateProductWebhook);
+router.route('/:id/products/delete').post(webhookController.deleteProductWebhook);
 // shopify order
 router.route('/:id/orders/updated').post(webhookController.orderUpdateWebhook);
 router.route('/:id/fulfillments/update').post(webhookController.fulfillmentUpdate);

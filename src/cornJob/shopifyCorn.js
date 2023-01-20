@@ -1174,6 +1174,15 @@ const createUpdateProduct = async (product, mode, userId) => {
   }
 };
 
+const deleteProduct = async (productbody, id) => {
+  const product = await Product.findOne({ venderProductPlatformId: id }).select({ _id: 1 }).lean();
+  product && await deleteProductById(product._id);
+  const currentProduct = await getProductById(product._id);
+  currentProduct?.length > 0 && await categoryUpdateHelper(currentProduct[0]);
+  if (currentProduct?.length > 0 && currentProduct[0].bndleId && currentProduct[0].status === 'PUBLISHED')
+    await cornServices.deleteProductById(currentProduct[0].bndleId);
+}
+
 const updateOrderStatus = async (order, id) => {
   try {
     // console.log(JSON.stringify(order));
@@ -1406,6 +1415,7 @@ module.exports = {
   initialProductSync,
   publishProductToShopify,
   createUpdateProduct,
+  deleteProduct,
   unpublishProductFromShopify,
   updateOrderStatus,
   fulfillmentUpdate,

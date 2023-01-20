@@ -26,8 +26,10 @@ const defaultRoutes = [
 
 // test 
 router.route('/check').get(async (req, res) => {
-  await updateAllVendorProducts()
+  // await updateAllVendorProducts()
+  await deleteVendorProducts()
 });
+
 // router.route('/checktodos').get(((req, res) => {
 //   AddJobCallTodos(req.body.id);
 //   res.json('done')
