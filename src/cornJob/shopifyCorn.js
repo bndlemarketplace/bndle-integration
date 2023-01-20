@@ -618,7 +618,6 @@ const publishProductToShopify = async (productsId) => {
             // console.log(JSON.stringify(bndleProduct));
             // console.log(5);
             logger.info(`${bndleProduct.title} product updated`);
-            bndleProduct.images = []
 
             if(bndleProduct && bndleProduct.images.length !== mappedImages.length) {
               logger.info('patch called - start to upload images in shopify');
