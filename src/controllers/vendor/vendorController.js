@@ -166,6 +166,7 @@ const registerAllWoocommerceWebhooks = catchAsync(async (req, res) => {
     const vendor = await userModel.findOne({ _id: vendorId }).lean();
     const platform = platformServiceFactory('woocommerce');
 
+    await platform.webhooks.deregisterWoocoommerceWebhook(vendor);
     // products
     // await platform.webhooks.registerWebhook(
     //   vendor,
@@ -185,6 +186,13 @@ const registerAllWoocommerceWebhooks = catchAsync(async (req, res) => {
       'Product update',
       'product.updated',
       process.env.APP_INTEGRATION_BASE_URL + `v1/webhooks/${vendor._id}/woocommerce/products/update`
+    );
+
+    await platform.webhooks.registerWebhook(
+      vendor,
+      'Product delete',
+      'product.deleted',
+      process.env.APP_INTEGRATION_BASE_URL + `v1/webhooks/${vendor._id}/woocommerce/products/delete`
     );
     return res.status(200).jsend.success('webhook registered successfully');
   } catch (err) {
