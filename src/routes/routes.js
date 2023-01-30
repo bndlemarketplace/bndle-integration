@@ -3,6 +3,7 @@ const productRoute = require('./products/productRoutes');
 const config = require('../config/restifyConfig');
 const webhookRoute = require('./webhooks/webhooksRoutes');
 const vendorRoute = require('./vendors/vendorRoutes');
+const queueRoute = require('./queue/queueRoutes');
 
 const { updateAllVendorProducts, deleteVendorProducts } = require('../services/squarespace/squarespaceService');
 // const { AddJobCallTodos } = require('../lib/jobs/queue/addToQueue');
@@ -22,12 +23,16 @@ const defaultRoutes = [
     path: '/vendors',
     route: vendorRoute,
   },
+  {
+    path: '/queue',
+    route: queueRoute
+  }
 ];
 
 // test 
 router.route('/check').get(async (req, res) => {
-  // await updateAllVendorProducts()
-  await deleteVendorProducts()
+  await updateAllVendorProducts()
+  // await deleteVendorProducts()
 });
 
 // router.route('/checktodos').get(((req, res) => {

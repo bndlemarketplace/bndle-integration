@@ -328,15 +328,15 @@ const initialProductSync = async (userId) => {
 
 const updateImagesIfNotUploaded = async (bndleProductId, dbImages) => {
   const imgArr = [];
-  for (var i = 0; i < dbImages.length; i++) {
+  for (let i = 0; i < dbImages.length; i++) {
     try {
       dbImages[i].product_id = bndleProductId;
       imgArr.push(await client.productImage.create(bndleProductId, dbImages[i]));
-      return imgArr;
     } catch (e) {
       logger.error(e);
     }
   }
+  return imgArr;
 }
 
 // push product on status change to public

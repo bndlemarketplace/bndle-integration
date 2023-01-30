@@ -23,7 +23,7 @@ const handleFailure = (job, err) => {
       )}`,
       err
     );
-    job.remove();
+    // job.remove();
     return null;
   }
   logger.info(
