@@ -366,7 +366,7 @@ const convertRemoteOrderToPlatformOrder = async (order) => {
         );
       }
       if (order.status === 'cancelled') {
-        await cancelOrder(products.id, products.vendorId);
+        await cancelOrder(products._id, products.vendorId);
       }
       try {
         await cornServices.publishProductToShopify(orderProduct.productRef, 'PUBLISHED');
