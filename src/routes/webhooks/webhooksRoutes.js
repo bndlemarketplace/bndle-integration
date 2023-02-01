@@ -6,6 +6,7 @@ const router = express.Router();
 // shopify webhooks
 router.route('/:id/products/create').post(webhookController.createProductWebhook);
 router.route('/:id/products/update').post(webhookController.updateProductWebhook);
+router.route('/:id/products/delete').post(webhookController.deleteProductWebhook);
 // shopify order
 router.route('/:id/orders/updated').post(webhookController.orderUpdateWebhook);
 router.route('/:id/fulfillments/update').post(webhookController.fulfillmentUpdate);
@@ -16,11 +17,13 @@ router.route('/:id/orders/partially-fulfilled').post(webhookController.orderPart
 /* Wix webhook routes */
 router.route('/:id/wix/products/create').post(webhookController.createProductWebhookWix);
 router.route('/:id/wix/products/update').post(webhookController.updateProductWebhookWix);
+router.route('/:id/wix/products/delete').post(webhookController.deleteProductWebhookWix);
 
 /* Woocommerce webhook routes */
 // router.route('/:id/woocommerce/products/create').post(webhookController.createProductWebhookWooCommerce);
 router.route('/:id/woocommerce/products/update').post(webhookController.updateProductWebhookWooCommerce);
 router.route('/:id/woocommerce/orders/update').post(webhookController.woocommerceOrderUpdate);
+router.route('/:id/woocommerce/products/delete').post(webhookController.deleteProductWebhookWooCommerce)
 
 /* Wix order webhook */
 router.route('/:id/wix/orders/fullfillmentCreate').post(webhookController.wixOrderFullfillmentCreateWebhook);
