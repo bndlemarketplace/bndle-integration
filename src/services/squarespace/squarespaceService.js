@@ -291,6 +291,7 @@ const cancelOrderStatus = async (order) => {
                 }
             }
             await updateMainOrderStatus(vendorOrderData);
+            await cancelOrder(vendorOrder._id, vendorOrder.vendorId);
         }
         return true;
     } catch (err) {
@@ -461,6 +462,41 @@ const updateAllVendorProducts = async (vendorId = '', productId = '') => {
         logger.error('SQ Error while running cron vendor product update: ' + ((e || {}).config || {}).url);
         logger.error('SQ Error while running cron vendor product update: ' + (((e || {}).response || {}).data || {}).message);
     }
+};
+
+const cancelOrder = async (orderId, vendorId) => {
+  let currentOrder = await VenderOrder.findOne({ _id: orderId });
+  const vendorData = await User.findOne({ _id: vendorId });
+  currentOrder = JSON.parse(JSON.stringify(currentOrder));
+  const receivedProduct = currentOrder.product;
+
+  for (let productIndex = 0; productIndex < receivedProduct.length; productIndex++) {
+    const product = receivedProduct[productIndex];
+    const returnProduct = JSON.parse(JSON.stringify(product));
+    returnProduct.receivedQuantity = product.quantity;
+    returnProduct.isCancelled = true;
+    if (currentOrder?.discount?.discountAmount) {
+      const discountAmount = (Number(returnProduct.productTotal) * parseFloat(currentOrder?.discount?.percentage)) / 100;
+      returnProduct.refundAmount = returnProduct.productTotal - discountAmount;
+    } else {
+      returnProduct.refundAmount = returnProduct.productTotal;
+    }
+    currentOrder.returnItems.push(returnProduct);
+  }
+
+  let updatedOrder = await VenderOrder.findOneAndUpdate({ _id: orderId }, currentOrder, { new: true });
+  updatedOrder = JSON.parse(JSON.stringify(updatedOrder));
+  let updateMainOrder = await Order.findOne({ _id: updatedOrder.orderId });
+  updateMainOrder = JSON.parse(JSON.stringify(updateMainOrder));
+
+  const vIndex = updateMainOrder.vendor.findIndex((cVendor) => {
+    return cVendor.vendorId === updatedOrder.vendorId;
+  });
+  // for update main order
+  updateMainOrder.vendor[vIndex] = updatedOrder;
+  await Order.updateOne({ _id: updatedOrder.orderId }, updateMainOrder);
+
+  return updatedOrder;
 };
 
 module.exports = {
