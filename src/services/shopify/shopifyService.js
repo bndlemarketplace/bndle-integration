@@ -1,14 +1,12 @@
-const mongoose = require('mongoose');
 const Shopify = require('shopify-api-node');
 const httpStatus = require('http-status');
 const logger = require('../../config/logger');
 const constVer = require('../../config/constant');
 const ApiError = require('../../utils/ApiError');
 const cornServices = require('../../cornJob/shopifyCorn');
-const productService = require('../../services/product.service');
 const shopifyRequest = require('../../services/shopify/lib/request');
-const { Product, ProductVariants, VenderOrder, Order, User } = require('../../models');
-const { AddJobPublishProductToShopify } = require('../../lib/jobs/queue/addToQueue');
+const LoggerService = require('../../services/logger.service');
+const { Product, User } = require('../../models');
 
 // 63e9dd5b4229fe58b04f117c
 const syncAllShopifyProducts = async (vendorId = '633bd2cf84763eba86fa4690', productId = '') => {
@@ -43,9 +41,10 @@ const syncAllShopifyProducts = async (vendorId = '633bd2cf84763eba86fa4690', pro
               // console.log('products',products, products.length);
               if (products && products.length) {
                 let product;
+                console.log("nextPageParameters==>>", products.nextPageParameters)
                 for (let index = 0; index < products.length; index++) {
                   product = products[index];
-console.log("product==>>",product.title)
+                  console.log('product==>>', product.title, product.id);
                   const dbProduct = await Product.findOne({ venderProductPlatformId: product.id });
                   // console.log("==dbProduct=",dbProduct)
                   // create product
@@ -66,9 +65,16 @@ console.log("product==>>",product.title)
             }
             params = products.nextPageParameters;
           } while (params !== undefined);
-        })().catch((err) => {
-          console.log("===err===",err)
+        })().catch(async (err) => {
+          console.log('===err===', err);
           // logger.error(err);
+          const loggerPayload = {
+            title: 'Update vendor product',
+            type: 'publish',
+            logs: err.message,
+            level: 'error',
+          };
+          await LoggerService.createLogger(loggerPayload);
           logger.error('Sync shopify product Error while running cron : ' + err);
           // throw new ApiError(402, err.message);
           // throw new ApiError(httpStatus.INTERNAL_SERVER_ERROR, err.message);
@@ -83,6 +89,13 @@ console.log("product==>>",product.title)
     }
   } catch (e) {
     logger.error(e);
+    const loggerPayload = {
+      title: 'Update vendor product(catch)',
+      type: 'publish',
+      logs: err.message,
+      level: 'error',
+    };
+    await LoggerService.createLogger(loggerPayload);
     logger.error('Sync shopify product Error while running cron : ' + ((e || {}).config || {}).url);
     logger.error('Sync shopify product Error while running cron : ' + (((e || {}).response || {}).data || {}).message);
   }
