@@ -9,7 +9,7 @@ const LoggerService = require('../../services/logger.service');
 const { Product, User } = require('../../models');
 
 // 63e9dd5b4229fe58b04f117c
-const syncAllShopifyProducts = async (vendorId = '633bd2cf84763eba86fa4690', productId = '') => {
+const syncAllShopifyProducts = async (vendorId = '', productId = '') => {
   console.log('===sync_product_shopify==');
   try {
     const allVendors = vendorId
