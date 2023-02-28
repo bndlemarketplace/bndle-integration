@@ -98,7 +98,7 @@ const mapWeightUnit = (unit) => { // map units of shopify
 
 const mapWithBndleVariant = async (options, subCat, vendorId, vendorOptionMapping) => {
   let subCategory = subCat;
-  console.log('===options, subCat, vendorOptionMapping==', options, subCat, vendorOptionMapping);
+  // console.log('===options, subCat, vendorOptionMapping==', options, subCat, vendorOptionMapping);
   const subcatArray = ['Maternity', 'Shoes'];
   if (!subcatArray.includes(subCategory)) {
     subCategory = 'Others';
@@ -116,7 +116,7 @@ const mapWithBndleVariant = async (options, subCat, vendorId, vendorOptionMappin
         // console.log(vendorOption.subCategory, subCategory);
         return vendorOption.vendorOptionName === option.name && vendorOption.subCategory === subCategory;
       });
-      console.log('vendorOptionIndex', vendorOptionIndex);
+      // console.log('vendorOptionIndex', vendorOptionIndex);
       if (vendorOptionIndex === -1) {
         mapStatus = false;
       } else {
@@ -473,7 +473,7 @@ const publishProductToShopify = async (productsId) => {
       const lifeStage = el.lifeStage; // ? el.lifeStage : 'Newborn';
       // console.log(3);
 
-        console.log("====category==",category,productType)
+        // console.log("====category==",category,productType)
         await Category.updateOne(
           { 'secondaryCategories.tertiaryCategories.tertiaryCategory': el.productCategory },
           { $inc: { 'secondaryCategories.$[y].tertiaryCategories.$[xxx].count': 1 } },
