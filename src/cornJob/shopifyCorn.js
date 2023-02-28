@@ -690,7 +690,7 @@ const publishProductToShopify = async (productsId) => {
             const loggerPayload = {
               title: 'Product publish',
               type: 'publish',
-              logs: productObj,
+              logs: err.message,
               level: 'error',
             };
             await LoggerService.createLogger(loggerPayload);
@@ -1085,7 +1085,7 @@ const createUpdateProduct = async (product, mode, userId) => {
       );
     }
     if (dbProduct) {
-      console.log(dbProduct._id);
+      console.log("db product id", dbProduct._id);
       // for create variant of product
       if (product.variants.length > 0) {
         product.variants.forEach(async (variant) => {
