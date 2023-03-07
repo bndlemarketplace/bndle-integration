@@ -162,7 +162,7 @@ class Adapter {
   }
 
   updateRemoteVariantFromPlatformVariant(platformVariant, dbVariant, dbProduct) {
-    let imgArr = [];  // update only images and stock as for now
+    let imgArr = [];  // update only images, price and stock as for now
 
     if (platformVariant && platformVariant.image) { // only single image for variant in squarepace
       const imgObj = {
@@ -179,6 +179,8 @@ class Adapter {
 
     dbVariant.openingQuantity = platformVariant.stock.unlimited ? constVer.model.product.quantityLimit + "" : platformVariant.stock.quantity;
     dbVariant.inventoryQuantity = platformVariant.stock.unlimited ? constVer.model.product.quantityLimit + "" : platformVariant.stock.quantity;
+    
+    dbVariant.price = platformVariant.pricing?.basePrice?.value || 0; 
 
     return dbVariant;
   }

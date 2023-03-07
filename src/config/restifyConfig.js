@@ -8,6 +8,7 @@ module.exports = {
     shopName: process.env.SHOPIFY_SHOPE_NAME,
     accessToken: process.env.SHOPIFY_ACCESS_TOKEN,
     apiVersion: '2022-10',
+    autoLimit: true // avoiding requests failing with 429 Rate Limit Exceeded
   },
   mongoose: {
     url: process.env.MONGODB_URL,
