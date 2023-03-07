@@ -1194,7 +1194,7 @@ const updateOrderStatus = async (order, id) => {
     // console.log(order.id, '----------------');
     const data = await platform.webhooks.fulfillments(userData, order.id);
 
-    console.log(data);
+    console.log("updateOrderStatus data:", data);
     if (data[0].status === 'on_hold') {
       console.log('inside on hold');
       status = constVer.model.order.vendorOrderStatus.ON_HOLD;
@@ -1264,7 +1264,7 @@ const updateOrderStatus = async (order, id) => {
       new: true,
     });
     // console.log('++++++++++++++++++++++++');
-    // console.log(vendorOrderData);
+    console.log("vendorOrderData :",vendorOrderData);
     if (products.status !== currentStatus) {
       await updateMainOrderStatus(vendorOrderData);
     }
@@ -1380,7 +1380,7 @@ const updateMainOrderStatus = async (vendorOrderData) => {
 
 const fulfillmentUpdate = async (order) => {
   try {
-    console.log(JSON.stringify(order));
+    // console.log(JSON.stringify(order));
   } catch (err) {
     console.log(err);
   }
