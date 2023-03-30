@@ -3,13 +3,14 @@ const productRoute = require('./products/productRoutes');
 const config = require('../config/restifyConfig');
 const webhookRoute = require('./webhooks/webhooksRoutes');
 const vendorRoute = require('./vendors/vendorRoutes');
-var builder = require('xmlbuilder');
+const fs = require('fs');
+const {encode} = require('html-entities');
+
 const { Product } = require('../models');
 const { updateAllVendorProducts } = require('../services/squarespace/squarespaceService');
 // const { AddJobCallTodos } = require('../lib/jobs/queue/addToQueue');
-const {encode} = require('html-entities');
+
 const router = express.Router();
-const fs = require('fs');
 
 const defaultRoutes = [
   {
@@ -36,7 +37,7 @@ router.route('/check').get(async (req, res) => {
 // }));
 
 
-router.route('/test').get(async (req, res) => {
+router.route('/generate').get(async (req, res) => {
  
   async function getProductCount() {
     try {
