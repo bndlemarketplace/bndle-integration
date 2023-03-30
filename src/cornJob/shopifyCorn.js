@@ -1,4 +1,5 @@
 const Shopify = require('shopify-api-node');
+const axios = require('axios');
 const httpStatus = require('http-status');
 const logger = require('../config/logger');
 const ApiError = require('../utils/ApiError');
@@ -97,7 +98,7 @@ const mapWeightUnit = (unit) => { // map units of shopify
 
 const mapWithBndleVariant = async (options, subCat, vendorId, vendorOptionMapping) => {
   let subCategory = subCat;
-  console.log('===options, subCat, vendorOptionMapping==', options, subCat, vendorOptionMapping);
+  // console.log('===options, subCat, vendorOptionMapping==', options, subCat, vendorOptionMapping);
   const subcatArray = ['Maternity', 'Shoes'];
   if (!subcatArray.includes(subCategory)) {
     subCategory = 'Others';
@@ -115,7 +116,7 @@ const mapWithBndleVariant = async (options, subCat, vendorId, vendorOptionMappin
         // console.log(vendorOption.subCategory, subCategory);
         return vendorOption.vendorOptionName === option.name && vendorOption.subCategory === subCategory;
       });
-      console.log('vendorOptionIndex', vendorOptionIndex);
+      // console.log('vendorOptionIndex', vendorOptionIndex);
       if (vendorOptionIndex === -1) {
         mapStatus = false;
       } else {
@@ -325,6 +326,19 @@ const initialProductSync = async (userId) => {
   }
 };
 
+const updateImagesIfNotUploaded = async (bndleProductId, dbImages) => {
+  const imgArr = [];
+  for (var i = 0; i < dbImages.length; i++) {
+    try {
+      dbImages[i].product_id = bndleProductId;
+      imgArr.push(await client.productImage.create(bndleProductId, dbImages[i]));
+      return imgArr;
+    } catch (e) {
+      logger.error(e);
+    }
+  }
+}
+
 // push product on status change to public
 const publishProductToShopify = async (productsId) => {
   try {
@@ -459,7 +473,7 @@ const publishProductToShopify = async (productsId) => {
       const lifeStage = el.lifeStage; // ? el.lifeStage : 'Newborn';
       // console.log(3);
 
-        console.log("====category==",category,productType)
+        // console.log("====category==",category,productType)
         await Category.updateOne(
           { 'secondaryCategories.tertiaryCategories.tertiaryCategory': el.productCategory },
           { $inc: { 'secondaryCategories.$[y].tertiaryCategories.$[xxx].count': 1 } },
@@ -604,6 +618,12 @@ const publishProductToShopify = async (productsId) => {
             // console.log(JSON.stringify(bndleProduct));
             // console.log(5);
             logger.info(`${bndleProduct.title} product updated`);
+
+            if(bndleProduct && bndleProduct.images.length !== mappedImages.length) {
+              logger.info('patch called - start to upload images in shopify');
+              bndleProduct.images = await updateImagesIfNotUploaded(bndleProduct.id, mappedImages) //patch - sometimes the images are not uploaded in shopify
+            }
+
             const updatedProduct = await Product.findOneAndUpdate({ _id: el._id }, { bndleId: bndleProduct.id });
             await client.productListing.create(bndleProduct.id, { product_listing: { product_id: bndleProduct.id } });
             await bndleProduct.variants.forEach(async (bndleVariant) => {
@@ -670,7 +690,7 @@ const publishProductToShopify = async (productsId) => {
             const loggerPayload = {
               title: 'Product publish',
               type: 'publish',
-              logs: productObj,
+              logs: err.message,
               level: 'error',
             };
             await LoggerService.createLogger(loggerPayload);
@@ -690,6 +710,11 @@ const publishProductToShopify = async (productsId) => {
             logger.info(`${bndleProduct.title} product created`);
             // console.log(bndleProduct.id);
             // console.log({ product_listing: { product_id: bndleProduct.id } });
+            if(bndleProduct && bndleProduct.images.length !== mappedImages.length) {
+              logger.info('patch called - start to upload images in shopify');
+              bndleProduct.images = await updateImagesIfNotUploaded(bndleProduct.id, mappedImages) //patch - sometimes the images are not uploaded in shopify
+            }
+            
             const updatedProduct = await Product.findOneAndUpdate(
               { _id: el._id },
               { bndleId: bndleProduct.id },
@@ -1060,7 +1085,7 @@ const createUpdateProduct = async (product, mode, userId) => {
       );
     }
     if (dbProduct) {
-      console.log(dbProduct._id);
+      console.log("db product id", dbProduct._id);
       // for create variant of product
       if (product.variants.length > 0) {
         product.variants.forEach(async (variant) => {
@@ -1386,6 +1411,19 @@ const fulfillmentUpdate = async (order) => {
   }
 };
 
+const deleteProductById = async (bndleId) => {
+  try {
+    const result = await axios({
+      method: 'DELETE',
+      url: `https://${restifyConfig.shopifyConfig.shopName}/admin/api/2022-07/products/${bndleId}.json`,
+      headers: { 'X-Shopify-Access-Token': restifyConfig.shopifyConfig.accessToken },
+    });
+    return result;
+  } catch (error) {
+    throw new ApiError(httpStatus.BAD_REQUEST, 'something went wrong with delete product to shopify');
+  }
+};
+
 module.exports = {
   // connectToShopify,
   pushProductToShopify,
@@ -1395,4 +1433,5 @@ module.exports = {
   unpublishProductFromShopify,
   updateOrderStatus,
   fulfillmentUpdate,
+  deleteProductById,
 };
