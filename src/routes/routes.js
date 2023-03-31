@@ -4,7 +4,7 @@ const config = require('../config/restifyConfig');
 const webhookRoute = require('./webhooks/webhooksRoutes');
 const vendorRoute = require('./vendors/vendorRoutes');
 const fs = require('fs');
-const {encode} = require('html-entities');
+const { encode } = require('html-entities');
 
 const { Product } = require('../models');
 const { updateAllVendorProducts } = require('../services/squarespace/squarespaceService');
@@ -40,7 +40,17 @@ router.route('/check').get(async (req, res) => {
 
 
 router.route('/generate').get(async (req, res) => {
- 
+ function getUrlFromBucket(fileName) {
+  return `https://${process.env.S3_IMAGE_BUCKET_NAME}.s3.${process.env.AWS_REGION}.amazonaws.com/${fileName}`;
+}
+  function getImage(product) {
+    let firstImage = product.images;
+    return firstImage && firstImage[0]
+      ? firstImage[0]?.src.includes("http")
+        ? firstImage[0]?.src
+        : getUrlFromBucket(firstImage[0]?.src)
+      : `${process.env.CUSTOMER_APP_URL}/asset/product-img01.png`;
+  }
   async function getProductCount() {
     try {
       const count = await Product.countDocuments({});
@@ -69,8 +79,9 @@ router.route('/generate').get(async (req, res) => {
             _id: 1,
             title: 1,
             description: 1,
-            vendorName : 1,
+            vendorName: 1,
             bndleId: 1,
+            images: 1
           }
         },
         {
@@ -89,12 +100,14 @@ router.route('/generate').get(async (req, res) => {
         }
       ]);
       for (let product of products) {
+        
+    
         xml += '<item>';
         xml += `<g:id>${product._id}</g:id>`;
         xml += `<g:title>${encode(product.title)}</g:title>`;
         xml += `<g:description>${encode(product.description)}</g:description>`;
         xml += `<g:link>${process.env.CUSTOMER_APP_URL}/product-detail?id=${product.bndleId}</g:link>`;
-        xml += `<g:image_link>${product?.variants[0]?.images[0]?.src}</g:image_link>`;
+        xml += `<g:image_link>${getImage(product)}</g:image_link>`;
         xml += `<g:condition>new</g:condition>`;
         xml += `<g:availability>in_stock</g:availability>`;
         xml += `<g:price>${product?.variants[0]?.price}</g:price>`;
@@ -118,7 +131,7 @@ router.route('/generate').get(async (req, res) => {
       }
       res.status(200).send('done');
     });
-    
+
   });
 });
 

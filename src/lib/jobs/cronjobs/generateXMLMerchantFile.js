@@ -10,6 +10,20 @@ module.exports = async (agenda) => {
     try {
 
       logger.info('Starting XML generation..');
+
+
+      function getUrlFromBucket(fileName) {
+        return `https://${process.env.S3_IMAGE_BUCKET_NAME}.s3.${process.env.AWS_REGION}.amazonaws.com/${fileName}`;
+      }
+        function getImage(product) {
+          let firstImage = product.images;
+          return firstImage && firstImage[0]
+            ? firstImage[0]?.src.includes("http")
+              ? firstImage[0]?.src
+              : getUrlFromBucket(firstImage[0]?.src)
+            : `${process.env.CUSTOMER_APP_URL}/asset/product-img01.png`;
+        }
+
       async function getProductCount() {
         try {
           const count = await Product.countDocuments({});
@@ -64,7 +78,7 @@ module.exports = async (agenda) => {
             xml += `<g:title>${encode(product.title)}</g:title>`;
             xml += `<g:description>${encode(product.description)}</g:description>`;
             xml += `<g:link>${process.env.CUSTOMER_APP_URL}/product-detail?id=${product.bndleId}</g:link>`;
-            xml += `<g:image_link>${product?.variants[0]?.images[0]?.src}</g:image_link>`;
+            xml += `<g:image_link>${getImage(product)}</g:image_link>`;
             xml += `<g:condition>new</g:condition>`;
             xml += `<g:availability>in_stock</g:availability>`;
             xml += `<g:price>${product?.variants[0]?.price}</g:price>`;
