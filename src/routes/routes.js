@@ -40,9 +40,9 @@ router.route('/check').get(async (req, res) => {
 
 
 router.route('/generate').get(async (req, res) => {
- function getUrlFromBucket(fileName) {
-  return `https://${process.env.S3_IMAGE_BUCKET_NAME}.s3.${process.env.AWS_REGION}.amazonaws.com/${fileName}`;
-}
+  function getUrlFromBucket(fileName) {
+    return `https://${process.env.S3_IMAGE_BUCKET_NAME}.s3.${process.env.AWS_REGION}.amazonaws.com/${fileName}`;
+  }
   function getImage(product) {
     let firstImage = product.images;
     return firstImage && firstImage[0]
@@ -81,7 +81,8 @@ router.route('/generate').get(async (req, res) => {
             description: 1,
             vendorName: 1,
             bndleId: 1,
-            images: 1
+            images: 1,
+
           }
         },
         {
@@ -93,6 +94,12 @@ router.route('/generate').get(async (req, res) => {
           }
         },
         {
+          $match: {
+            bndleId: { $exists: true, $ne: "" },
+            vendorName: { $type: "string", $nin: ["", null] } // filter out products where vendorName is empty or null
+          }
+        },
+        {
           $skip: skip
         },
         {
@@ -100,8 +107,8 @@ router.route('/generate').get(async (req, res) => {
         }
       ]);
       for (let product of products) {
-        
-    
+
+
         xml += '<item>';
         xml += `<g:id>${product._id}</g:id>`;
         xml += `<g:title>${encode(product.title)}</g:title>`;

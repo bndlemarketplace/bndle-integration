@@ -15,14 +15,14 @@ module.exports = async (agenda) => {
       function getUrlFromBucket(fileName) {
         return `https://${process.env.S3_IMAGE_BUCKET_NAME}.s3.${process.env.AWS_REGION}.amazonaws.com/${fileName}`;
       }
-        function getImage(product) {
-          let firstImage = product.images;
-          return firstImage && firstImage[0]
-            ? firstImage[0]?.src.includes("http")
-              ? firstImage[0]?.src
-              : getUrlFromBucket(firstImage[0]?.src)
-            : `${process.env.CUSTOMER_APP_URL}/asset/product-img01.png`;
-        }
+      function getImage(product) {
+        let firstImage = product.images;
+        return firstImage && firstImage[0]
+          ? firstImage[0]?.src.includes("http")
+            ? firstImage[0]?.src
+            : getUrlFromBucket(firstImage[0]?.src)
+          : `${process.env.CUSTOMER_APP_URL}/asset/product-img01.png`;
+      }
 
       async function getProductCount() {
         try {
@@ -63,6 +63,12 @@ module.exports = async (agenda) => {
                 localField: "_id",
                 foreignField: "productId",
                 as: "variants"
+              }
+            },
+            {
+              $match: {
+                bndleId: { $exists: true, $ne: "" },
+                vendorName: { $type: "string", $nin: ["", null] } // filter out products where vendorName is empty or null
               }
             },
             {
