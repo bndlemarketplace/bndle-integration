@@ -40,6 +40,27 @@ router.route('/check').get(async (req, res) => {
 
 
 router.route('/generate').get(async (req, res) => {
+
+  function getConcatenatedColorValues(options) {
+  
+    // Filter the options array to only contain objects with name='Color'
+    const colorOptions = options.filter(option => option.name === 'Color');
+    
+    // If there are no color options, return an empty string
+    if (colorOptions.length === 0) {
+      return '';
+    }
+
+    // Get the values of the color options and concatenate them with slashes
+    const colorValues = colorOptions.map(option => option.values).flat().slice(0, 3);
+   
+    const escapedValues = colorValues.map((value) => value.replace("/", "\\/"));
+    return escapedValues.join("/");
+    
+  }
+
+
+
   function getUrlFromBucket(fileName) {
     return `https://${process.env.S3_IMAGE_BUCKET_NAME}.s3.${process.env.AWS_REGION}.amazonaws.com/${fileName}`;
   }
@@ -82,6 +103,7 @@ router.route('/generate').get(async (req, res) => {
             vendorName: 1,
             bndleId: 1,
             images: 1,
+            options: 1
 
           }
         },
@@ -98,6 +120,15 @@ router.route('/generate').get(async (req, res) => {
             description: { $type: "string", $nin: ["", null] },
             bndleId: { $exists: true, $ne: "" },
             vendorName: { $type: "string", $nin: ["", null] }, // filter out products where vendorName is empty or null
+            options: {
+              $elemMatch: {
+                name: "Color",
+
+
+              }
+            }
+
+
           }
         },
         {
@@ -107,6 +138,7 @@ router.route('/generate').get(async (req, res) => {
           $limit: batchSize
         }
       ]);
+
       for (let product of products) {
 
 
@@ -118,9 +150,12 @@ router.route('/generate').get(async (req, res) => {
         xml += `<g:image_link>${getImage(product)}</g:image_link>`;
         xml += `<g:condition>new</g:condition>`;
         xml += `<g:availability>in_stock</g:availability>`;
-        xml += `<g:price>${product?.variants[0]?.price}</g:price>`;
+        xml += `<g:price>${product?.variants[0]?.price} GBP</g:price>`;
         xml += `<g:gtin>${product.bndleId}</g:gtin>`;
         xml += `<g:brand>${product.vendorName}</g:brand>`;
+        xml += "<g:age_group>newborn</g:age_group>"
+        xml += "<g:gender>unisex</g:gender>"
+        xml += `<g:color>${(getConcatenatedColorValues(product.options))}</g:color>`
         xml += '</item>';
       }
 
