@@ -95,8 +95,9 @@ router.route('/generate').get(async (req, res) => {
         },
         {
           $match: {
+            description: { $type: "string", $nin: ["", null] },
             bndleId: { $exists: true, $ne: "" },
-            vendorName: { $type: "string", $nin: ["", null] } // filter out products where vendorName is empty or null
+            vendorName: { $type: "string", $nin: ["", null] }, // filter out products where vendorName is empty or null
           }
         },
         {
