@@ -120,7 +120,7 @@ module.exports = async (agenda) => {
             xml += `<g:brand>${product.vendorName}</g:brand>`;
             xml += "<g:age_group>newborn</g:age_group>"
             xml += "<g:gender>unisex</g:gender>"
-            xml += `<g:color>${(getConcatenatedColorValues(product.options))}</g:color>`
+            xml += `<g:color>Black/White/Grey/Green/Blue/Pink</g:color>`
             xml += `<g:mpn>${product?.variants[0]?.sku}</g:mpn>`
             xml += '</item>';
           }

@@ -42,10 +42,10 @@ const defaultRoutes = [
 router.route('/generate').get(async (req, res) => {
 
   function getConcatenatedColorValues(options) {
-  
+
     // Filter the options array to only contain objects with name='Color'
     const colorOptions = options.filter(option => option.name === 'Color');
-    
+
     // If there are no color options, return an empty string
     if (colorOptions.length === 0) {
       return '';
@@ -53,10 +53,10 @@ router.route('/generate').get(async (req, res) => {
 
     // Get the values of the color options and concatenate them with slashes
     const colorValues = colorOptions.map(option => option.values).flat().slice(0, 3);
-   
+
     const escapedValues = colorValues.map((value) => value.replace("/", "\\/"));
     return escapedValues.join("/");
-    
+
   }
 
 
@@ -134,16 +134,16 @@ router.route('/generate').get(async (req, res) => {
           $limit: batchSize
         }
       ]);
-      
-      
-     
+
+
+
       for (let product of products) {
 
 
         xml += '<item>';
         xml += `<g:id>${product._id}</g:id>`;
-        xml += `<g:title>${encode(product.title)}</g:title>`;
-        xml += `<g:description>${encode(product.description)}</g:description>`;
+        xml += `<g:title>${encode(product.title, { level: 'xml' })}</g:title>`;
+        xml += `<g:description>${encode(product.description, { level: 'xml' })}</g:description>`;
         xml += `<g:link>${process.env.CUSTOMER_APP_URL}/product-detail?id=${product.bndleId}</g:link>`;
         xml += `<g:image_link>${getImage(product)}</g:image_link>`;
         xml += `<g:condition>new</g:condition>`;
@@ -153,7 +153,7 @@ router.route('/generate').get(async (req, res) => {
         xml += `<g:brand>${product.vendorName}</g:brand>`;
         xml += "<g:age_group>newborn</g:age_group>"
         xml += "<g:gender>unisex</g:gender>"
-        xml += `<g:color>${(getConcatenatedColorValues(product.options))}</g:color>`
+        xml += `<g:color>Black/White/Grey/Green/Blue/Pink</g:color>`
         xml += `<g:mpn>${product?.variants[0]?.sku}</g:mpn>`
         xml += '</item>';
       }
