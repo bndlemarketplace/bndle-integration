@@ -63,54 +63,78 @@ module.exports = async (agenda) => {
       getProductCount().then(async count => {
         let skip = 0;
         while (skip < count) {
-            let products = await Product.aggregate([
-                {
-                  $project: {
-                    _id: 1,
-                    title: 1,
-                    description: 1,
-                    vendorName: 1,
-                    bndleId: 1,
-                    images: 1,
-                    options: 1
+          let products = await Product.aggregate([
+            {
+              $project: {
+                _id: 1,
+                title: 1,
+                description: 1,
+                vendorName: 1,
+                vendorId: 1, // Add vendorId to the projection
+                bndleId: 1,
+                images: 1,
+                options: 1
+              }
+            },
+            {
+              $lookup: {
+                from: "productvariants",
+                localField: "_id",
+                foreignField: "productId",
+                as: "variants"
+              }
+            },
+            {
+              $lookup: {
+                from: "users",
+                localField: "vendorId",
+                foreignField: "_id",
+                as: "vendor"
+              }
+            },
+            {
+              $project: {
+                _id: 1,
+                title: 1,
+                description: 1,
+                vendorName: 1,
+                vendorId: 1,
+                bndleId: 1,
+                images: 1,
+                options: 1,
+                variants: 1,
+                standardShipping: { $arrayElemAt: ["$vendor.standardShipping", 0] } // Add standardShipping to the projection
+              }
+            },
+            {
+              $match: {
+                description: { $type: "string", $nin: ["", null] },
+                bndleId: { $exists: true, $ne: "" },
+                vendorName: { $type: "string", $nin: ["", null] },
+                options: {
+                  $elemMatch: {
+                    name: "Color"
                   }
                 },
-                {
-                  $lookup: {
-                    from: "productvariants",
-                    localField: "_id",
-                    foreignField: "productId",
-                    as: "variants"
-                  }
-                },
-                {
-                  $match: {
-                    description: { $type: "string", $nin: ["", null] },
-                    bndleId: { $exists: true, $ne: "" },
-                    vendorName: { $type: "string", $nin: ["", null] },
-                    options: {
-                      $elemMatch: {
-                        name: "Color"
-                      }
-                    },
-                    "variants.sku": { $exists: true, $nin: ["", null] }
-                  }
-                },
-                {
-                  $skip: skip
-                },
-                {
-                  $limit: batchSize
-                }
-              ]);
+                "variants.sku": { $exists: true, $nin: ["", null] }
+              }
+            },
+            {
+              $skip: skip
+            },
+            {
+              $limit: batchSize
+            }
+          ]);
     
+
           for (let product of products) {
-    
-    
+
+        
             xml += '<item>';
             xml += `<g:id>${product._id}</g:id>`;
-            xml += `<g:title>${encode(product.title)}</g:title>`;
-            xml += `<g:description>${encode(product.description)}</g:description>`;
+            xml += `<g:title>${encode(product.title, { level: 'xml' })}</g:title>`;
+            xml += `<g:description>${encode(product.description, { level: 'xml' })}</g:description>`;
             xml += `<g:link>${process.env.CUSTOMER_APP_URL}/product-detail?id=${product.bndleId}</g:link>`;
             xml += `<g:image_link>${getImage(product)}</g:image_link>`;
             xml += `<g:condition>new</g:condition>`;
@@ -122,13 +146,18 @@ module.exports = async (agenda) => {
             xml += "<g:gender>unisex</g:gender>"
             xml += `<g:color>Black/White/Grey/Green/Blue/Pink</g:color>`
             xml += `<g:mpn>${product?.variants[0]?.sku}</g:mpn>`
+            xml += `<g:shipping>`
+            xml += `<g:country>GB</g:country>`
+            xml += `<g:service>Standard</g:service>`
+            xml += `<g:price>${product?.standardShipping?.price}GBP</g:price>`
+            xml += `</g:shipping>`
             xml += '</item>';
           }
-    
+
           // Process the current batch of products here
           skip += batchSize;
         }
-    
+
         xml += '</channel>';
         xml += '</rss>';
         const path = require('path');
@@ -140,7 +169,7 @@ module.exports = async (agenda) => {
           }
           logger.info('Done');
         });
-    
+
       });
 
 

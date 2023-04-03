@@ -101,6 +101,7 @@ router.route('/generate').get(async (req, res) => {
             title: 1,
             description: 1,
             vendorName: 1,
+            vendorId: 1, // Add vendorId to the projection
             bndleId: 1,
             images: 1,
             options: 1
@@ -112,6 +113,28 @@ router.route('/generate').get(async (req, res) => {
             localField: "_id",
             foreignField: "productId",
             as: "variants"
+          }
+        },
+        {
+          $lookup: {
+            from: "users",
+            localField: "vendorId",
+            foreignField: "_id",
+            as: "vendor"
+          }
+        },
+        {
+          $project: {
+            _id: 1,
+            title: 1,
+            description: 1,
+            vendorName: 1,
+            vendorId: 1,
+            bndleId: 1,
+            images: 1,
+            options: 1,
+            variants: 1,
+            standardShipping: { $arrayElemAt: ["$vendor.standardShipping", 0] } // Add standardShipping to the projection
           }
         },
         {
@@ -137,6 +160,7 @@ router.route('/generate').get(async (req, res) => {
 
 
 
+
       for (let product of products) {
 
 
@@ -155,6 +179,11 @@ router.route('/generate').get(async (req, res) => {
         xml += "<g:gender>unisex</g:gender>"
         xml += `<g:color>Black/White/Grey/Green/Blue/Pink</g:color>`
         xml += `<g:mpn>${product?.variants[0]?.sku}</g:mpn>`
+        xml += `<g:shipping>`
+        xml += `<g:country>GB</g:country>`
+        xml += `<g:service>Standard</g:service>`
+        xml += `<g:price>${product?.standardShipping?.price}GBP</g:price>`
+        xml += `</g:shipping>`
         xml += '</item>';
       }
 
