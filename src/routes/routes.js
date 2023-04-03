@@ -104,7 +104,6 @@ router.route('/generate').get(async (req, res) => {
             bndleId: 1,
             images: 1,
             options: 1
-
           }
         },
         {
@@ -119,16 +118,13 @@ router.route('/generate').get(async (req, res) => {
           $match: {
             description: { $type: "string", $nin: ["", null] },
             bndleId: { $exists: true, $ne: "" },
-            vendorName: { $type: "string", $nin: ["", null] }, // filter out products where vendorName is empty or null
+            vendorName: { $type: "string", $nin: ["", null] },
             options: {
               $elemMatch: {
-                name: "Color",
-
-
+                name: "Color"
               }
-            }
-
-
+            },
+            "variants.sku": { $exists: true, $nin: ["", null] }
           }
         },
         {
@@ -138,7 +134,9 @@ router.route('/generate').get(async (req, res) => {
           $limit: batchSize
         }
       ]);
-
+      
+      
+     
       for (let product of products) {
 
 
@@ -156,6 +154,7 @@ router.route('/generate').get(async (req, res) => {
         xml += "<g:age_group>newborn</g:age_group>"
         xml += "<g:gender>unisex</g:gender>"
         xml += `<g:color>${(getConcatenatedColorValues(product.options))}</g:color>`
+        xml += `<g:mpn>${product?.variants[0]?.sku}</g:mpn>`
         xml += '</item>';
       }
 

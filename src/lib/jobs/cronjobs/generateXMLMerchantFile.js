@@ -63,50 +63,46 @@ module.exports = async (agenda) => {
       getProductCount().then(async count => {
         let skip = 0;
         while (skip < count) {
-          let products = await Product.aggregate([
-            {
-              $project: {
-                _id: 1,
-                title: 1,
-                description: 1,
-                vendorName: 1,
-                bndleId: 1,
-                images: 1,
-                options: 1
-    
-              }
-            },
-            {
-              $lookup: {
-                from: "productvariants",
-                localField: "_id",
-                foreignField: "productId",
-                as: "variants"
-              }
-            },
-            {
-              $match: {
-                description: { $type: "string", $nin: ["", null] },
-                bndleId: { $exists: true, $ne: "" },
-                vendorName: { $type: "string", $nin: ["", null] }, // filter out products where vendorName is empty or null
-                options: {
-                  $elemMatch: {
-                    name: "Color",
-    
-    
+            let products = await Product.aggregate([
+                {
+                  $project: {
+                    _id: 1,
+                    title: 1,
+                    description: 1,
+                    vendorName: 1,
+                    bndleId: 1,
+                    images: 1,
+                    options: 1
                   }
+                },
+                {
+                  $lookup: {
+                    from: "productvariants",
+                    localField: "_id",
+                    foreignField: "productId",
+                    as: "variants"
+                  }
+                },
+                {
+                  $match: {
+                    description: { $type: "string", $nin: ["", null] },
+                    bndleId: { $exists: true, $ne: "" },
+                    vendorName: { $type: "string", $nin: ["", null] },
+                    options: {
+                      $elemMatch: {
+                        name: "Color"
+                      }
+                    },
+                    "variants.sku": { $exists: true, $nin: ["", null] }
+                  }
+                },
+                {
+                  $skip: skip
+                },
+                {
+                  $limit: batchSize
                 }
-    
-    
-              }
-            },
-            {
-              $skip: skip
-            },
-            {
-              $limit: batchSize
-            }
-          ]);
+              ]);
     
           for (let product of products) {
     
@@ -125,6 +121,7 @@ module.exports = async (agenda) => {
             xml += "<g:age_group>newborn</g:age_group>"
             xml += "<g:gender>unisex</g:gender>"
             xml += `<g:color>${(getConcatenatedColorValues(product.options))}</g:color>`
+            xml += `<g:mpn>${product?.variants[0]?.sku}</g:mpn>`
             xml += '</item>';
           }
     
