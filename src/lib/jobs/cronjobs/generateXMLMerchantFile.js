@@ -11,6 +11,23 @@ module.exports = async (agenda) => {
 
       logger.info('Starting XML generation..');
 
+      function getConcatenatedColorValues(options) {
+
+        // Filter the options array to only contain objects with name='Color'
+        const colorOptions = options.filter(option => option.name === 'Color');
+
+        // If there are no color options, return an empty string
+        if (colorOptions.length === 0) {
+          return '';
+        }
+
+        // Get the values of the color options and concatenate them with slashes
+        const colorValues = colorOptions.map(option => option.values).flat().slice(0, 3);
+
+        const escapedValues = colorValues.map((value) => value.replace("/", "\\/"));
+        return escapedValues.join("/");
+
+      }
 
       function getUrlFromBucket(fileName) {
         return `https://${process.env.S3_IMAGE_BUCKET_NAME}.s3.${process.env.AWS_REGION}.amazonaws.com/${fileName}`;
@@ -44,7 +61,6 @@ module.exports = async (agenda) => {
       const batchSize = 20;
       // Call the getProductCount function
       getProductCount().then(async count => {
-
         let skip = 0;
         while (skip < count) {
           let products = await Product.aggregate([
@@ -55,6 +71,9 @@ module.exports = async (agenda) => {
                 description: 1,
                 vendorName: 1,
                 bndleId: 1,
+                images: 1,
+                options: 1
+    
               }
             },
             {
@@ -70,6 +89,15 @@ module.exports = async (agenda) => {
                 description: { $type: "string", $nin: ["", null] },
                 bndleId: { $exists: true, $ne: "" },
                 vendorName: { $type: "string", $nin: ["", null] }, // filter out products where vendorName is empty or null
+                options: {
+                  $elemMatch: {
+                    name: "Color",
+    
+    
+                  }
+                }
+    
+    
               }
             },
             {
@@ -79,7 +107,10 @@ module.exports = async (agenda) => {
               $limit: batchSize
             }
           ]);
+    
           for (let product of products) {
+    
+    
             xml += '<item>';
             xml += `<g:id>${product._id}</g:id>`;
             xml += `<g:title>${encode(product.title)}</g:title>`;
@@ -88,31 +119,31 @@ module.exports = async (agenda) => {
             xml += `<g:image_link>${getImage(product)}</g:image_link>`;
             xml += `<g:condition>new</g:condition>`;
             xml += `<g:availability>in_stock</g:availability>`;
-            xml += `<g:price>${product?.variants[0]?.price}</g:price>`;
-            xml += `<g:gtin>${product.bndleId}</g:gtin>`;
+            xml += `<g:price>${product?.variants[0]?.price} GBP</g:price>`;
+            xml += `<g:gtin></g:gtin>`;
             xml += `<g:brand>${product.vendorName}</g:brand>`;
+            xml += "<g:age_group>newborn</g:age_group>"
+            xml += "<g:gender>unisex</g:gender>"
+            xml += `<g:color>${(getConcatenatedColorValues(product.options))}</g:color>`
             xml += '</item>';
           }
-
+    
           // Process the current batch of products here
           skip += batchSize;
         }
-
+    
         xml += '</channel>';
         xml += '</rss>';
         const path = require('path');
         const directoryPath = path.resolve(__dirname, '../../../public/merchants/products.xml');
-        logger.info(directoryPath)
         fs.writeFile(directoryPath, xml, (err) => {
           if (err) {
             console.error(err);
             return;
           }
-
           logger.info('Done');
-
         });
-
+    
       });
 
 
