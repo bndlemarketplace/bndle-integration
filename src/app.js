@@ -15,6 +15,7 @@ const { jwtStrategy } = require('./config/passport');
 const { authLimiter } = require('./middlewares/rateLimiter');
 const { errorConverter, errorHandler } = require('./middlewares/error');
 const ApiError = require('./utils/ApiError');
+const path = require('path');
 const routes = require('./routes/routes');
 
 const app = express();
@@ -57,7 +58,7 @@ app.use('/v1', routes);
 tasks.connect(tasks.agenda);
 // initilize queues
 require('./lib/jobs/queue/process');
-
+app.use('/static', express.static(path.join(__dirname, 'public')));
 // send back a 404 error for any unknown api request
 app.use((req, res, next) => {
   next(new ApiError(httpStatus.NOT_FOUND, 'Not found'));
