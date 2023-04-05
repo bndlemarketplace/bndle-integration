@@ -173,7 +173,9 @@ const productSchema = mongoose.Schema(
 productSchema.index({ isDeleted: 1 });
 productSchema.index({ category: 1 });
 productSchema.index({ status: 1 });
-
+productSchema.index({ description: 1 });
+productSchema.index({ vendorName: 1 });
+productSchema.index({ bndleId: 1 });
 // add plugin that converts mongoose to json
 productSchema.plugin(toJSON);
 productSchema.plugin(paginate);

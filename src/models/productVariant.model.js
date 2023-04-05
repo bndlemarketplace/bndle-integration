@@ -121,7 +121,7 @@ const productVariant = mongoose.Schema(
     versionKey: false,
   }
 );
-
+productVariant.index({ sku: 1 });
 // add plugin that converts mongoose to json
 productVariant.plugin(toJSON);
 
