@@ -158,7 +158,7 @@ router.route('/generate').get(async (req, res) => {
         writeStream.write(`<g:availability>in_stock</g:availability>\n`);
         writeStream.write(`<g:price>${product?.variants[0]?.price} GBP</g:price>\n`);
         writeStream.write(`<g:gtin></g:gtin>\n`);
-        writeStream.write(`<g:brand>${product.vendorName}</g:brand>\n`);
+        writeStream.write(`<g:brand>${encode(product.vendorName,{level  :'xml'})}</g:brand>\n`);
         writeStream.write("<g:age_group>newborn</g:age_group>\n");
         writeStream.write("<g:gender>unisex</g:gender>\n");
         writeStream.write(`<g:color>Black/White/Grey/Green/Blue/Pink</g:color>\n`);
