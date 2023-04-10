@@ -28,7 +28,7 @@ const defaultRoutes = [
   },
 ];
 
-// // test 
+// test 
 // router.route('/check').get(async (req, res) => {
 //   // await updateAllVendorProducts()
 //   await deleteVendorProducts()
@@ -41,7 +41,24 @@ const defaultRoutes = [
 
 
 router.route('/generate').get(async (req, res) => {
- 
+
+  function getConcatenatedColorValues(options) {
+  
+    // Filter the options array to only contain objects with name='Color'
+    const colorOptions = options.filter(option => option.name === 'Color');
+    
+    // If there are no color options, return an empty string
+    if (colorOptions.length === 0) {
+      return '';
+    }
+
+    // Get the values of the color options and concatenate them with slashes
+    const colorValues = colorOptions.map(option => option.values).flat().slice(0, 3);
+   
+    const escapedValues = colorValues.map((value) => value.replace("/", "\\/"));
+    return escapedValues.join("/");
+    
+  }
 
 
 

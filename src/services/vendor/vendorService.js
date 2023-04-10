@@ -35,6 +35,11 @@ const registerAllWebhooksService = async (vendor) => {
       'products/update',
       process.env.APP_INTEGRATION_BASE_URL + `v1/webhooks/${vendor._id}/products/update`
     );
+    await platform.webhooks.registerWebhook(
+      vendor,
+      'products/delete',
+      process.env.APP_INTEGRATION_BASE_URL + `v1/webhooks/${vendor._id}/products/delete`
+    );
 
     return 'webhook registered successfully';
   } catch (error) {

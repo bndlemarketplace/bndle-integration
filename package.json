@@ -29,6 +29,7 @@
     "express-rate-limit": "^6.5.1",
     "handlebars": "^4.7.7",
     "helmet": "^5.1.1",
+    "html-entities": "^2.3.3",
     "http-status": "^1.5.2",
     "https": "^1.0.0",
     "ioredis": "^5.2.4",
@@ -36,6 +37,7 @@
     "jsend": "^1.1.0",
     "jsonwebtoken": "^8.5.1",
     "mongoose": "^6.4.4",
+    "mongoose-paginate": "^5.0.3",
     "mongoose-timestamps": "^0.0.1",
     "morgan": "^1.10.0",
     "node-fetch": "^2.6.7",
@@ -49,6 +51,7 @@
     "shopify-api-node": "^3.11.0",
     "winston": "^3.8.1",
     "woocommerce-api": "^1.5.0",
+    "xmlbuilder": "^9.0.7",
     "xss-clean": "^0.1.1"
   },
   "devDependencies": {

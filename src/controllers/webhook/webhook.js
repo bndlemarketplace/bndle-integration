@@ -8,7 +8,7 @@ const squarespaceService = require('../../services/squarespace/squarespaceServic
 const logger = require('../../config/logger');
 const User = require('../../models/user.model');
 const woocommerceService = require('../../services/woocommerce/wooCommerceService');
-
+const productService = require('../../services/product.service');
 // module.exports = {
 
 const createProductWebhook = catchAsync(async (req, res) => {
@@ -32,6 +32,18 @@ const updateProductWebhook = catchAsync(async (req, res) => {
     const { id } = req.params;
     await cornServices.createUpdateProduct(body, 'update', id);
     // return res.status(200).jsend.success({ message: 'product updated successfully' });
+  } catch (err) {
+    console.log(err);
+  }
+});
+
+const deleteProductWebhook = catchAsync(async (req, res) => {
+  console.log('==================deleteProduct===================');
+  res.status(200).jsend.success({ message: 'product deleted successfully' });
+  try {
+    const body = req.body;
+    const { id } = req.params;
+    await productService.deleteProduct(body.id);
   } catch (err) {
     console.log(err);
   }
@@ -139,6 +151,22 @@ const updateProductWebhookWix = catchAsync(async (req, res) => {
   }
 });
 
+const deleteProductWebhookWix = catchAsync(async (req, res) => {
+  try {
+    logger.info(`===========delete product webhook===================`);
+    res.status(200).jsend.success({});
+    const { id } = req.params;
+
+    const data = jwt.decode(req.body);
+    let parsedData = JSON.parse(data.data);
+    parsedData = JSON.parse(parsedData.data);
+    console.log("==parsedData==>",parsedData)
+    await productService.deleteProduct(parsedData.productId, id);
+  } catch (err) {
+    console.log(err);
+  }
+});
+
 // const createProductWebhookWooCommerce = catchAsync(async (req, res) => {
 //   console.log(`===========create webhook woocommerce===================`);
 
@@ -237,9 +265,25 @@ const woocommerceOrderUpdate = catchAsync(async (req, res) => {
   // }
 });
 
+const deleteProductWebhookWooCommerce = catchAsync(async (req, res) => {
+  try {
+    console.log(`===========woocommerce product delete===================`);
+    res.status(200).jsend.success({});
+  
+    const product = req.body;
+    const { id } = req.params;
+    const productId = product.id.toString()
+    await productService.deleteProduct(productId, id);
+    
+  } catch (error) {
+    console.log("error",error)
+  }
+});
+
 module.exports = {
   createProductWebhook,
   updateProductWebhook,
+  deleteProductWebhook,
   orderUpdateWebhook,
   orderFulfilledWebhook,
   orderPartiallyFulfilledWebhook,
@@ -254,4 +298,6 @@ module.exports = {
   squarespaceOrderWebhook,
   squarespaceWebhookRegister,
   woocommerceOrderUpdate,
+  deleteProductWebhookWooCommerce,
+  deleteProductWebhookWix,
 };
