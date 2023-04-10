@@ -1199,22 +1199,33 @@ const createUpdateProduct = async (product, mode, userId) => {
 };
 
 const updateOrderStatus = async (order, id) => {
+  let logs = [];
   try {
-    // console.log(JSON.stringify(order));
+    console.log(JSON.stringify(order));
+    logs.push({ S: `Step 1: Webhook Received with payload ${JSON.stringify(order)}` })
     const platform = platformServiceFactory();
     // get product by product id
     let status;
     let currentStatus;
     let products = await VendorOrder.findOne({ venderPlatformOrderId: order.id });
     if (products === null) {
+      logs.push({ E: `Step 2: venderPlatformOrderId not found` })
+      logService.insertLog(order.id, {
+        webHookData: order,
+        logType : 'ORDER_UPDATE_WEBHOOK',
+        status : 'ERROR',
+      }, logs);
       return true;
     }
+
+    logs.push({ S: `Step 2: venderPlatformOrderId found with status ${products.status}` })
     status = products.status;
     currentStatus = products.status;
     products = JSON.parse(JSON.stringify(products));
 
     // client for get fulfillment status of that user
     const userData = await User.findById(id);
+    logs.push({ S: `Step 3: User Data found ${JSON.stringify(userData)}` })
     // const yolo =
     // console.log(order.id, '----------------');
     const data = await platform.webhooks.fulfillments(userData, order.id);
@@ -1234,9 +1245,12 @@ const updateOrderStatus = async (order, id) => {
       products.carrier = order.fulfillments[0].tracking_company;
       products.trackingUrl = order.fulfillments[0].tracking_url;
       products.shippingDate = order.fulfillments[0].updated_at;
+
+      logs.push({ S: `Step 4: Webhook received with fulfilled status` })
     }
     if (order.fulfillment_status === 'partial') {
       status = constVer.model.order.vendorOrderStatus.PARTIALLY_SHIPPED;
+      logs.push({ S: `Step 4: Webhook received with partial status` })
     }
 
     // if order cenacle
@@ -1285,6 +1299,7 @@ const updateOrderStatus = async (order, id) => {
       products.statusHistory.push(statusHistoryObj);
     }
 
+    logs.push({ S: `Step 5: VendorOrder update with ${JSON.stringify(products)}` })
     const vendorOrderData = await VendorOrder.findOneAndUpdate({ venderPlatformOrderId: order.id }, products, {
       new: true,
     });
@@ -1308,8 +1323,18 @@ const updateOrderStatus = async (order, id) => {
       const email = orderData.customerId.email;
       await emailService.orderShippedEmail(email, orderData, vendorOrderData.trackingId);
     }
+    LoggerService.insertLog(order.id, {
+      webHookData: order,
+      logType : 'ORDER_UPDATE_WEBHOOK',
+      status : 'SUCCESS',
+    }, logs);
     return true;
   } catch (err) {
+    LoggerService.insertLog(order.id, {
+      webHookData: order,
+      logType : 'ORDER_UPDATE_WEBHOOK',
+      status : `ERROR ${JSON.stringify(err)}`,
+    }, logs);
     console.log(err);
   }
 };
