@@ -1,3 +1,4 @@
+const WooCommerceRestApi = require("@woocommerce/woocommerce-rest-api").default;
 const vendorModel = require('../../models/vendor.model');
 const productModel = require('../../models/product.model');
 const platformServiceFactory = require('../../services/fulfilmentPlatformServiceFactory');
@@ -136,6 +137,11 @@ const registerAllWebhooks = catchAsync(async (req, res) => {
       'products/update',
       process.env.APP_INTEGRATION_BASE_URL + `v1/webhooks/${vendor._id}/products/update`
     );
+    await platform.webhooks.registerWebhook(
+      vendor,
+      'products/delete',
+      process.env.APP_INTEGRATION_BASE_URL + `v1/webhooks/${vendor._id}/products/delete`
+    );
 
     return res.status(200).jsend.success('webhook registered successfully');
   } catch (err) {
@@ -152,6 +158,46 @@ const deleteRemoteWebhooks = catchAsync(async (req, res) => {
   await platform.webhooks.deleteAllRemoteWebhooks(vendor);
 
   return res.status(200).jsend.success({ message: 'success' });
+});
+
+const registerAllWoocommerceWebhooks = catchAsync(async (req, res) => {
+  try {
+    const vendorId = req.params.id;
+    const vendor = await userModel.findOne({ _id: vendorId }).lean();
+    const platform = platformServiceFactory('woocommerce');
+
+    await platform.webhooks.deregisterWoocoommerceWebhook(vendor);
+    // products
+    // await platform.webhooks.registerWebhook(
+    //   vendor,
+    //   'Add product',
+    //   'product.created',
+    //   process.env.APP_BASE_URL + `v1/webhooks/${vendor._id}/woocommerce/products/create`
+    // );
+    await platform.webhooks.registerWebhook(
+      vendor,
+      'Update order',
+      'order.updated',
+      process.env.APP_INTEGRATION_BASE_URL + `v1/webhooks/${vendor._id}/woocommerce/orders/update`
+    );
+
+     await platform.webhooks.registerWebhook(
+      vendor,
+      'Product update',
+      'product.updated',
+      process.env.APP_INTEGRATION_BASE_URL + `v1/webhooks/${vendor._id}/woocommerce/products/update`
+    );
+
+    await platform.webhooks.registerWebhook(
+      vendor,
+      'Product delete',
+      'product.deleted',
+      process.env.APP_INTEGRATION_BASE_URL + `v1/webhooks/${vendor._id}/woocommerce/products/delete`
+    );
+    return res.status(200).jsend.success('webhook registered successfully');
+  } catch (err) {
+    return res.status(200).jsend.success(err.message);
+  }
 });
 
 const registerWebhooks = catchAsync(async (req, res) => {
@@ -175,5 +221,6 @@ const registerWebhooks = catchAsync(async (req, res) => {
 module.exports = {
   registerAllWebhooks,
   deleteRemoteWebhooks,
+  registerAllWoocommerceWebhooks,
   registerWebhooks,
 };

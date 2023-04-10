@@ -56,11 +56,13 @@ const orderShippedEmail = async (to, order, trackingId = '', trackingUrl = '') =
   // const dt = new Date(order.createdAt);
   const orderDetails = {
     orderNo: order.orderCode,
-    shippingCostSum: 0,
+    shippingCostSum: order.shippingOptions.shipment.price,
     // orderDate: moment(dt).format('d MMM,YYYY HH:mm:ss'),
     totalAmount: order.total.toFixed(2),
     subtotal: order.subtotal.toFixed(2),
     customerName: order.customerId.firstName,
+    discountPercentage: order.discount.percentage,
+    discountAmount: order.discount.discountAmount,
     productDetails: [],
   };
 
@@ -79,7 +81,6 @@ const orderShippedEmail = async (to, order, trackingId = '', trackingUrl = '') =
     // const productData = await productService.getProductDetailsByBndleId(product.productId);
     const productData = await Product.findOne({ venderProductPlatformId: product.vendorProductId }).lean();
 
-    shippingCostSum += order.shippingOptions.shipment.price;
     const data = {
       vendorName: order.vendorId.name,
       vendorEmail: order.vendorId.email,
@@ -97,7 +98,7 @@ const orderShippedEmail = async (to, order, trackingId = '', trackingUrl = '') =
     orderDetails.productDetails.push(data);
     // }
   }
-  orderDetails.shippingCostSum = shippingCostSum;
+  // orderDetails.shippingCostSum = shippingCostSum;
   // orderDetails.subtotal = order.total - shippingCostSum;
   console.log('orderDetails', orderDetails);
   const data = { orderDetails };

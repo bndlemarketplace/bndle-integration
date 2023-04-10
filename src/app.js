@@ -10,10 +10,12 @@ const httpStatus = require('http-status');
 const jsend = require('jsend');
 const config = require('./config/config');
 const morgan = require('./config/morgan');
+const tasks = require('./lib/jobs/cronjobs/init');
 const { jwtStrategy } = require('./config/passport');
 const { authLimiter } = require('./middlewares/rateLimiter');
 const { errorConverter, errorHandler } = require('./middlewares/error');
 const ApiError = require('./utils/ApiError');
+const path = require('path');
 const routes = require('./routes/routes');
 
 const app = express();
@@ -27,10 +29,10 @@ app.use(jsend.middleware);
 app.use(helmet());
 
 // parse json request body
-app.use(express.json());
+app.use(express.json({ limit: '50mb' }));
 
 // parse urlencoded request body
-app.use(express.urlencoded({ extended: true }));
+app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 
 // parses all the bodies as string
 app.use(express.text());
@@ -52,6 +54,11 @@ passport.use('jwt', jwtStrategy);
 // v1 api routes
 app.use('/v1', routes);
 
+// initatlize crons
+tasks.connect(tasks.agenda);
+// initilize queues
+require('./lib/jobs/queue/process');
+app.use('/static', express.static(path.join(__dirname, 'public')));
 // send back a 404 error for any unknown api request
 app.use((req, res, next) => {
   next(new ApiError(httpStatus.NOT_FOUND, 'Not found'));

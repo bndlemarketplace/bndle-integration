@@ -11,6 +11,8 @@ const s3upload = require('../../utils/s3-bucket');
 const emailService = require('../emailService');
 const VendorOrder = require('../../models/vendorOrder.model');
 const cornServices = require('../../cornJob/shopifyCorn');
+const LoggerService = require('../../services/logger.service');
+
 const wixProductSync = async (userId) => {
   try {
     const userData = await User.findById(userId);
@@ -315,6 +317,9 @@ const createUpdateProduct = async (productId, mode, userId) => {
         };
         await LoggerService.createLogger(loggerPayload);
       }
+      if (dbProduct && dbProduct.status === 'PUBLISHED') {
+        await cornServices.publishProductToShopify(dbProduct._id, 'PUBLISHED');
+      }
     }
   } catch (err) {
     console.log(err);
@@ -595,8 +600,7 @@ async function productVariantSync(product, accessToken, dbProduct, mode) {
                 const choices = optionEl.choices[index];
                 // console.log(choices)
                 if (
-                  choices.value == variantEl.choices[keysEl] ||
-                  (isColor && choices.description === variantEl.choices[keysEl] && productOptions.length === 1)
+                  choices.value == variantEl.choices[keysEl] || (isColor && choices.description === variantEl.choices[keysEl] && productOptions.length)
                 ) {
                   if (choices.media?.items.length > 0) {
                     for (let index = 0; index < choices.media.items.length; index++) {
@@ -643,7 +647,7 @@ async function productVariantSync(product, accessToken, dbProduct, mode) {
                     variantObj = {
                       productId: dbProduct._id,
                       venderProductPlatformVariantId: variantEl.id,
-                      // price: variantEl.variant.priceData.price,
+                      price: variantEl.variant.priceData.price,
                       // options: mappedOption,
                       // sku: variantEl.variant.sku,
                       // title: title,
@@ -651,7 +655,7 @@ async function productVariantSync(product, accessToken, dbProduct, mode) {
                       // weight: variantEl.variant.weight,
                       inventoryQuantity: variantEl.stock && variantEl.stock.quantity,
                       openingQuantity: variantEl.stock && variantEl.stock.quantity,
-                      // images: variantImg,
+                      images: variantImg,
                       // isDeleted: false,
                     };
                   } else {
@@ -687,7 +691,7 @@ async function productVariantSync(product, accessToken, dbProduct, mode) {
           variantObj = {
             productId: dbProduct._id,
             venderProductPlatformVariantId: variantEl.id,
-            // price: variantEl.variant.priceData.price,
+            price: variantEl.variant.priceData.price,
             // options: mappedOption,
             // sku: variantEl.variant.sku,
             // title: title,

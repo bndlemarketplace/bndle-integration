@@ -1,10 +1,11 @@
 const Shopify = require('shopify-api-node');
+const axios = require('axios');
 const httpStatus = require('http-status');
 const logger = require('../config/logger');
 const ApiError = require('../utils/ApiError');
 const constVer = require('../config/constant');
 const User = require('../models/user.model');
-const { Product, ProductVariants, Mapping } = require('../models');
+const { Product, ProductVariants, Mapping, Category } = require('../models');
 const restifyConfig = require('../config/restifyConfig');
 const LoggerService = require('../services/logger.service');
 const { s3Url } = require('../config/restifyConfig');
@@ -16,6 +17,8 @@ const Order = require('../models/order.model');
 const product = require('../models/product.model');
 const platformServiceFactory = require('../services/fulfilmentPlatformServiceFactory');
 const { registerAllWebhooksService } = require('../services/vendor/vendorService');
+const { AddJobPublishProductToShopify2 } = require('../lib/jobs/queue/addToQueue');
+
 const locationId = restifyConfig.locationId;
 
 const client = new Shopify(restifyConfig.shopifyConfig);
@@ -38,31 +41,40 @@ const mapOptionWithBndle = async (options, subCat, vendorId) => {
 
   for (let optionIndex = 0; optionIndex < options.length; optionIndex++) {
     const option = options[optionIndex];
+    if (option.name === 'Size' || option.name === 'Age') {
+      const vendorOptionIndex = vendorOptionMapping.findIndex((vendorOption) => {
+        // console.log(vendorOption.vendorOptionName, option.name);
+        // console.log(vendorOption.subCategory, subCategory);
+        return vendorOption.vendorOptionName === option.name && vendorOption.subCategory === subCategory;
+      });
 
-    const vendorOptionIndex = vendorOptionMapping.findIndex((vendorOption) => {
-      // console.log(vendorOption.vendorOptionName, option.name);
-      // console.log(vendorOption.subCategory, subCategory);
-      return vendorOption.vendorOptionName === option.name && vendorOption.subCategory === subCategory;
-    });
+      if (vendorOptionIndex == -1) {
+        mapStatus = false;
+        canMap = false;
+      } else {
+        optionObj = {};
+        optionObj.values = [];
+        optionObj.name = vendorOptionMapping[vendorOptionIndex].bundleOptionName;
+        // console.log(vendorOptionMapping);
+        // console.log(vendorOptionIndex, '======================');
 
-    if (vendorOptionIndex == -1) {
-      mapStatus = false;
-      canMap = false;
+        await option.values.forEach((value) => {
+          const vendorValue = value;
+          const bndleValue = vendorOptionMapping[vendorOptionIndex].valueMapping[vendorValue];
+          if (bndleValue === undefined) {
+            mapAllVariant = false;
+          } else {
+            optionObj.values.push(bndleValue);
+          }
+        });
+        mappedOption.push(optionObj);
+      }
     } else {
       optionObj = {};
       optionObj.values = [];
-      optionObj.name = vendorOptionMapping[vendorOptionIndex].bundleOptionName;
-      // console.log(vendorOptionMapping);
-      // console.log(vendorOptionIndex, '======================');
-
+      optionObj.name = option.name;
       await option.values.forEach((value) => {
-        const vendorValue = value;
-        const bndleValue = vendorOptionMapping[vendorOptionIndex].valueMapping[vendorValue];
-        if (bndleValue === undefined) {
-          mapAllVariant = false;
-        } else {
-          optionObj.values.push(bndleValue);
-        }
+        optionObj.values.push(value);
       });
       mappedOption.push(optionObj);
     }
@@ -70,37 +82,65 @@ const mapOptionWithBndle = async (options, subCat, vendorId) => {
   return { canMap, mappedOption };
 };
 
+const mapWeightUnit = (unit) => { // map units of shopify
+  switch (unit) {
+    case 'GRAMS': return 'g';
+    case 'GRAM': return 'g';
+    case 'KILOGRAMS': return 'kg';
+    case 'KILOGRAM': return 'kg';
+    case 'OUNCES': return 'oz';
+    case 'OUNCE': return 'oz';
+    case 'POUNDS': return 'lb';
+    case 'POUND': return 'lb';
+    default: return '';
+  }
+}
+
 const mapWithBndleVariant = async (options, subCat, vendorId, vendorOptionMapping) => {
   let subCategory = subCat;
+  // console.log('===options, subCat, vendorOptionMapping==', options, subCat, vendorOptionMapping);
   const subcatArray = ['Maternity', 'Shoes'];
   if (!subcatArray.includes(subCategory)) {
     subCategory = 'Others';
   }
   let mapStatus = true;
-  const mappedOption = [];
+  let mappedOption = [];
   // let vendorOptionMapping = await Mapping.findOne({ vendorId: vendorId });
   vendorOptionMapping = vendorOptionMapping.optionMapping;
 
   for (let index = 0; index < options.length; index++) {
     const option = options[index];
-
-    const vendorOptionIndex = vendorOptionMapping.findIndex((vendorOption) => {
-      // console.log(vendorOption.vendorOptionName, option.name);
-      // console.log(vendorOption.subCategory, subCategory);
-      return vendorOption.vendorOptionName === option.name && vendorOption.subCategory === subCategory;
-    });
-    // console.log(vendorOptionIndex);
-    if (vendorOptionIndex === -1) {
-      mapStatus = false;
-    } else {
-      const optionObj = {};
-      optionObj.name = vendorOptionMapping[vendorOptionIndex].bundleOptionName;
-      const bndleValue = vendorOptionMapping[vendorOptionIndex].valueMapping[option.value];
-      if (bndleValue === undefined) {
+    if (option.name === 'Size' || option.name === 'Age') {
+      const vendorOptionIndex = vendorOptionMapping.findIndex((vendorOption) => {
+        // console.log(vendorOption.vendorOptionName, option.name);
+        // console.log(vendorOption.subCategory, subCategory);
+        return vendorOption.vendorOptionName === option.name && vendorOption.subCategory === subCategory;
+      });
+      // console.log('vendorOptionIndex', vendorOptionIndex);
+      if (vendorOptionIndex === -1) {
         mapStatus = false;
+      } else {
+        const optionObj = {};
+        optionObj.name = vendorOptionMapping[vendorOptionIndex].bundleOptionName;
+        const bndleValue = vendorOptionMapping[vendorOptionIndex].valueMapping[option.value];
+        if (bndleValue === undefined) {
+          mapStatus = false;
+        }
+        optionObj.value = bndleValue;
+        mappedOption.push(optionObj);
       }
-      optionObj.value = bndleValue;
-      mappedOption.push(optionObj);
+    } else {
+      // const optionObj = {};
+      // optionObj.name = vendorOptionMapping[vendorOptionIndex].valueMapping[option.name];
+      // const bndleValue = vendorOptionMapping[vendorOptionIndex].valueMapping[option.value];
+      // if (bndleValue === undefined) {
+      //   mapStatus = false;
+      // }
+      // optionObj.value = bndleValue;
+      // mappedOption.push(optionObj);
+      // mappedOption = options;
+      // mappedOption = JSON.parse(JSON.stringify(options));
+      mappedOption.push(option);
     }
   }
   return { mapStatus, mappedOption };
@@ -286,6 +326,19 @@ const initialProductSync = async (userId) => {
   }
 };
 
+const updateImagesIfNotUploaded = async (bndleProductId, dbImages) => {
+  const imgArr = [];
+  for (var i = 0; i < dbImages.length; i++) {
+    try {
+      dbImages[i].product_id = bndleProductId;
+      imgArr.push(await client.productImage.create(bndleProductId, dbImages[i]));
+      return imgArr;
+    } catch (e) {
+      logger.error(e);
+    }
+  }
+}
+
 // push product on status change to public
 const publishProductToShopify = async (productsId) => {
   try {
@@ -381,7 +434,7 @@ const publishProductToShopify = async (productsId) => {
           option2,
           option3,
           weight: variant.weight,
-          weight_unit: variant.weightUnit,
+          weight_unit: mapWeightUnit(variant.weightUnit),
           inventory_management: 'shopify',
         };
         // console.log(el.options);
@@ -420,6 +473,61 @@ const publishProductToShopify = async (productsId) => {
       const lifeStage = el.lifeStage; // ? el.lifeStage : 'Newborn';
       // console.log(3);
 
+        // console.log("====category==",category,productType)
+        await Category.updateOne(
+          { 'secondaryCategories.tertiaryCategories.tertiaryCategory': el.productCategory },
+          { $inc: { 'secondaryCategories.$[y].tertiaryCategories.$[xxx].count': 1 } },
+          { arrayFilters: [
+            { 'y.secondaryCategory': el.subCategory },
+            { 'xxx.tertiaryCategory': el.productCategory },
+          ]
+        }
+        );
+        const categoryData = await Category.aggregate([
+          {
+            $unwind: '$secondaryCategories',
+          },
+          {
+            $match: {
+              primaryCategory: el.category,
+              'secondaryCategories.secondaryCategory': el.subCategory,
+            },
+          },
+          {
+            $project: {
+              data: '$secondaryCategories',
+            },
+          },
+          {
+            $unwind: '$data',
+          },
+        ]);
+        const isExist = categoryData[0].data.tertiaryCategories.some((t) => t.count > 0);
+        if (isExist) {
+          await Category.updateOne(
+            {
+              secondaryCategories: { $exists: true },
+              'secondaryCategories.secondaryCategory': el.subCategory,
+              'secondaryCategories.tertiaryCategories.tertiaryCategory': el.productCategory,
+            },
+            {
+              $set: { 'secondaryCategories.$[xxx].count': 1 },
+            },
+            { arrayFilters: [{ 'xxx.secondaryCategory': el.subCategory }] }
+          );
+        } else {
+          await Category.updateOne(
+            {
+              secondaryCategories: { $exists: true },
+              'secondaryCategories.secondaryCategory': el.subCategory,
+              'secondaryCategories.tertiaryCategories.tertiaryCategory': el.productCategory,
+            },
+            {
+              $set: { 'secondaryCategories.$[xxx].count': 0 },
+            },
+            { arrayFilters: [{ 'xxx.secondaryCategory': el.subCategory }] }
+          );
+        }
       const productObj = {
         title: `${el.title}`,
         body_html: el.description,
@@ -510,6 +618,12 @@ const publishProductToShopify = async (productsId) => {
             // console.log(JSON.stringify(bndleProduct));
             // console.log(5);
             logger.info(`${bndleProduct.title} product updated`);
+
+            if(bndleProduct && bndleProduct.images.length !== mappedImages.length) {
+              logger.info('patch called - start to upload images in shopify');
+              bndleProduct.images = await updateImagesIfNotUploaded(bndleProduct.id, mappedImages) //patch - sometimes the images are not uploaded in shopify
+            }
+
             const updatedProduct = await Product.findOneAndUpdate({ _id: el._id }, { bndleId: bndleProduct.id });
             await client.productListing.create(bndleProduct.id, { product_listing: { product_id: bndleProduct.id } });
             await bndleProduct.variants.forEach(async (bndleVariant) => {
@@ -576,7 +690,7 @@ const publishProductToShopify = async (productsId) => {
             const loggerPayload = {
               title: 'Product publish',
               type: 'publish',
-              logs: productObj,
+              logs: err.message,
               level: 'error',
             };
             await LoggerService.createLogger(loggerPayload);
@@ -596,6 +710,11 @@ const publishProductToShopify = async (productsId) => {
             logger.info(`${bndleProduct.title} product created`);
             // console.log(bndleProduct.id);
             // console.log({ product_listing: { product_id: bndleProduct.id } });
+            if(bndleProduct && bndleProduct.images.length !== mappedImages.length) {
+              logger.info('patch called - start to upload images in shopify');
+              bndleProduct.images = await updateImagesIfNotUploaded(bndleProduct.id, mappedImages) //patch - sometimes the images are not uploaded in shopify
+            }
+            
             const updatedProduct = await Product.findOneAndUpdate(
               { _id: el._id },
               { bndleId: bndleProduct.id },
@@ -628,7 +747,8 @@ const publishProductToShopify = async (productsId) => {
                 ) {
                   updatedVariant = await ProductVariants.findOneAndUpdate(
                     { _id: mongoVariant.mongoVariantId },
-                    { bndleVariantId: bndleVariant.id, bndleInventoryItemId: bndleVariant.inventory_item_id }
+                    { bndleVariantId: bndleVariant.id, bndleInventoryItemId: bndleVariant.inventory_item_id },
+                    { new: true }
                   );
                   if (updatedVariant.images.length > 0) {
                     let src = updatedVariant.images[0].src;
@@ -670,6 +790,118 @@ const unpublishProductFromShopify = async (productsId) => {
 
     for (let productIndex = 0; productIndex < products.length; productIndex++) {
       const product = products[productIndex];
+
+      if (product.category !== 'Support') {
+        const categoryData = await Category.aggregate([
+          {
+            $unwind: '$secondaryCategories',
+          },
+          {
+            $match: {
+              'secondaryCategories.secondaryCategory': product.subCategory,
+            },
+          },
+          {
+            $project: {
+              data: '$secondaryCategories.tertiaryCategories',
+            },
+          },
+          {
+            $unwind: '$data',
+          },
+          {
+            $match: {
+              'data.tertiaryCategory': product.productCategory,
+            },
+          },
+        ]);
+        if (categoryData[0].data.count > 0) {
+          const count = await Product.countDocuments({
+            productCategory: product.productCategory,
+            status: 'PUBLISHED',
+            isDeleted: false,
+          });
+          await Category.findOneAndUpdate(
+            {
+              secondaryCategories: { $exists: true },
+              primaryCategory: product.category,
+              'secondaryCategories.tertiaryCategories.count': { $gt: 0 },
+              'secondaryCategories.tertiaryCategories.tertiaryCategory': product.productCategory,
+            },
+            { $set: { 'secondaryCategories.$[].tertiaryCategories.$[xxx].count': count } },
+            { arrayFilters: [{ 'xxx.tertiaryCategory': product.productCategory }] }
+          );
+        }
+        const secondaryCatData = await Category.aggregate([
+          {
+            $unwind: '$secondaryCategories',
+          },
+          {
+            $match: {
+              primaryCategory: product.category,
+              'secondaryCategories.secondaryCategory': product.subCategory,
+            },
+          },
+          {
+            $project: {
+              data: '$secondaryCategories',
+            },
+          },
+          {
+            $unwind: '$data',
+          },
+        ]);
+        const isExist = secondaryCatData[0].data.tertiaryCategories.some((t) => t.count > 0);
+        console.log("==isExist===",isExist)
+        if (isExist) {
+          await Category.updateOne(
+            {
+              secondaryCategories: { $exists: true },
+              'secondaryCategories.secondaryCategory': product.subCategory,
+              'secondaryCategories.tertiaryCategories.tertiaryCategory': product.productCategory,
+            },
+            {
+              $set: { 'secondaryCategories.$[xxx].count': 1 },
+            },
+            { arrayFilters: [{ 'xxx.secondaryCategory': product.subCategory }] }
+          );
+        } else {
+          await Category.updateOne(
+            {
+              secondaryCategories: { $exists: true },
+              'secondaryCategories.secondaryCategory': product.subCategory,
+              'secondaryCategories.tertiaryCategories.tertiaryCategory': product.productCategory,
+            },
+            {
+              $set: { 'secondaryCategories.$[xxx].count': 0 },
+            },
+            { arrayFilters: [{ 'xxx.secondaryCategory': product.subCategory }] }
+          );
+        }
+      } else {
+        secondaryCatData = await Category.aggregate([
+          {
+            $unwind: '$secondaryCategories',
+          },
+          {
+            $match: {
+              'secondaryCategories.secondaryCategory': product.subCategory,
+            },
+          },
+        ]);
+        const count = await Product.countDocuments({ subCategory: product.subCategory, status: 'PUBLISHED', isDeleted: false });
+        if (secondaryCatData[0].secondaryCategories.count > 0) {
+          await Category.updateOne(
+            {
+              secondaryCategories: { $exists: true },
+              primaryCategory: product.category,
+              'secondaryCategories.secondaryCategory': product.subCategory,
+            },
+            { $set: { 'secondaryCategories.$[xxx].count': count } },
+            { arrayFilters: [{ 'xxx.secondaryCategory': product.subCategory }] }
+          );
+        }
+      }
 
       if (product.bndleId !== '') {
         const productObj = { status: 'draft' };
@@ -740,7 +972,7 @@ const pushProductToShopify = async () => {
           option2,
           option3,
           weight: variant.weight,
-          weight_unit: variant.weightUnit,
+          weight_unit: mapWeightUnit(variant.weightUnit),
         };
         variantArray.push(variantsObj);
       }
@@ -848,12 +1080,12 @@ const createUpdateProduct = async (product, mode, userId) => {
     if (mode === 'update') {
       dbProduct = await Product.findOneAndUpdate(
         { venderProductPlatformId: productObj.venderProductPlatformId },
-        { image: productObj.images }
+        { images: productObj.images }
         // { upsert: true, new: true } // if by any chance we miss create webhook
       );
     }
     if (dbProduct) {
-      console.log(dbProduct._id);
+      console.log("db product id", dbProduct._id);
       // for create variant of product
       if (product.variants.length > 0) {
         product.variants.forEach(async (variant) => {
@@ -902,7 +1134,7 @@ const createUpdateProduct = async (product, mode, userId) => {
               inventoryQuantity: variant.inventory_quantity,
               openingQuantity: variant.old_inventory_quantity,
               weight: variant.weight,
-              weightUnit: variant.weight_unit,
+              weightUnit: mapWeightUnit(variant.weight_unit),
               images: mappedVariantImages,
               isDeleted: false,
               isDefault: false,
@@ -919,7 +1151,7 @@ const createUpdateProduct = async (product, mode, userId) => {
             variantObj = {
               // productId: dbProduct._id,
               // venderProductPlatformVariantId: variant.id,
-              // price: variant.price,
+              price: variant.price,
               // position: variant.position,
               // options: mappedOption,
               // venderSku: variant.sku,
@@ -930,7 +1162,7 @@ const createUpdateProduct = async (product, mode, userId) => {
               openingQuantity: variant.old_inventory_quantity,
               // weight: variant.weight,
               // weightUnit: variant.weight_unit,
-              // images: mappedVariantImages,
+              images: mappedVariantImages,
               // isDeleted: false,
               // isDefault: false,
               // isEnable: false,
@@ -957,8 +1189,9 @@ const createUpdateProduct = async (product, mode, userId) => {
       };
       await LoggerService.createLogger(loggerPayload);
     }
-    if (dbProduct.status === 'PUBLISHED') {
-      publishProductToShopify(dbProduct._id);
+    if (dbProduct && dbProduct.status === 'PUBLISHED') {
+        AddJobPublishProductToShopify2(dbProduct._id);
+      // publishProductToShopify(dbProduct._id);
     }
   } catch (err) {
     console.log(err);
@@ -997,7 +1230,7 @@ const updateOrderStatus = async (order, id) => {
     // console.log(order.id, '----------------');
     const data = await platform.webhooks.fulfillments(userData, order.id);
 
-    console.log(data);
+    console.log("updateOrderStatus data:", data);
     if (data[0].status === 'on_hold') {
       console.log('inside on hold');
       status = constVer.model.order.vendorOrderStatus.ON_HOLD;
@@ -1071,7 +1304,7 @@ const updateOrderStatus = async (order, id) => {
       new: true,
     });
     // console.log('++++++++++++++++++++++++');
-    // console.log(vendorOrderData);
+    console.log("vendorOrderData :",vendorOrderData);
     if (products.status !== currentStatus) {
       await updateMainOrderStatus(vendorOrderData);
     }
@@ -1197,9 +1430,22 @@ const updateMainOrderStatus = async (vendorOrderData) => {
 
 const fulfillmentUpdate = async (order) => {
   try {
-    console.log(JSON.stringify(order));
+    // console.log(JSON.stringify(order));
   } catch (err) {
     console.log(err);
+  }
+};
+
+const deleteProductById = async (bndleId) => {
+  try {
+    const result = await axios({
+      method: 'DELETE',
+      url: `https://${restifyConfig.shopifyConfig.shopName}/admin/api/2022-07/products/${bndleId}.json`,
+      headers: { 'X-Shopify-Access-Token': restifyConfig.shopifyConfig.accessToken },
+    });
+    return result;
+  } catch (error) {
+    throw new ApiError(httpStatus.BAD_REQUEST, 'something went wrong with delete product to shopify');
   }
 };
 
@@ -1212,4 +1458,5 @@ module.exports = {
   unpublishProductFromShopify,
   updateOrderStatus,
   fulfillmentUpdate,
+  deleteProductById,
 };
