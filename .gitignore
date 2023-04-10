@@ -106,3 +106,5 @@ dist
 .vscode/
 # Webstorm Editor
 .idea
+
+src/public/merchants/products.xml

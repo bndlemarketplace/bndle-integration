@@ -54,7 +54,7 @@ const orderUpdateWebhook = catchAsync(async (req, res) => {
   console.log('====================UPDATE=======================');
   res.status(200).jsend.success({ message: 'product updated successfully' });
   try {
-    // console.log(body);
+    console.log("order updated data :", body);
     const { id } = req.params;
 
     await cornServices.updateOrderStatus(body, id);
@@ -84,7 +84,7 @@ const orderCancelledWebhook = catchAsync(async (req, res) => {
   res.status(200).jsend.success({ message: 'product updated successfully' });
   try {
     const body = req.body;
-    console.log(body);
+    // console.log(body);
     const { id } = req.params;
     // await cornServices.createUpdateProduct(body, 'update', id);
     // return res.status(200).jsend.success({ message: 'product updated successfully' });
@@ -98,7 +98,7 @@ const orderFulfilledWebhook = catchAsync(async (req, res) => {
   res.status(200).jsend.success({ message: 'product updated successfully' });
   try {
     const body = req.body;
-    console.log(body);
+    // console.log(body);
     const { id } = req.params;
     // await cornServices.createUpdateProduct(body, 'update', id);
     // return res.status(200).jsend.success({ message: 'product updated successfully' });
@@ -112,7 +112,7 @@ const orderPartiallyFulfilledWebhook = catchAsync(async (req, res) => {
   res.status(200).jsend.success({ message: 'product updated successfully' });
   try {
     const body = req.body;
-    console.log(body);
+    // console.log(body);
     const { id } = req.params;
     // await cornServices.createUpdateProduct(body, 'update', id);
     // return res.status(200).jsend.success({ message: 'product updated successfully' });
