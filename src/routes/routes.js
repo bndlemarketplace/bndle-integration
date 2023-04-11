@@ -89,7 +89,7 @@ router.route('/generate').get(async (req, res) => {
   xml += '<link>https://store.google.com</link>';
   xml += '<description>This is an example of a basic RSS 2.0 document containing a single item</description>';
 
-  const batchSize = 20;
+  const batchSize = 500;
   // Call the getProductCount function
   getProductCount().then(async count => {
     let skip = 0;
@@ -161,6 +161,7 @@ router.route('/generate').get(async (req, res) => {
 
 
 
+      console.log("🚀 ~ file: routes.js:165 ~ getProductCount ~ products:", products.length)
       for (let product of products) {
 
 
