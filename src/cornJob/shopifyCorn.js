@@ -1210,7 +1210,7 @@ const updateOrderStatus = async (order, id) => {
     let products = await VendorOrder.findOne({ venderPlatformOrderId: order.id });
     if (products === null) {
       logs.push({ E: `Step 2: venderPlatformOrderId not found` })
-      logService.insertLog(order.id, {
+      LoggerService.insertLog(order.id, {
         webHookData: order,
         logType : 'ORDER_UPDATE_WEBHOOK',
         status : 'ERROR',
