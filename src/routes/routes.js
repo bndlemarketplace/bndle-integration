@@ -142,11 +142,11 @@ router.route('/generate').get(async (req, res) => {
             description: { $type: "string", $nin: ["", null] },
             bndleId: { $exists: true, $ne: "" },
             vendorName: { $type: "string", $nin: ["", null] },
-            options: {
-              $elemMatch: {
-                name: "Color"
-              }
-            },
+            // options: {
+            //   $elemMatch: {
+            //     name: "Color"
+            //   }
+            // },
             "variants.sku": { $exists: true, $nin: ["", null] }
           }
         },
