@@ -128,7 +128,7 @@ router.route('/generate').get(async (req, res) => {
             _id: 1,
             title: 1,
             description: 1,
-            vendorName: 1,
+            vendorName: { $arrayElemAt: ['$vendor.name', 0] },
             vendorId: 1,
             bndleId: 1,
             images: 1,
@@ -147,7 +147,7 @@ router.route('/generate').get(async (req, res) => {
             //     name: "Color"
             //   }
             // },
-            "variants.sku": { $exists: true, $nin: ["", null] }
+            // "variants.sku": { $exists: true, $nin: ["", null] }
           }
         },
         {
@@ -179,7 +179,7 @@ router.route('/generate').get(async (req, res) => {
         xml += "<g:age_group>newborn</g:age_group>"
         xml += "<g:gender>unisex</g:gender>"
         xml += `<g:color>Black/White/Grey/Green/Blue/Pink</g:color>`
-        xml += `<g:mpn>${product?.variants[0]?.sku}</g:mpn>`
+        xml += `<g:mpn>${(product?.variants[0] && product?.variants[0]?.sku) ? product?.variants[0]?.sku : "bndle01"}</g:mpn>`
         xml += `<g:shipping>`
         xml += `<g:country>GB</g:country>`
         xml += `<g:service>Standard</g:service>`
