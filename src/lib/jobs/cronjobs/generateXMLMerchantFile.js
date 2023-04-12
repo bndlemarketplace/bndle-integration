@@ -66,6 +66,12 @@ module.exports = async (agenda) => {
         while (skip < count) {
           let products = await Product.aggregate([
             {
+              $match: {
+                status: 'PUBLISHED',
+                isDeleted: false
+              },
+            },
+            {
               $project: {
                 _id: 1,
                 title: 1,

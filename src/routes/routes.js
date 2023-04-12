@@ -96,6 +96,12 @@ router.route('/generate').get(async (req, res) => {
     while (skip < count) {
       let products = await Product.aggregate([
         {
+          $match: {
+            status: 'PUBLISHED',
+            isDeleted: false
+          },
+        },
+        {
           $project: {
             _id: 1,
             title: 1,
