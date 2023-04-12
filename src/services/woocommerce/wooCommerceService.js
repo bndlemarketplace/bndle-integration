@@ -646,10 +646,40 @@ const createUpdateProduct = async (product, userId) => {
   }
 };
 
+const syncAllProducts = async () => {
+  const users = await User.find({
+    connectionType: 'woocommerce',
+    isDeleted : false
+  }).lean();
+
+  for (let index = 0; index < users.length; index++) {
+    const user = users[index];
+    const dbProducts = await Product.find({
+      vendorId: user._id,
+    }).lean();
+    if(user.connectionType === 'woocommerce'){
+      for (let index = 0; index < dbProducts.length; index++) {
+        try {
+          const dbProduct = dbProducts[index];
+          // console.log('==dbProduct==woocommerce', dbProduct);
+          let product = await woocommerceProduct(user.credentials, dbProduct.venderProductPlatformId);
+          product = product.data;
+          // console.log('=product=', product);
+          await createUpdateProduct( product, user._id)
+        } catch (error) {
+          console.log("🚀 ~ file: wooCommerceService.js:669 ~ syncAllProducts ~ error:", error)
+        }
+      }
+    }
+  }
+ 
+}
+
 module.exports = {
   wooCommerceProductSync,
   woocommerceProduct,
   woocommerceProductVariant,
   createUpdateProduct,
   convertRemoteOrderToPlatformOrder,
+  syncAllProducts
 };

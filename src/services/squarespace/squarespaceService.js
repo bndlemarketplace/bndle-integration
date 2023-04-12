@@ -497,6 +497,31 @@ const deleteVendorProducts = async (vendorId = '', productsId = '') => {
     }
 }
 
+const syncAllProducts = async () => {
+  const users = await User.find({
+    connectionType: 'squarespace',
+    isDeleted : false
+  }).lean();
+
+  for (let index = 0; index < users.length; index++) {
+    const user = users[index];
+    const dbProducts = await Product.find({
+      vendorId: user._id,
+    }).lean();
+
+    if (user.connectionType === 'squarespace') {
+      for (let index = 0; index < dbProducts.length; index++) {
+        try {
+          const dbProduct = dbProducts[index];
+          await updateAllVendorProducts(user._id, dbProduct.venderProductPlatformId);
+        } catch (error) {
+          console.log('🚀 ~ file: squarespaceService.js:517 ~ syncAllProducts ~ error:', error);
+        }
+      }
+    }
+  }
+};
+
 module.exports = {
     squarespaceProductSync,
     updateOrderStatus,
@@ -504,4 +529,5 @@ module.exports = {
     updateAllVendorProducts,
     deleteVendorProducts,
     registerWebhooks,
+    syncAllProducts
 }
