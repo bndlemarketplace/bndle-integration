@@ -89,12 +89,18 @@ router.route('/generate').get(async (req, res) => {
   xml += '<link>https://store.google.com</link>';
   xml += '<description>This is an example of a basic RSS 2.0 document containing a single item</description>';
 
-  const batchSize = 20;
+  const batchSize = 500;
   // Call the getProductCount function
   getProductCount().then(async count => {
     let skip = 0;
     while (skip < count) {
       let products = await Product.aggregate([
+        {
+          $match: {
+            status: 'PUBLISHED',
+            isDeleted: false
+          },
+        },
         {
           $project: {
             _id: 1,
@@ -128,7 +134,7 @@ router.route('/generate').get(async (req, res) => {
             _id: 1,
             title: 1,
             description: 1,
-            vendorName: 1,
+            vendorName: { $arrayElemAt: ['$vendor.name', 0] },
             vendorId: 1,
             bndleId: 1,
             images: 1,
@@ -147,7 +153,7 @@ router.route('/generate').get(async (req, res) => {
             //     name: "Color"
             //   }
             // },
-            "variants.sku": { $exists: true, $nin: ["", null] }
+            // "variants.sku": { $exists: true, $nin: ["", null] }
           }
         },
         {
@@ -161,6 +167,7 @@ router.route('/generate').get(async (req, res) => {
 
 
 
+      console.log("🚀 ~ file: routes.js:165 ~ getProductCount ~ products:", products.length)
       for (let product of products) {
 
 
@@ -174,11 +181,11 @@ router.route('/generate').get(async (req, res) => {
         xml += `<g:availability>in_stock</g:availability>`;
         xml += `<g:price>${product?.variants[0]?.price} GBP</g:price>`;
         xml += `<g:gtin></g:gtin>`;
-        xml += `<g:brand>${product.vendorName}</g:brand>`;
+        xml += `<g:brand>${encode(product.vendorName, { level: 'xml' })}</g:brand>`;
         xml += "<g:age_group>newborn</g:age_group>"
         xml += "<g:gender>unisex</g:gender>"
         xml += `<g:color>Black/White/Grey/Green/Blue/Pink</g:color>`
-        xml += `<g:mpn>${product?.variants[0]?.sku}</g:mpn>`
+        xml += `<g:mpn>${(product?.variants[0] && product?.variants[0]?.sku) ? product?.variants[0]?.sku : "bndle01"}</g:mpn>`
         xml += `<g:shipping>`
         xml += `<g:country>GB</g:country>`
         xml += `<g:service>Standard</g:service>`
