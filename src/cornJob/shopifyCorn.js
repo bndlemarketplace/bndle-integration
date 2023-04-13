@@ -1172,6 +1172,12 @@ const createUpdateProduct = async (product, mode, userId) => {
             //   variantObj.isDefault = true;
             //   variantObj.isEnable = true;
             // }
+
+            console.log("🚀 ~ file: shopifyCorn.js:1177 ~ product.variants.forEach ~ process.env.PRICE_NOT_TO_UPDATE_VENDORS:", process.env.PRICE_NOT_TO_UPDATE_VENDORS)
+            console.log("🚀 ~ file: shopifyCorn.js:1178 ~ product.variants.forEach ~ userId:", userId)
+            if(process.env.PRICE_NOT_TO_UPDATE_VENDORS.indexOf(userId) > -1) {
+              delete variantObj.price;
+            }
           }
 
           await ProductVariants.findOneAndUpdate({ venderProductPlatformVariantId: variant.id }, variantObj, {
