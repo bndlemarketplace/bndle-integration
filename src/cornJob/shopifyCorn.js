@@ -1174,7 +1174,7 @@ const createUpdateProduct = async (product, mode, userId) => {
             // }
             console.log("----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------")
             console.log("🚀 ~ file: shopifyCorn.js:1177 ~ product.variants.forEach ~ JSON.parse(process.env.PRICE_NOT_TO_UPDATE_VENDORS):", JSON.parse(process.env.PRICE_NOT_TO_UPDATE_VENDORS))
-            console.log("🚀 ~ file: shopifyCorn.js:1178 ~ product.variants.forEach ~ userId:", userId.toString())
+            console.log("🚀 ~ file: shopifyCorn.js:1178 ~ product.variants.forEach ~ userId:", userId.toString(), JSON.parse(process.env.PRICE_NOT_TO_UPDATE_VENDORS).indexOf(userId.toString()))
             if(JSON.parse(process.env.PRICE_NOT_TO_UPDATE_VENDORS).indexOf(userId.toString()) > -1) {
               delete variantObj.price;
             }
