@@ -18,7 +18,7 @@ const syncAllShopifyProducts = async (vendorId = '', productId = '') => {
           { credentials: 1, name: 1, connectionType: 1 }
         ).lean()
       : await User.find(
-          { connectionType: constVer.model.product.productSourceEnum[1] },
+          { _id:"63db65052a56eeb2609cbed8", connectionType: constVer.model.product.productSourceEnum[1] },
           { credentials: 1, name: 1, connectionType: 1 }
         ).lean();
 
@@ -33,37 +33,39 @@ const syncAllShopifyProducts = async (vendorId = '', productId = '') => {
           accessToken: vendor.credentials.accessToken,
           apiVersion: '2022-10',
         });
+
         (async () => {
           let params = { limit: 10 };
           do {
             const products = await tmpClient.product.list(params);
-            try {
-              // cursor = pagination.nextPageCursor;
-              // console.log('products',products, products.length);
-              if (products && products.length) {
-                let product;
-                console.log("nextPageParameters==>>", products.nextPageParameters)
-                for (let index = 0; index < products.length; index++) {
-                  product = products[index];
-                  console.log('product==>>', product.title, product.id);
-                  const dbProduct = await Product.findOne({ venderProductPlatformId: product.id }).lean();
-                  console.log("dbProduct==>>", dbProduct.title, dbProduct.status)
-                  // create product
-                  if (dbProduct && (dbProduct.status === 'PUBLISHED' || dbProduct.status === 'ENABLED')) {
-                    await cornServices.createUpdateProduct(product, 'update', vendor._id);
-                  } else {
-                    // await cornServices.createUpdateProduct(product, 'create', vendor._id);
-                  }
-                }
-              }
-            } catch (e) {
-              logger.error(e);
-              logger.error('Sync shopify product Error while running cron : ' + ((e || {}).config || {}).url);
-              logger.error(
-                'Sync shopify product Error while running cron : ' + (((e || {}).response || {}).data || {}).message
-              );
-              continue;
-            }
+            console.log('products',products, products.length);
+            // try {
+            //   // cursor = pagination.nextPageCursor;
+            //   // console.log('products',products, products.length);
+            //   if (products && products.length) {
+            //     let product;
+            //     console.log("nextPageParameters==>>", products.nextPageParameters)
+            //     for (let index = 0; index < products.length; index++) {
+            //       product = products[index];
+            //       console.log('product==>>', product.title, product.id);
+            //       const dbProduct = await Product.findOne({ venderProductPlatformId: product.id }).lean();
+            //       console.log("dbProduct==>>", dbProduct.title, dbProduct.status)
+            //       // create product
+            //       if (dbProduct && (dbProduct.status === 'PUBLISHED' || dbProduct.status === 'ENABLED')) {
+            //         await cornServices.createUpdateProduct(product, 'update', vendor._id);
+            //       } else {
+            //         // await cornServices.createUpdateProduct(product, 'create', vendor._id);
+            //       }
+            //     }
+            //   }
+            // } catch (e) {
+            //   logger.error(e);
+            //   logger.error('Sync shopify product Error while running cron : ' + ((e || {}).config || {}).url);
+            //   logger.error(
+            //     'Sync shopify product Error while running cron : ' + (((e || {}).response || {}).data || {}).message
+            //   );
+            //   continue;
+            // }
             params = products.nextPageParameters;
           } while (params !== undefined);
         })().catch(async (err) => {
