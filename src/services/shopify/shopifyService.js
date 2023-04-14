@@ -33,12 +33,13 @@ const syncAllShopifyProducts = async (vendorId = '', productId = '') => {
           accessToken: vendor.credentials.accessToken,
           apiVersion: '2022-10',
         });
-
+        const products = await tmpClient.product.list();
+        console.log('products', products.length);
         (async () => {
           let params = { limit: 10 };
           do {
-            const products = await tmpClient.product.list(params);
-            console.log('products', products.length);
+            // const products = await tmpClient.product.list(params);
+            // console.log('products', products.length);
             // try {
             //   // cursor = pagination.nextPageCursor;
             //   // console.log('products',products, products.length);
@@ -66,7 +67,7 @@ const syncAllShopifyProducts = async (vendorId = '', productId = '') => {
             //   );
             //   continue;
             // }
-            params = products.nextPageParameters;
+            // params = products.nextPageParameters;
           } while (params !== undefined);
         })().catch(async (err) => {
           console.log('===err===', err);
