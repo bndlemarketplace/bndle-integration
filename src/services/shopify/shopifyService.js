@@ -52,7 +52,7 @@ const syncAllShopifyProducts = async (vendorId = '', productId = '') => {
                   if (dbProduct && (dbProduct.status === 'PUBLISHED' || dbProduct.status === 'ENABLED')) {
                     await cornServices.createUpdateProduct(product, 'update', vendor._id);
                   } else {
-                    await cornServices.createUpdateProduct(product, 'create', vendor._id);
+                    // await cornServices.createUpdateProduct(product, 'create', vendor._id);
                   }
                 }
               }
