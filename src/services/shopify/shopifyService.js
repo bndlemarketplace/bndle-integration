@@ -22,23 +22,19 @@ const syncAllShopifyProducts = async (vendorId = '', productId = '') => {
           { credentials: 1, name: 1, connectionType: 1 }
         ).lean();
 
-    let vendor;
     for (let i = 0; i < allVendors.length; i++) {
-      vendor = allVendors[i];
-      console.log("🚀 ~ file: shopifyService.js:28 ~ syncAllShopifyProducts ~ vendor:", vendor)
+      const vendor = allVendors[i];
       console.log('=vendor email=', vendor.email);
       if (vendor.credentials) {
         const tmpClient = new Shopify({
           shopName: vendor.credentials.shopName,
           accessToken: vendor.credentials.accessToken,
           apiVersion: '2022-10',
-        });        
+        });
         (async () => {
           let params = { limit: 10 };
-
-          while(params !== undefined) {
+          do {
             const products = await tmpClient.product.list(params);
-            console.log('products', products.length);
             try {
               // cursor = pagination.nextPageCursor;
               // console.log('products',products, products.length);
@@ -48,13 +44,13 @@ const syncAllShopifyProducts = async (vendorId = '', productId = '') => {
                 for (let index = 0; index < products.length; index++) {
                   product = products[index];
                   console.log('product==>>', product.title, product.id);
-                  const dbProduct = await Product.findOne({ venderProductPlatformId: product.id }).lean();
-                  console.log("dbProduct==>>", dbProduct.title, dbProduct.status)
+                  const dbProduct = await Product.findOne({ venderProductPlatformId: product.id });
+                  // console.log("==dbProduct=",dbProduct)
                   // create product
                   if (dbProduct && (dbProduct.status === 'PUBLISHED' || dbProduct.status === 'ENABLED')) {
                     await cornServices.createUpdateProduct(product, 'update', vendor._id);
                   } else {
-                    // await cornServices.createUpdateProduct(product, 'create', vendor._id);
+                    await cornServices.createUpdateProduct(product, 'create', vendor._id);
                   }
                 }
               }
@@ -67,40 +63,7 @@ const syncAllShopifyProducts = async (vendorId = '', productId = '') => {
               continue;
             }
             params = products.nextPageParameters;
-          }
-
-          // do {
-          //   const products = await tmpClient.product.list(params);
-          //   console.log('products', products.length);
-          //   try {
-          //     // cursor = pagination.nextPageCursor;
-          //     // console.log('products',products, products.length);
-          //     if (products && products.length) {
-          //       let product;
-          //       console.log("nextPageParameters==>>", products.nextPageParameters)
-          //       for (let index = 0; index < products.length; index++) {
-          //         product = products[index];
-          //         console.log('product==>>', product.title, product.id);
-          //         const dbProduct = await Product.findOne({ venderProductPlatformId: product.id }).lean();
-          //         console.log("dbProduct==>>", dbProduct.title, dbProduct.status)
-          //         // create product
-          //         if (dbProduct && (dbProduct.status === 'PUBLISHED' || dbProduct.status === 'ENABLED')) {
-          //           await cornServices.createUpdateProduct(product, 'update', vendor._id);
-          //         } else {
-          //           // await cornServices.createUpdateProduct(product, 'create', vendor._id);
-          //         }
-          //       }
-          //     }
-          //   } catch (e) {
-          //     logger.error(e);
-          //     logger.error('Sync shopify product Error while running cron : ' + ((e || {}).config || {}).url);
-          //     logger.error(
-          //       'Sync shopify product Error while running cron : ' + (((e || {}).response || {}).data || {}).message
-          //     );
-          //     continue;
-          //   }
-          //   params = products.nextPageParameters;
-          // } while (params !== undefined);
+          } while (params !== undefined);
         })().catch(async (err) => {
           console.log('===err===', err);
           // logger.error(err);
