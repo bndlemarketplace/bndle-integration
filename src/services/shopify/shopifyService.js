@@ -30,7 +30,7 @@ const syncAllShopifyProducts = async (vendorId = '', productId = '') => {
       vendorId: user._id,
     }).lean();
 
-    if (user.connectionType === constVer.model.product.productSourceEnum[1]) {
+    if (user.connectionType === constVer.model.product.productSourceEnum[1] && user.credentials) {
 
       for (let index = 0; index < dbProducts.length; index++) {
         try {
@@ -42,21 +42,16 @@ const syncAllShopifyProducts = async (vendorId = '', productId = '') => {
             apiVersion: '2022-10',
           });
           const product = await tmpClient.product.get(dbProduct.venderProductPlatformId);
-          console.log("🚀 ~ file: shopifyService.js:45 ~ syncAllShopifyProducts ~ product:", product)
-          // const url = `https://${user.credentials.shopName}/admin/api/2022-01/products/${dbProduct.venderProductPlatformId}.json`;
-          // const response = await shopifyRequest('get', url, user.credentials.accessToken).catch((e) => {
-          //   console.log(e);
-          // });
-          // if(response && response.data && response.data.product) {
-          //   const product = response.data.product;
-          //   if (dbProduct && (dbProduct.status === 'PUBLISHED' || dbProduct.status === 'ENABLED')) {
-          //     await cornServices.createUpdateProduct(product, 'update', user._id);
-          //   } else {
-          //     await cornServices.createUpdateProduct(product, 'create', user._id);
-          //   }
-          // }
+          
+          if(product) {
+            if (dbProduct && (dbProduct.status === 'PUBLISHED' || dbProduct.status === 'ENABLED')) {
+              await cornServices.createUpdateProduct(product, 'update', user._id);
+            } else {
+              await cornServices.createUpdateProduct(product, 'create', user._id);
+            }
+          }
         } catch (error) {
-          logger.error(error);
+          logger.error("-----------", error);
         }
       }
     }
