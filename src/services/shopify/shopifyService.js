@@ -36,18 +36,25 @@ const syncAllShopifyProducts = async (vendorId = '', productId = '') => {
         try {
           const dbProduct = dbProducts[index];
           // console.log('==dbProduct===shopify', dbProduct);
-          const url = `https://${user.credentials.shopName}/admin/api/2022-01/products/${dbProduct.venderProductPlatformId}.json`;
-          const response = await shopifyRequest('get', url, user.credentials.accessToken).catch((e) => {
-            console.log(e);
+          const tmpClient = new Shopify({
+            shopName: vendor.credentials.shopName,
+            accessToken: vendor.credentials.accessToken,
+            apiVersion: '2022-10',
           });
-          if(response && response.data && response.data.product) {
-            const product = response.data.product;
-            if (dbProduct && (dbProduct.status === 'PUBLISHED' || dbProduct.status === 'ENABLED')) {
-              await cornServices.createUpdateProduct(product, 'update', user._id);
-            } else {
-              await cornServices.createUpdateProduct(product, 'create', user._id);
-            }
-          }
+          const product = await tmpClient.product.get(dbProduct.venderProductPlatformId);
+          console.log("🚀 ~ file: shopifyService.js:45 ~ syncAllShopifyProducts ~ product:", product)
+          // const url = `https://${user.credentials.shopName}/admin/api/2022-01/products/${dbProduct.venderProductPlatformId}.json`;
+          // const response = await shopifyRequest('get', url, user.credentials.accessToken).catch((e) => {
+          //   console.log(e);
+          // });
+          // if(response && response.data && response.data.product) {
+          //   const product = response.data.product;
+          //   if (dbProduct && (dbProduct.status === 'PUBLISHED' || dbProduct.status === 'ENABLED')) {
+          //     await cornServices.createUpdateProduct(product, 'update', user._id);
+          //   } else {
+          //     await cornServices.createUpdateProduct(product, 'create', user._id);
+          //   }
+          // }
         } catch (error) {
           logger.error(error);
         }
