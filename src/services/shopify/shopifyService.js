@@ -38,7 +38,7 @@ const syncAllShopifyProducts = async (vendorId = '', productId = '') => {
           let params = { limit: 10 };
           do {
             const products = await tmpClient.product.list(params);
-            console.log('products',products, products.length);
+            console.log('products', products.length);
             // try {
             //   // cursor = pagination.nextPageCursor;
             //   // console.log('products',products, products.length);
