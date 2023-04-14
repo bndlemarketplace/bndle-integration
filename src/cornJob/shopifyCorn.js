@@ -157,7 +157,7 @@ const initialProductSync = async (userId) => {
     // if (userData.connectionType !== 'shopify') {
     //   throw new ApiError(403, 'user connection type is not shopify');
     // }
-    registerAllWebhooksService(userId);
+    registerAllWebhooksService(userData);
     const tmpClient = new Shopify({
       shopName: userData.credentials.shopName,
       accessToken: userData.credentials.accessToken,
