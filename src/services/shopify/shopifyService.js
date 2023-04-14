@@ -47,7 +47,7 @@ const syncAllShopifyProducts = async (vendorId = '', productId = '') => {
                   product = products[index];
                   console.log('product==>>', product.title, product.id);
                   const dbProduct = await Product.findOne({ venderProductPlatformId: product.id });
-                  // console.log("==dbProduct=",dbProduct)
+                  console.log("dbProduct==>>", dbProduct.title, dbProduct.status)
                   // create product
                   if (dbProduct && (dbProduct.status === 'PUBLISHED' || dbProduct.status === 'ENABLED')) {
                     await cornServices.createUpdateProduct(product, 'update', vendor._id);
