@@ -46,7 +46,7 @@ const syncAllShopifyProducts = async (vendorId = '', productId = '') => {
                 for (let index = 0; index < products.length; index++) {
                   product = products[index];
                   console.log('product==>>', product.title, product.id);
-                  const dbProduct = await Product.findOne({ venderProductPlatformId: product.id });
+                  const dbProduct = await Product.findOne({ venderProductPlatformId: product.id }).lean();
                   console.log("dbProduct==>>", dbProduct.title, dbProduct.status)
                   // create product
                   if (dbProduct && (dbProduct.status === 'PUBLISHED' || dbProduct.status === 'ENABLED')) {
