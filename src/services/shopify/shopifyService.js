@@ -40,12 +40,13 @@ const syncAllShopifyProducts = async (vendorId = '', productId = '') => {
           const response = await shopifyRequest('get', url, user.credentials.accessToken).catch((e) => {
             console.log(e);
           });
-
-          const product = response.data.product;
-          if (dbProduct && (dbProduct.status === 'PUBLISHED' || dbProduct.status === 'ENABLED')) {
-            await cornServices.createUpdateProduct(product, 'update', user._id);
-          } else {
-            await cornServices.createUpdateProduct(product, 'create', user._id);
+          if(response && response.data && response.data.product) {
+            const product = response.data.product;
+            if (dbProduct && (dbProduct.status === 'PUBLISHED' || dbProduct.status === 'ENABLED')) {
+              await cornServices.createUpdateProduct(product, 'update', user._id);
+            } else {
+              await cornServices.createUpdateProduct(product, 'create', user._id);
+            }
           }
         } catch (error) {
           logger.error(error);
