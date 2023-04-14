@@ -37,8 +37,8 @@ const syncAllShopifyProducts = async (vendorId = '', productId = '') => {
           const dbProduct = dbProducts[index];
           // console.log('==dbProduct===shopify', dbProduct);
           const tmpClient = new Shopify({
-            shopName: vendor.credentials.shopName,
-            accessToken: vendor.credentials.accessToken,
+            shopName: user.credentials.shopName,
+            accessToken: user.credentials.accessToken,
             apiVersion: '2022-10',
           });
           const product = await tmpClient.product.get(dbProduct.venderProductPlatformId);
