@@ -18,13 +18,14 @@ const syncAllShopifyProducts = async (vendorId = '', productId = '') => {
           { credentials: 1, name: 1, connectionType: 1 }
         ).lean()
       : await User.find(
-          { connectionType: constVer.model.product.productSourceEnum[1] },
+          { _id: "63db65052a56eeb2609cbed8", connectionType: constVer.model.product.productSourceEnum[1] },
           { credentials: 1, name: 1, connectionType: 1 }
         ).lean();
 
     let vendor;
     for (let i = 0; i < allVendors.length; i++) {
       vendor = allVendors[i];
+      console.log("🚀 ~ file: shopifyService.js:28 ~ syncAllShopifyProducts ~ vendor:", vendor)
       console.log('=vendor email=', vendor.email);
       if (vendor.credentials) {
         const tmpClient = new Shopify({
