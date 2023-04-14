@@ -1085,7 +1085,7 @@ const createUpdateProduct = async (product, mode, userId) => {
       );
     }
     if (dbProduct) {
-      console.log("db product id", dbProduct._id);
+      console.log("4 db product id", dbProduct._id);
       // for create variant of product
       if (product.variants.length > 0) {
         product.variants.forEach(async (variant) => {
@@ -1172,7 +1172,7 @@ const createUpdateProduct = async (product, mode, userId) => {
             //   variantObj.isDefault = true;
             //   variantObj.isEnable = true;
             // }
-            console.log("----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------")
+            console.log("5 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------")
             
             if(JSON.parse(process.env.PRICE_NOT_TO_UPDATE_VENDORS).indexOf(userId.toString()) > -1) {
               console.log("🚀 ~ file: shopifyCorn.js:1177 ~ product.variants.forEach ~ JSON.parse(process.env.PRICE_NOT_TO_UPDATE_VENDORS):", JSON.parse(process.env.PRICE_NOT_TO_UPDATE_VENDORS), product.title)
@@ -1181,7 +1181,7 @@ const createUpdateProduct = async (product, mode, userId) => {
             }
           }
           
-          console.log("🚀 ~ file: shopifyCorn.js:1182 ~ product.variants.forEach ~ variantObj:", variantObj)
+          console.log("6 🚀 ~ file: shopifyCorn.js:1182 ~ product.variants.forEach ~ variantObj:", variantObj)
           await ProductVariants.findOneAndUpdate({ venderProductPlatformVariantId: variant.id }, variantObj, {
             upsert: true,
             new: true,
