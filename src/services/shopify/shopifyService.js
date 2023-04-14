@@ -21,9 +21,10 @@ const syncAllShopifyProducts = async (vendorId = '', productId = '') => {
           { connectionType: constVer.model.product.productSourceEnum[1] },
           { credentials: 1, name: 1, connectionType: 1 }
         ).lean();
-
+        
+    let vendor;    
     for (let i = 0; i < allVendors.length; i++) {
-      const vendor = allVendors[i];
+      vendor = allVendors[i];
       console.log('1 =  vendor email=', vendor);
       if (vendor.credentials) {
         const tmpClient = new Shopify({
