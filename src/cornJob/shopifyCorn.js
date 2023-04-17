@@ -157,7 +157,7 @@ const initialProductSync = async (userId) => {
     // if (userData.connectionType !== 'shopify') {
     //   throw new ApiError(403, 'user connection type is not shopify');
     // }
-    registerAllWebhooksService(userId);
+    registerAllWebhooksService(userData);
     const tmpClient = new Shopify({
       shopName: userData.credentials.shopName,
       accessToken: userData.credentials.accessToken,
@@ -1085,7 +1085,7 @@ const createUpdateProduct = async (product, mode, userId) => {
       );
     }
     if (dbProduct) {
-      console.log("db product id", dbProduct._id);
+      console.log("4 db product id", dbProduct._id);
       // for create variant of product
       if (product.variants.length > 0) {
         product.variants.forEach(async (variant) => {
@@ -1172,8 +1172,15 @@ const createUpdateProduct = async (product, mode, userId) => {
             //   variantObj.isDefault = true;
             //   variantObj.isEnable = true;
             // }
+            
+            if(JSON.parse(process.env.PRICE_NOT_TO_UPDATE_VENDORS).indexOf(userId.toString()) > -1) {
+              console.log("5 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------")
+              console.log("🚀 ~ file: shopifyCorn.js:1177 ~ product.variants.forEach ~ JSON.parse(process.env.PRICE_NOT_TO_UPDATE_VENDORS):", JSON.parse(process.env.PRICE_NOT_TO_UPDATE_VENDORS), product.title)
+              console.log("🚀 ~ file: shopifyCorn.js:1178 ~ product.variants.forEach ~ userId:", userId.toString(), JSON.parse(process.env.PRICE_NOT_TO_UPDATE_VENDORS).indexOf(userId.toString()))
+              delete variantObj.price;
+            }
           }
-
+          
           await ProductVariants.findOneAndUpdate({ venderProductPlatformVariantId: variant.id }, variantObj, {
             upsert: true,
             new: true,

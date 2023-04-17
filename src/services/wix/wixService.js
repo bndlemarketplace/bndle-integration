@@ -509,11 +509,38 @@ const cancelOrderStatus = async (order) => {
   }
 };
 
+const syncAllProducts = async () => {
+  const users = await User.find({
+    connectionType: 'wix',
+    isDeleted : false
+  }).lean();
+
+  for (let index = 0; index < users.length; index++) {
+    const user = users[index];
+    const dbProducts = await Product.find({
+      vendorId: user._id,
+    }).lean();
+    if (user.connectionType === 'wix') {
+      for (let index = 0; index < dbProducts.length; index++) {
+        try {
+          const dbProduct = dbProducts[index];
+          // console.log("==dbProduct===wix",dbProduct)
+          await createUpdateProduct(dbProduct.venderProductPlatformId, 'update', user._id);
+        } catch (error) {
+          console.log("🚀 ~ file: wixService.js:529 ~ syncAllProducts ~ error:", error)
+        }
+      }
+    }
+  }
+}
+
+
 module.exports = {
   wixProductSync,
   createUpdateProduct,
   updateOrderStatus,
   cancelOrderStatus,
+  syncAllProducts
 };
 
 const updateMainOrderStatus = async (vendorOrderData) => {

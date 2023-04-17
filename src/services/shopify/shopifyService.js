@@ -22,10 +22,10 @@ const syncAllShopifyProducts = async (vendorId = '', productId = '') => {
           { credentials: 1, name: 1, connectionType: 1 }
         ).lean();
 
-    let vendor;
+    // let vendor;    
     for (let i = 0; i < allVendors.length; i++) {
-      vendor = allVendors[i];
-      console.log('=vendor email=', vendor.email);
+      const vendor = allVendors[i];
+      console.log('1 =  vendor email=', vendor);
       if (vendor.credentials) {
         const tmpClient = new Shopify({
           shopName: vendor.credentials.shopName,
@@ -41,10 +41,10 @@ const syncAllShopifyProducts = async (vendorId = '', productId = '') => {
               // console.log('products',products, products.length);
               if (products && products.length) {
                 let product;
-                console.log("nextPageParameters==>>", products.nextPageParameters)
+                console.log("2 nextPageParameters==>>", products.nextPageParameters)
                 for (let index = 0; index < products.length; index++) {
                   product = products[index];
-                  console.log('product==>>', product.title, product.id);
+                  console.log(' 3 product==>>', product.title, product.id);
                   const dbProduct = await Product.findOne({ venderProductPlatformId: product.id });
                   // console.log("==dbProduct=",dbProduct)
                   // create product

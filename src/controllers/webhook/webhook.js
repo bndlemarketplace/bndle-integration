@@ -26,6 +26,7 @@ const createProductWebhook = catchAsync(async (req, res) => {
 
 const updateProductWebhook = catchAsync(async (req, res) => {
   console.log('==================updateProduct===================');
+  console.log("--------------", JSON.stringify(req.body))
   res.status(200).jsend.success({ message: 'product updated successfully' });
   try {
     const body = req.body;
