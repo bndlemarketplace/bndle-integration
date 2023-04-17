@@ -25,7 +25,7 @@ const syncAllShopifyProducts = async (vendorId = '', productId = '') => {
     // let vendor;    
     for (let i = 0; i < allVendors.length; i++) {
       const vendor = allVendors[i];
-      console.log('1 =  vendor email=', vendor);
+      console.log('start =========================================================> 1 =  vendor email=', vendor);
       if (vendor.credentials) {
         const tmpClient = new Shopify({
           shopName: vendor.credentials.shopName,
@@ -86,6 +86,7 @@ const syncAllShopifyProducts = async (vendorId = '', productId = '') => {
 
         // const products = response && response.data.products;
       }
+      console.log('end =========================================================> 1 =  vendor email=', vendor);
     }
   } catch (e) {
     logger.error(e);
