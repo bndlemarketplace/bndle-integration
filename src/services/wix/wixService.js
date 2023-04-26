@@ -621,8 +621,10 @@ async function productVariantSync(product, accessToken, dbProduct, mode) {
       if (keys.length > 0) {
         for (let index = 0; index < keys.length; index++) {
           const keysEl = keys[index];
+          console.log("🚀 ~ file: wixService.js:624 ~ productVariantSync ~ keysEl:", keysEl)
           for (let index = 0; index < productOptions.length; index++) {
             const optionEl = productOptions[index];
+            console.log("🚀 ~ file: wixService.js:627 ~ productVariantSync ~ optionEl:", optionEl)
             let isColor = false;
             if (optionEl.name === 'Color') {
               isColor = true;
@@ -660,6 +662,7 @@ async function productVariantSync(product, accessToken, dbProduct, mode) {
                   let title = '';
                   keys.forEach((keyName, index) => {
                     const keyValue = variantEl.choices[keyName];
+                    console.log("🚀 ~ file: wixService.js:665 ~ keys.forEach ~ keyValue:", keyValue)
                     if (index === 0) {
                       title = keyValue;
                     } else {
@@ -713,6 +716,7 @@ async function productVariantSync(product, accessToken, dbProduct, mode) {
             }
           }
         }
+        console.log("🚀 ~ file: wixService.js:717 ~ productVariantSync ~ variantObj:", variantObj)
         await ProductVariants.findOneAndUpdate({ venderProductPlatformVariantId: variantEl.id }, variantObj, {
           upsert: true,
           new: true,
