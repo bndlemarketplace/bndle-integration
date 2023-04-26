@@ -685,7 +685,7 @@ async function productVariantSync(product, accessToken, dbProduct, mode) {
                       price: variantEl.variant.priceData.price,
                       // options: mappedOption,
                       // sku: variantEl.variant.sku,
-                      // title: title,
+                      title: title,
                       // taxable: true,
                       // weight: variantEl.variant.weight,
                       inventoryQuantity: variantEl.stock && variantEl.stock.quantity,
