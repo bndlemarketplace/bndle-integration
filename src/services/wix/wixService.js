@@ -290,7 +290,7 @@ const createUpdateProduct = async (productId, mode, userId) => {
         };
         if (mode === 'update') {
           delete productObj.status;
-          delete productObj.venderProductPlatformId;
+          delete productObj.description;
           delete productObj.productSource;
           delete productObj.vendorId;
           delete productObj.vendorName;
