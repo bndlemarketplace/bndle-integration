@@ -297,6 +297,7 @@ const createUpdateProduct = async (productId, mode, userId) => {
           delete productObj.productType;
           delete productObj.isDeleted;
         }
+        console.log("🚀 ~ file: wixService.js:300 ~ createUpdateProduct ~ productObj:", productObj)
         // create product
         dbProduct = await Product.findOneAndUpdate(
           { venderProductPlatformId: productObj.venderProductPlatformId },
