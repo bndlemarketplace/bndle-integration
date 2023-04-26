@@ -230,7 +230,7 @@ const createUpdateProduct = async (productId, mode, userId) => {
       product = product.product;
       // console.log(product)
       // for map image data to fit in our db
-      if (mode === 'create') {
+      
         const mappedImages = [];
         if (product.media.items.length > 0) {
           for (let index = 0; index < product.media.items.length; index++) {
@@ -275,7 +275,6 @@ const createUpdateProduct = async (productId, mode, userId) => {
             return optionObj;
           });
         }
-
         const productObj = {
           venderProductPlatformId: product.id,
           productSource: constVer.model.product.productSourceEnum[2],
@@ -291,6 +290,12 @@ const createUpdateProduct = async (productId, mode, userId) => {
         };
         if (mode === 'update') {
           delete productObj.status;
+          delete productObj.venderProductPlatformId;
+          delete productObj.productSource;
+          delete productObj.vendorId;
+          delete productObj.vendorName;
+          delete productObj.productType;
+          delete productObj.isDeleted;
         }
         // create product
         dbProduct = await Product.findOneAndUpdate(
@@ -301,9 +306,7 @@ const createUpdateProduct = async (productId, mode, userId) => {
             new: true,
           }
         );
-      } else {
-        dbProduct = await Product.findOne({ venderProductPlatformId: productId });
-      }
+      
       // for create variant of product
       if (dbProduct) {
         // console.log(dbProduct._id);
