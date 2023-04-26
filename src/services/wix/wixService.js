@@ -604,7 +604,7 @@ async function productVariantSync(product, accessToken, dbProduct, mode) {
   try {
     // console.log(product);
     let variant = product.variants;
-    console.log("🚀 ~ file: wixService.js:607 ~ productVariantSync ~ variant:", variant)
+    // console.log("🚀 ~ file: wixService.js:607 ~ productVariantSync ~ variant:", variant)
     let variantObj;
 
     // console.log(variant);
@@ -617,7 +617,7 @@ async function productVariantSync(product, accessToken, dbProduct, mode) {
       const variantImg = [];
       const keys = Object.keys(variantEl.choices);
       // console.log(variantEl.choices);
-      // console.log(keys);
+      console.log(keys);
       if (keys.length > 0) {
         for (let index = 0; index < keys.length; index++) {
           const keysEl = keys[index];

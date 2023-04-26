@@ -138,7 +138,7 @@ const createProductWebhookWix = catchAsync(async (req, res) => {
 
 const updateProductWebhookWix = catchAsync(async (req, res) => {
   try {
-    logger.info(`===========update webhook===================`);
+    logger.info(`===========update webhook===================`, JSON.stringify(req.body));
     res.status(200).jsend.success({});
     const { id } = req.params;
 
