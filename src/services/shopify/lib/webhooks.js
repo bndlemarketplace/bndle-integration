@@ -35,7 +35,7 @@ class Webhooks {
       const url = `https://${vendor.credentials.shopName}/admin/api/${apiVersion}/webhooks.json`;
       const response = await shopifyRequest('post', url, vendor.credentials.accessToken, {}, data).catch((e) => {
         // console.log(e);
-        // console.log(e.response.data.errors);
+        console.log(e.response.data.errors);
       });
 
       if (response) {
