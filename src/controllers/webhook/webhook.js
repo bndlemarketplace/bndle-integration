@@ -189,6 +189,7 @@ const deleteProductWebhookWix = catchAsync(async (req, res) => {
 
 const updateProductWebhookWooCommerce = catchAsync(async (req, res) => {
   logger.info(`===========update webhook woocommerce===================`);
+  console.log(JSON.stringify(req.body))
   res.status(200).jsend.success({});
   const { product } = req.body;
   const { id } = req.params;
