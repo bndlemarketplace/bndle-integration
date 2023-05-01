@@ -161,6 +161,10 @@ const convertRemoteProductToPlatformProduct = async (products, userData) => {
         options: mappedOptions,
         isDeleted: false,
       };
+      const currentDbProduct = await Product.findOne({ venderProductPlatformId: product.id });
+      if(currentDbProduct) {
+        delete platformProduct.description
+      }
       // create product
       const dbProduct = await Product.findOneAndUpdate(
         { venderProductPlatformId: platformProduct.venderProductPlatformId },
@@ -619,6 +623,10 @@ const createUpdateProduct = async (product, userId) => {
 
     if (currentDbProduct && currentDbProduct.status !== 'IMPORTED') {
       delete productObj.status;
+    }
+
+    if(currentDbProduct) {
+      delete productObj.description;
     }
 
     // create product
