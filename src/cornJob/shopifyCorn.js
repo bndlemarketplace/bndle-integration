@@ -615,10 +615,9 @@ const publishProductToShopify = async (productsId) => {
         client.product
           .update(el.bndleId, updateProductObj)
           .then(async (bndleProduct) => {
-            // console.log(JSON.stringify(bndleProduct));
             // console.log(5);
             logger.info(`${bndleProduct.title} product updated`);
-
+            console.log(JSON.stringify(bndleProduct));
             if(bndleProduct && bndleProduct.images.length !== mappedImages.length) {
               logger.info('patch called - start to upload images in shopify');
               bndleProduct.images = await updateImagesIfNotUploaded(bndleProduct.id, mappedImages) //patch - sometimes the images are not uploaded in shopify
