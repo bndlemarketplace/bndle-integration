@@ -1204,7 +1204,7 @@ const createUpdateProduct = async (product, mode, userId) => {
   }
 };
 
-const orderCancel = async (products, userData) => {
+const orderCancel = async (products) => {
   const allProducts = []
   for (let index = 0; index < products.product.length; index++) {
     const element = products.product[index];
@@ -1227,6 +1227,19 @@ const orderCancel = async (products, userData) => {
   return
 };
 
+const cancelOrderStatus = async (order, id) => {
+  try {
+    let orderData = await VendorOrder.findOne({ venderPlatformOrderId: order.id }).populate({
+      path: 'product.productRef',
+    }).populate({
+      path: 'customerId',
+    }).lean();
+    await orderCancel(orderData)
+  } catch (error) {
+    console.log(error);
+  }
+}
+
 const updateOrderStatus = async (order, id) => {
   let logs = [];
   try {
@@ -1237,11 +1250,6 @@ const updateOrderStatus = async (order, id) => {
     let status;
     let currentStatus;
     let products = await VendorOrder.findOne({ venderPlatformOrderId: order.id })
-    let orderData = await VendorOrder.findOne({ venderPlatformOrderId: order.id }).populate({
-      path: 'product.productRef',
-    }).populate({
-      path: 'customerId',
-    }).lean();
     if (products === null) {
       logs.push({ E: `Step 2: venderPlatformOrderId not found` })
       LoggerService.insertLog(order.id, {
@@ -1295,7 +1303,6 @@ const updateOrderStatus = async (order, id) => {
       products.cancelReason = cancelReason;
       products.status = status;
       products.cancelAt = order.cancelled_at;
-      await orderCancel(orderData, userData)
     }
     products.status = status;
     if (order.refunds.length !== 0) {
@@ -1494,4 +1501,5 @@ module.exports = {
   updateOrderStatus,
   fulfillmentUpdate,
   deleteProductById,
+  cancelOrderStatus
 };

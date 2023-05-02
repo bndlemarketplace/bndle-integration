@@ -87,6 +87,7 @@ const orderCancelledWebhook = catchAsync(async (req, res) => {
     const body = req.body;
     console.log(JSON.stringify(body));
     const { id } = req.params;
+    await cornServices.cancelOrderStatus(body, id);
     // await cornServices.createUpdateProduct(body, 'update', id);
     // return res.status(200).jsend.success({ message: 'product updated successfully' });
   } catch (error) {
