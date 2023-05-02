@@ -1210,7 +1210,7 @@ const orderCancel = async (products, userData) => {
     const element = products.product[index];
     let discount = 0;
       if(products.discount && products.discount.percentage) {
-        discount = ((element.productTotal || 0) * 100)/products.discount.percentage
+        discount = (((element.productTotal || 0) * 100)/products.discount.percentage)/100
       }
     allProducts.push({
       name: element.productRef.title,
@@ -1241,7 +1241,7 @@ const updateOrderStatus = async (order, id) => {
       path: 'product.productRef',
     }).populate({
       path: 'customerId',
-    });
+    }).lean();
     if (products === null) {
       logs.push({ E: `Step 2: venderPlatformOrderId not found` })
       LoggerService.insertLog(order.id, {
