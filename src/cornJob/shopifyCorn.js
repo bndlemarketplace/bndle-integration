@@ -1204,6 +1204,29 @@ const createUpdateProduct = async (product, mode, userId) => {
   }
 };
 
+const orderCancel = async (products, userData) => {
+  const allProducts = []
+  for (let index = 0; index < products.product.length; index++) {
+    const element = products.product[index];
+    let discount = 0;
+      if(products.discount && products.discount.percentage) {
+        discount = ((element.productTotal || 0) * 100)/products.discount.percentage
+      }
+    allProducts.push({
+      name: element.productRef.title,
+      quantity: element.quantity,
+      total: ((element.productTotal || 0) - discount).toFixed(2),
+    });
+  }
+  await emailService.orderCancel(
+    products.customerId.email,
+    `${products.billingAddress.firstName} ${products.billingAddress.lastName}`,
+    products.orderCode,
+    allProducts
+  );
+  return
+};
+
 const updateOrderStatus = async (order, id) => {
   let logs = [];
   try {
@@ -1213,7 +1236,12 @@ const updateOrderStatus = async (order, id) => {
     // get product by product id
     let status;
     let currentStatus;
-    let products = await VendorOrder.findOne({ venderPlatformOrderId: order.id });
+    let products = await VendorOrder.findOne({ venderPlatformOrderId: order.id })
+    let orderData = await VendorOrder.findOne({ venderPlatformOrderId: order.id }).populate({
+      path: 'product.productRef',
+    }).populate({
+      path: 'customerId',
+    });
     if (products === null) {
       logs.push({ E: `Step 2: venderPlatformOrderId not found` })
       LoggerService.insertLog(order.id, {
@@ -1267,6 +1295,7 @@ const updateOrderStatus = async (order, id) => {
       products.cancelReason = cancelReason;
       products.status = status;
       products.cancelAt = order.cancelled_at;
+      await orderCancel(orderData, userData)
     }
     products.status = status;
     if (order.refunds.length !== 0) {

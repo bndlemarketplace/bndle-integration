@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Karla:wght@200;300;400;600;700;800&family=League+Spartan:wght@100;200;300;400;500;600;700;800;900&display=swap"
+        rel="stylesheet" />
+    <title>Cancel Email</title>
+</head>
+<style>
+    body {
+        background-color: #ffffff;
+        font-family: "Karla";
+        font-weight: 600;
+    }
+
+    .container {
+        width: 700px;
+        height: 100%;
+        margin-left: auto;
+        margin-right: auto;
+    }
+
+    .text {
+        margin: 0;
+    }
+
+    table {
+        margin-top: 10px;
+        border-collapse: collapse;
+        width: 100%;
+    }
+
+    .titles {
+        border-top: 1px solid black;
+        border-bottom: 1px solid black;
+        height: 30px;
+        background-color: #a1c29c;
+    }
+
+    .productsInfo {
+        text-align: center;
+        height: 40px;
+        border-bottom: 1px solid black;
+    }
+</style>
+
+<body style="font-family:Karla;">
+    <div style=" width: 700px;height: 100%;margin-left: auto;margin-right: auto;">
+        <p>Dear {{name}}</p>
+        <p>
+            We are writing to let you know that order {{orderCode}} has been cancelled. Your
+            payment has been refunded.
+        </p>
+
+        <div>
+            <div>
+                <p><b>Refunded Items:</b></p>
+            </div>
+            <table style="margin-top: 10px;border-collapse: collapse;width: 100%;">
+                <tr class="titles" style="border-top: 1px solid black;border-bottom: 1px solid black;height: 30px;background-color: #a1c29c;">
+                    <th>ITEM</th>
+                    <th>QUANTITY</th>
+                    <th>PRICE</th>
+                </tr>
+                {{#each products}}
+                <tr class="productsInfo" style="text-align: center;height: 40px;border-bottom: 1px solid black;">
+                    <td>{{name}}</td>
+                    <td>{{quantity}}</td>
+                    <td>£{{total}}</td>
+                </tr>
+                {{/each}}
+            </table> ​
+        </div>
+        <p>A member of our team will be in contact with you soon.</p>
+        <p>
+            If you have any queries in the meantime, please contact
+            support@bndle.com and we will be happy to assist you.
+        </p>
+        <p class="text" style=" margin: 0;">Thank You</p>
+        <p class="text" style=" margin: 0;">The bndle team</p>
+    </div>
+</body>
+
+</html>
