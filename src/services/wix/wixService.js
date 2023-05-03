@@ -230,7 +230,7 @@ const createUpdateProduct = async (productId, mode, userId) => {
       product = product.product;
       // console.log(product)
       // for map image data to fit in our db
-      if (mode === 'create') {
+      
         const mappedImages = [];
         if (product.media.items.length > 0) {
           for (let index = 0; index < product.media.items.length; index++) {
@@ -275,7 +275,6 @@ const createUpdateProduct = async (productId, mode, userId) => {
             return optionObj;
           });
         }
-
         const productObj = {
           venderProductPlatformId: product.id,
           productSource: constVer.model.product.productSourceEnum[2],
@@ -291,7 +290,14 @@ const createUpdateProduct = async (productId, mode, userId) => {
         };
         if (mode === 'update') {
           delete productObj.status;
+          delete productObj.description;
+          delete productObj.productSource;
+          delete productObj.vendorId;
+          delete productObj.vendorName;
+          delete productObj.productType;
+          delete productObj.isDeleted;
         }
+        console.log("🚀 ~ file: wixService.js:300 ~ createUpdateProduct ~ productObj:", productObj)
         // create product
         dbProduct = await Product.findOneAndUpdate(
           { venderProductPlatformId: productObj.venderProductPlatformId },
@@ -301,9 +307,7 @@ const createUpdateProduct = async (productId, mode, userId) => {
             new: true,
           }
         );
-      } else {
-        dbProduct = await Product.findOne({ venderProductPlatformId: productId });
-      }
+      
       // for create variant of product
       if (dbProduct) {
         // console.log(dbProduct._id);
@@ -600,6 +604,7 @@ async function productVariantSync(product, accessToken, dbProduct, mode) {
   try {
     // console.log(product);
     let variant = product.variants;
+    // console.log("🚀 ~ file: wixService.js:607 ~ productVariantSync ~ variant:", variant)
     let variantObj;
 
     // console.log(variant);
@@ -612,12 +617,14 @@ async function productVariantSync(product, accessToken, dbProduct, mode) {
       const variantImg = [];
       const keys = Object.keys(variantEl.choices);
       // console.log(variantEl.choices);
-      // console.log(keys);
+      console.log(keys);
       if (keys.length > 0) {
         for (let index = 0; index < keys.length; index++) {
           const keysEl = keys[index];
+          console.log("🚀 ~ file: wixService.js:624 ~ productVariantSync ~ keysEl:", keysEl)
           for (let index = 0; index < productOptions.length; index++) {
             const optionEl = productOptions[index];
+            console.log("🚀 ~ file: wixService.js:627 ~ productVariantSync ~ optionEl:", optionEl)
             let isColor = false;
             if (optionEl.name === 'Color') {
               isColor = true;
@@ -655,6 +662,7 @@ async function productVariantSync(product, accessToken, dbProduct, mode) {
                   let title = '';
                   keys.forEach((keyName, index) => {
                     const keyValue = variantEl.choices[keyName];
+                    console.log("🚀 ~ file: wixService.js:665 ~ keys.forEach ~ keyValue:", keyValue)
                     if (index === 0) {
                       title = keyValue;
                     } else {
@@ -677,7 +685,7 @@ async function productVariantSync(product, accessToken, dbProduct, mode) {
                       price: variantEl.variant.priceData.price,
                       // options: mappedOption,
                       // sku: variantEl.variant.sku,
-                      // title: title,
+                      title: title,
                       // taxable: true,
                       // weight: variantEl.variant.weight,
                       inventoryQuantity: variantEl.stock && variantEl.stock.quantity,
@@ -708,6 +716,7 @@ async function productVariantSync(product, accessToken, dbProduct, mode) {
             }
           }
         }
+        console.log("🚀 ~ file: wixService.js:717 ~ productVariantSync ~ variantObj:", variantObj)
         await ProductVariants.findOneAndUpdate({ venderProductPlatformVariantId: variantEl.id }, variantObj, {
           upsert: true,
           new: true,

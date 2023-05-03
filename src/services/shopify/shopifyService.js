@@ -96,7 +96,7 @@ const syncAllShopifyProducts = async (vendorId = '', productId = '') => {
     const loggerPayload = {
       title: 'Update vendor product(catch)',
       type: 'publish',
-      logs: err.message,
+      logs: e.message,
       level: 'error',
     };
     await LoggerService.createLogger(loggerPayload);

@@ -108,7 +108,18 @@ const orderShippedEmail = async (to, order, trackingId = '', trackingUrl = '') =
   return res;
 };
 
+const orderCancel = async (to, name, orderCode, products) => {
+  const source = fs.readFileSync(`${__dirname}/../emailTemplate/orderCancel.hbs`, { encoding: 'utf8', flag: 'r' });
+  const template = handlebars.compile(source);
+  const data = { name, orderCode, products };
+  const result = template(data);
+  const _subject = 'Your bndle order has been cancelled';
+  const res = await sendEmail(to, _subject, result);
+  return res;
+};
+
 module.exports = {
   sendEmail,
   orderShippedEmail,
+  orderCancel
 };

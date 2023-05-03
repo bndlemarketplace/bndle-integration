@@ -161,6 +161,10 @@ const convertRemoteProductToPlatformProduct = async (products, userData) => {
         options: mappedOptions,
         isDeleted: false,
       };
+      const currentDbProduct = await Product.findOne({ venderProductPlatformId: product.id });
+      if(currentDbProduct) {
+        delete platformProduct.description
+      }
       // create product
       const dbProduct = await Product.findOneAndUpdate(
         { venderProductPlatformId: platformProduct.venderProductPlatformId },
@@ -364,11 +368,13 @@ const convertRemoteProductVariantToPlatformProductVariant = async (product, user
     }).then(async (response) => {
       // handle success
       let variants = response.data;
+      console.log("🚀 ~ file: wooCommerceService.js:367 ~ convertRemoteProductVariantToPlatformProductVariant ~ variants:", variants)
       let platformProductVariant;
 
       if (variants.length > 0) {
         for (let index = 0; index < variants.length; index++) {
           const variant = variants[index];
+          console.log("🚀 ~ file: wooCommerceService.js:372 ~ convertRemoteProductVariantToPlatformProductVariant ~ variant:", variant)
           let mappedOptions = [];
           if (variant.attributes.length > 0) {
             for (let index = 0; index < variant.attributes.length; index++) {
@@ -460,6 +466,7 @@ const convertRemoteProductVariantToPlatformProductVariant = async (product, user
               productId: dbProduct._id,
               venderProductPlatformVariantId: variant.id,
               price: variant.price ? variant.price : 0,
+              title: title,
               // options: mappedOptions,
               // sku: variant.sku ? variant.sku : '',
               // title: dbProduct.title,
@@ -616,6 +623,10 @@ const createUpdateProduct = async (product, userId) => {
 
     if (currentDbProduct && currentDbProduct.status !== 'IMPORTED') {
       delete productObj.status;
+    }
+
+    if(currentDbProduct) {
+      delete productObj.description;
     }
 
     // create product

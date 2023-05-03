@@ -85,8 +85,9 @@ const orderCancelledWebhook = catchAsync(async (req, res) => {
   res.status(200).jsend.success({ message: 'product updated successfully' });
   try {
     const body = req.body;
-    // console.log(body);
+    console.log(JSON.stringify(body));
     const { id } = req.params;
+    await cornServices.cancelOrderStatus(body, id);
     // await cornServices.createUpdateProduct(body, 'update', id);
     // return res.status(200).jsend.success({ message: 'product updated successfully' });
   } catch (error) {
@@ -138,7 +139,7 @@ const createProductWebhookWix = catchAsync(async (req, res) => {
 
 const updateProductWebhookWix = catchAsync(async (req, res) => {
   try {
-    logger.info(`===========update webhook===================`);
+    logger.info(`===========update webhook===================`, JSON.stringify(req.body));
     res.status(200).jsend.success({});
     const { id } = req.params;
 
@@ -188,7 +189,8 @@ const deleteProductWebhookWix = catchAsync(async (req, res) => {
 // });
 
 const updateProductWebhookWooCommerce = catchAsync(async (req, res) => {
-  logger.info(`===========update webhook woocommerce===================`);
+  logger.info(`===========update webhook woocommerce 1===================`);
+  console.log("---------------",JSON.stringify(req.body))
   res.status(200).jsend.success({});
   const { product } = req.body;
   const { id } = req.params;

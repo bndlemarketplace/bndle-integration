@@ -615,10 +615,9 @@ const publishProductToShopify = async (productsId) => {
         client.product
           .update(el.bndleId, updateProductObj)
           .then(async (bndleProduct) => {
-            // console.log(JSON.stringify(bndleProduct));
             // console.log(5);
             logger.info(`${bndleProduct.title} product updated`);
-
+            console.log(JSON.stringify(bndleProduct));
             if(bndleProduct && bndleProduct.images.length !== mappedImages.length) {
               logger.info('patch called - start to upload images in shopify');
               bndleProduct.images = await updateImagesIfNotUploaded(bndleProduct.id, mappedImages) //patch - sometimes the images are not uploaded in shopify
@@ -1205,6 +1204,42 @@ const createUpdateProduct = async (product, mode, userId) => {
   }
 };
 
+const orderCancel = async (products) => {
+  const allProducts = []
+  for (let index = 0; index < products.product.length; index++) {
+    const element = products.product[index];
+    let discount = 0;
+      if(products.discount && products.discount.percentage) {
+        discount = (((element.productTotal || 0) * 100)/products.discount.percentage)/100
+      }
+    allProducts.push({
+      name: element.productRef.title,
+      quantity: element.quantity,
+      total: ((element.productTotal || 0) - discount).toFixed(2),
+    });
+  }
+  await emailService.orderCancel(
+    products.customerId.email,
+    `${products.billingAddress.firstName} ${products.billingAddress.lastName}`,
+    products.orderCode,
+    allProducts
+  );
+  return
+};
+
+const cancelOrderStatus = async (order, id) => {
+  try {
+    let orderData = await VendorOrder.findOne({ venderPlatformOrderId: order.id }).populate({
+      path: 'product.productRef',
+    }).populate({
+      path: 'customerId',
+    }).lean();
+    await orderCancel(orderData)
+  } catch (error) {
+    console.log(error);
+  }
+}
+
 const updateOrderStatus = async (order, id) => {
   let logs = [];
   try {
@@ -1214,7 +1249,7 @@ const updateOrderStatus = async (order, id) => {
     // get product by product id
     let status;
     let currentStatus;
-    let products = await VendorOrder.findOne({ venderPlatformOrderId: order.id });
+    let products = await VendorOrder.findOne({ venderPlatformOrderId: order.id })
     if (products === null) {
       logs.push({ E: `Step 2: venderPlatformOrderId not found` })
       LoggerService.insertLog(order.id, {
@@ -1466,4 +1501,5 @@ module.exports = {
   updateOrderStatus,
   fulfillmentUpdate,
   deleteProductById,
+  cancelOrderStatus
 };
