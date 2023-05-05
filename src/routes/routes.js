@@ -181,6 +181,7 @@ router.route('/generate').get(async (req, res) => {
         xml += `<g:availability>in_stock</g:availability>`;
         xml += `<g:price>${product?.variants[0]?.price} GBP</g:price>`;
         xml += `<g:gtin></g:gtin>`;
+        xml += `<g:identifier_exists>no</g:identifier_exists>`;
         xml += `<g:brand>${encode(product.vendorName, { level: 'xml' })}</g:brand>`;
         xml += "<g:age_group>newborn</g:age_group>"
         xml += "<g:gender>unisex</g:gender>"
