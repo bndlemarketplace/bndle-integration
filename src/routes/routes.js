@@ -186,9 +186,8 @@ router.route('/generate').get(async (req, res) => {
         xml += `<g:color>Black/White/Grey/Green/Blue/Pink</g:color>`
         if(product?.variants[0] && product?.variants[0]?.sku) {
           xml += `<g:mpn>${product?.variants[0]?.sku}</g:mpn>`
-        } else {
-          xml += `<g:identifier_exists>false</g:identifier_exists>`;
         }
+        xml += `<g:identifier_exists>no</g:identifier_exists>`;
         xml += `<g:shipping>`
         xml += `<g:country>GB</g:country>`
         xml += `<g:service>Standard</g:service>`
