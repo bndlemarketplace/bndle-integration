@@ -186,8 +186,10 @@ router.route('/generate').get(async (req, res) => {
         if(product?.variants[0] && product?.variants[0]?.sku) {
           xml += `<g:mpn>${(product?.variants[0] && product?.variants[0]?.sku) ? product?.variants[0]?.sku : "bndle01"}</g:mpn>`
           xml += `<g:brand>${encode(product.vendorName, { level: 'xml' })}</g:brand>`;
+          xml += `<g:identifier_exists>yes</g:identifier_exists>`;
+        } else {
+          xml += `<g:identifier_exists>no</g:identifier_exists>`;
         }
-        xml += `<g:identifier_exists>no</g:identifier_exists>`;
         xml += `<g:shipping>`
         xml += `<g:country>GB</g:country>`
         xml += `<g:service>Standard</g:service>`
