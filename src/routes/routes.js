@@ -180,13 +180,15 @@ router.route('/generate').get(async (req, res) => {
         xml += `<g:condition>new</g:condition>`;
         xml += `<g:availability>in_stock</g:availability>`;
         xml += `<g:price>${product?.variants[0]?.price} GBP</g:price>`;
-        xml += `<g:gtin></g:gtin>`;
-        xml += `<g:identifier_exists>no</g:identifier_exists>`;
         xml += `<g:brand>${encode(product.vendorName, { level: 'xml' })}</g:brand>`;
         xml += "<g:age_group>newborn</g:age_group>"
         xml += "<g:gender>unisex</g:gender>"
         xml += `<g:color>Black/White/Grey/Green/Blue/Pink</g:color>`
-        xml += `<g:mpn>${(product?.variants[0] && product?.variants[0]?.sku) ? product?.variants[0]?.sku : "bndle01"}</g:mpn>`
+        if(product?.variants[0] && product?.variants[0]?.sku) {
+          xml += `<g:mpn>${product?.variants[0]?.sku}</g:mpn>`
+        } else {
+          xml += `<g:identifier_exists>false</g:identifier_exists>`;
+        }
         xml += `<g:shipping>`
         xml += `<g:country>GB</g:country>`
         xml += `<g:service>Standard</g:service>`
