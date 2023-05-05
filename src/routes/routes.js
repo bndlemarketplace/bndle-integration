@@ -183,12 +183,15 @@ router.route('/generate').get(async (req, res) => {
         xml += "<g:age_group>newborn</g:age_group>"
         xml += "<g:gender>unisex</g:gender>"
         xml += `<g:color>Black/White/Grey/Green/Blue/Pink</g:color>`
-        if(product?.variants[0] && product?.variants[0]?.sku && product.vendorName) {
-          xml += `<g:brand>${encode(product.vendorName, { level: 'xml' })}</g:brand>`;
-          xml += `<g:mpn>${product?.variants[0]?.sku}</g:mpn>`
-        } else {
-          xml += `<g:identifier_exists>no</g:identifier_exists>`;
-        }
+        xml += `<g:mpn>${(product?.variants[0] && product?.variants[0]?.sku) ? product?.variants[0]?.sku : "bndle01"}</g:mpn>`
+        xml += `<g:brand>${encode(product.vendorName, { level: 'xml' })}</g:brand>`;
+        // if(!(product?.variants[0] && product?.variants[0]?.sku && product.vendorName)) {
+        //   xml += `<g:brand>${encode(product.vendorName, { level: 'xml' })}</g:brand>`;
+        //   xml += `<g:mpn>${product?.variants[0]?.sku}</g:mpn>`
+        // } else {
+        //   xml += `<g:identifier_exists>no</g:identifier_exists>`;
+        // }
+        xml += `<g:identifier_exists>no</g:identifier_exists>`;
        
         xml += `<g:shipping>`
         xml += `<g:country>GB</g:country>`
