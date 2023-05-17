@@ -1375,7 +1375,7 @@ const updateOrderStatus = async (order, id) => {
     LoggerService.insertLog(order.id, {
       webHookData: order,
       logType : 'ORDER_UPDATE_WEBHOOK',
-      status : `ERROR ${JSON.stringify(err)}`,
+      status : `ERROR ${JSON.stringify(err.message)}`,
     }, logs);
     console.log(err);
   }
