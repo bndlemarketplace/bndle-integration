@@ -226,6 +226,7 @@ const wixOrderCancel = catchAsync(async (req, res) => {
   parsedData = JSON.parse(parsedData.data);
   logger.info(`===========wix Order Cancel parsedData=================== ${parsedData}`);
   await wixService.cancelOrderStatus(parsedData.order);
+  await cornServices.cancelOrderStatus(parsedData.order);
 });
 
 const squarespaceOrderWebhook = catchAsync(async (req, res) => {
@@ -238,6 +239,8 @@ const squarespaceOrderWebhook = catchAsync(async (req, res) => {
 
   if (parsedData && parsedData.data && parsedData.data.update === 'CANCELED') {
     await squarespaceService.cancelOrderStatus(parsedData.data);
+    parsedData.data.id = parsedData.data.orderId
+    await cornServices.cancelOrderStatus(parsedData.data);
   } else {
     await squarespaceService.updateOrderStatus(parsedData.data);
   }

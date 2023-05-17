@@ -269,6 +269,10 @@ const convertRemoteOrderToPlatformOrder = async (order) => {
       // products.cancelReason = cancelReason;
       products.status = status;
       products.cancelAt = order.date_modified;
+      if(!products.isCancel) {
+        await cornServices.cancelOrderStatus(order);
+      }
+      products.isCancel = true;
     }
     products.status = status;
 
