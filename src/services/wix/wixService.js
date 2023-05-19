@@ -322,7 +322,7 @@ const createUpdateProduct = async (productId, mode, userId) => {
           vendorName: userData.name,
           productType: product.productType,
           status: 'IMPORTED',
-          images: mappedImages,
+          images: [...currentDbProduct.images, ...mappedImages],
           options: mappedOptions,
           isDeleted: false,
         };
