@@ -139,7 +139,7 @@ const createProductWebhookWix = catchAsync(async (req, res) => {
 
 const updateProductWebhookWix = catchAsync(async (req, res) => {
   try {
-    logger.info(`===========update webhook===================`, JSON.stringify(req.body));
+    logger.info(`===========update webhook wix ===================`);
     res.status(200).jsend.success({});
     const { id } = req.params;
 
@@ -147,6 +147,7 @@ const updateProductWebhookWix = catchAsync(async (req, res) => {
     const data = jwt.decode(req.body);
     let parsedData = JSON.parse(data.data);
     parsedData = JSON.parse(parsedData.data);
+    console.log("---------", JSON.stringify(parsedData))
     await wixService.createUpdateProduct(parsedData.productId, 'update', id);
   } catch (err) {
     console.log(err);
