@@ -1008,24 +1008,36 @@ const pushProductToShopify = async () => {
 const createUpdateProduct = async (product, mode, userId) => {
   try {
     const userData = await User.findOne({ _id: userId });
-    // const currentDbProduct = await Product.findOne({ venderProductPlatformId: product.id });
+    const currentDbProduct = await Product.findOne({ venderProductPlatformId: product.id }).lean();
     // for map image data to fit in our db
     const mappedImages = [];
     if (product.images.length > 0) {
-      await product.images.forEach(async (img) => {
+      product.images.forEach(async (img) => {
         if (img.variant_ids.length === 0) {
           // const Products3url = await s3upload.downloadImgAndUploadToS3(img.src);
-          const imgObj = {
-            bndleImageId: img.id,
-            bndleProductId: img.product_id,
-            position: img.position,
-            productPlatformSrc: img.src,
-            src: img.src,
-          };
-          mappedImages.push(imgObj);
+          let oldImg = currentDbProduct.images.findIndex((i) => i.src === img.src);
+          if(oldImg === -1) {
+            const imgObj = {
+              bndleImageId: img.id,
+              bndleProductId: img.product_id,
+              position: img.position,
+              productPlatformSrc: img.src,
+              src: img.src,
+            };
+            mappedImages.push(imgObj);
+          }
         }
       });
     }
+
+    for (let index = 0; index < currentDbProduct.images.length; index++) {
+      const element = currentDbProduct.images[index];
+      let oldImg = product.images.findIndex((i) => i.src === element.src);
+      if(oldImg === -1) {
+        currentDbProduct.images.splice(index, 1)
+      }
+    }
+
     // for map option data to fit in our db
     let isDefaultVariant = false;
     let mappedOptions = await product.options.map((option) => {
@@ -1054,7 +1066,7 @@ const createUpdateProduct = async (product, mode, userId) => {
       productType: product.product_type,
       status: constVer.model.product.STATUS[5],
       tags: product.tags.split(', '),
-      images: mappedImages,
+      images: [...currentDbProduct.images, ...mappedImages],
       options: mappedOptions,
       // isDeleted: false, // for deleted product stay deleted
     };
