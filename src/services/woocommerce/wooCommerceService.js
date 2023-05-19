@@ -586,9 +586,7 @@ const createUpdateProduct = async (product, userId) => {
       // });
 
       product.images.forEach(async (img) => {
-        if (img.variant_ids.length === 0) {
-          // const Products3url = await s3upload.downloadImgAndUploadToS3(img.src);
-          let oldImg = currentDbProduct.images.findIndex((i) => i.src === img.src);
+        let oldImg = currentDbProduct.images.findIndex((i) => i.src === img.src);
           if(oldImg === -1) {
             const imgObj = {
               bndleImageId: img.id,
@@ -598,7 +596,6 @@ const createUpdateProduct = async (product, userId) => {
             };
             mappedImages.push(imgObj);
           }
-        }
       });
   
       
