@@ -232,6 +232,18 @@ const createUpdateProduct = async (productId, mode, userId) => {
       // for map image data to fit in our db
       
         const mappedImages = [];
+        if(product.media && product.media.mainMedia && product.media.mainMedia.image && product.media.mainMedia.image.url) {
+          let oldImg = currentDbProduct.images.findIndex((i) => i.src === product.media.mainMedia.image.url);
+          if(oldImg === -1) {
+            const imgObj = {
+              bndleProductId: product.id,
+              productPlatformSrc: product.media.mainMedia.image.url,
+              src: product.media.mainMedia.image.url,
+            };
+            mappedImages.push(imgObj);
+          }
+        }
+
         if (product.media.items.length > 0) {
           for (let index = 0; index < product.media.items.length; index++) {
             const img = product.media.items[index];
@@ -248,6 +260,36 @@ const createUpdateProduct = async (productId, mode, userId) => {
             }
           }
         }
+
+        // if (product.media.items.length > 0) {
+        //   for (let index = 0; index < product.media.items.length; index++) {
+        //     const img = product.media.items[index];
+        //     if (img.image) {
+        //       const imgObj = {
+        //         bndleProductId: product.id,
+        //         productPlatformSrc: img.image ? img.image.url : '',
+        //       };
+
+        //       let imageCheck;
+        //       if (currentDbProduct) {
+        //         imageCheck = currentDbProduct.images.find(async (currentDbImage) =>
+        //           currentDbImage.ProductPlatformSrc === img.image ? img.image.url : ''
+        //         );
+        //         if (imageCheck === undefined) {
+        //           // const s3url = await s3upload.downloadImgAndUploadToS3(img.image ? img.image.url : '');
+        //           imgObj.src = img.image ? img.image.url : '';
+        //         } else {
+        //           imgObj.src = imageCheck.src;
+        //         }
+        //       } else {
+        //         // const s3url = await s3upload.downloadImgAndUploadToS3(img.image ? img.image.url : '');
+        //         imgObj.src = img.image ? img.image.url : '';
+        //       }
+        //       mappedImages.push(imgObj);
+        //     }
+        //   }
+        // }
+
 
         for (let index = 0; index < currentDbProduct.images.length; index++) {
           const element = currentDbProduct.images[index];
