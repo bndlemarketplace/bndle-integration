@@ -249,7 +249,8 @@ const createUpdateProduct = async (productId, mode, userId) => {
             const img = product.media.items[index];
             if (img.image) {
               let oldImg = currentDbProduct.images.findIndex((i) => i.src === img.image.url);
-              if(oldImg === -1) {
+              let mppedImg = mappedImages.findIndex((i) => i.src === img.image.url);
+              if(oldImg === -1 && mppedImg === -1) {
                 const imgObj = {
                   bndleProductId: product.id,
                   productPlatformSrc: img.image.url,
