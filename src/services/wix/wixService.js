@@ -352,11 +352,11 @@ const createUpdateProduct = async (productId, mode, userId) => {
       if (dbProduct) {
         // console.log(dbProduct._id);
         await productVariantSync(product, accessToken, dbProduct, mode);
-
+        console.log("🚀 ~ file: wixService.js:369 ~ createUpdateProduct ~ mappedImages:", mappedImages)
         const productVariantUpdates = ProductVariants.find({ productId: dbProduct._id}).lean();
+        console.log("🚀 ~ file: wixService.js:357 ~ createUpdateProduct ~ productVariantUpdates:", productVariantUpdates)
         for (let index = 0; index < productVariantUpdates.length; index++) {
           const element = productVariantUpdates[index];
-          
           for (let i = 0; i < element.images.length; i++) {
             const image = element.images[i];
             const isImageAvailable = mappedImages.findIndex((m) => m.src === image.src)
@@ -365,6 +365,7 @@ const createUpdateProduct = async (productId, mode, userId) => {
             }
           }
         }
+        console.log("🚀 ~ file: wixService.js:369 ~ createUpdateProduct ~ mappedImages:", mappedImages)
         await Product.findOneAndUpdate({ _id: dbProduct._id}, { $set: { images: mappedImages}})
       } else {
         const loggerPayload = {
