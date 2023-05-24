@@ -250,11 +250,12 @@ const createUpdateProduct = async (productId, mode, userId) => {
             if (img.image) {
               let oldImg = currentDbProduct.images.findIndex((i) => i.src === img.image.url);
               let mppedImg = mappedImages.findIndex((i) => i.src === img.image.url);
-              if(oldImg === -1 && mppedImg === -1) {
+              if(mppedImg === -1) {
                 const imgObj = {
                   bndleProductId: product.id,
                   productPlatformSrc: img.image.url,
                   src: img.image.url,
+                  position: (oldImg > -1) ? currentDbProduct.images[oldImg].position : product.media.items.length + 1,
                 };
                 mappedImages.push(imgObj);
               }
@@ -292,13 +293,13 @@ const createUpdateProduct = async (productId, mode, userId) => {
         // }
 
 
-        for (let index = 0; index < currentDbProduct.images.length; index++) {
-          const element = currentDbProduct.images[index];
-          let oldImg = product.media.items.findIndex((i) => i.image && i.image.url === element.src);
-          if(oldImg === -1) {
-            currentDbProduct.images.splice(index, 1)
-          }
-        }
+        // for (let index = 0; index < currentDbProduct.images.length; index++) {
+        //   const element = currentDbProduct.images[index];
+        //   let oldImg = product.media.items.findIndex((i) => i.image && i.image.url === element.src);
+        //   if(oldImg === -1) {
+        //     currentDbProduct.images.splice(index, 1)
+        //   }
+        // }
 
         let mappedOptions = [];
         if (product.productOptions.length > 0) {
@@ -323,7 +324,7 @@ const createUpdateProduct = async (productId, mode, userId) => {
           vendorName: userData.name,
           productType: product.productType,
           status: 'IMPORTED',
-          images: [...currentDbProduct.images, ...mappedImages],
+          images: mappedImages,
           options: mappedOptions,
           isDeleted: false,
         };
@@ -351,6 +352,20 @@ const createUpdateProduct = async (productId, mode, userId) => {
       if (dbProduct) {
         // console.log(dbProduct._id);
         await productVariantSync(product, accessToken, dbProduct, mode);
+
+        const productVariantUpdates = ProductVariants.find({ productId: dbProduct._id}).lean();
+        for (let index = 0; index < productVariantUpdates.length; index++) {
+          const element = productVariantUpdates[index];
+          
+          for (let i = 0; i < element.images.length; i++) {
+            const image = element.images[i];
+            const isImageAvailable = mappedImages.findIndex((m) => m.src === image.src)
+            if(isImageAvailable > -1) {
+              mappedImages.splice(isImageAvailable, 1)
+            }
+          }
+        }
+        await Product.findOneAndUpdate({ _id: dbProduct._id}, { $set: { images: mappedImages}})
       } else {
         const loggerPayload = {
           title: 'Product publish',
