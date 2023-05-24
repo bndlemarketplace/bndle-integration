@@ -18,6 +18,7 @@ const product = require('../models/product.model');
 const platformServiceFactory = require('../services/fulfilmentPlatformServiceFactory');
 const { registerAllWebhooksService } = require('../services/vendor/vendorService');
 const { AddJobPublishProductToShopify2 } = require('../lib/jobs/queue/addToQueue');
+var _ = require('lodash');
 
 const locationId = restifyConfig.locationId;
 
@@ -1016,11 +1017,12 @@ const createUpdateProduct = async (product, mode, userId) => {
         if (img.variant_ids.length === 0) {
           // const Products3url = await s3upload.downloadImgAndUploadToS3(img.src);
           let oldImg = currentDbProduct.images.findIndex((i) => i.src === img.src);
-          if(oldImg === -1) {
+          let mappedImagesIndex = mappedImages.findIndex((i) => i.src === img.src);
+          if(mappedImagesIndex === -1) {
             const imgObj = {
               bndleImageId: img.id,
               bndleProductId: img.product_id,
-              position: img.position,
+              position: (oldImg > -1) ? currentDbProduct.images[oldImg].position : img.position,
               productPlatformSrc: img.src,
               src: img.src,
             };
@@ -1030,13 +1032,13 @@ const createUpdateProduct = async (product, mode, userId) => {
       });
     }
 
-    for (let index = 0; index < currentDbProduct.images.length; index++) {
-      const element = currentDbProduct.images[index];
-      let oldImg = product.images.findIndex((i) => i.src === element.src);
-      if(oldImg === -1) {
-        currentDbProduct.images.splice(index, 1)
-      }
-    }
+    // for (let index = 0; index < currentDbProduct.images.length; index++) {
+    //   const element = currentDbProduct.images[index];
+    //   let oldImg = product.images.findIndex((i) => i.src === element.src);
+    //   if(oldImg === -1) {
+    //     currentDbProduct.images.splice(index, 1)
+    //   }
+    // }
 
     // for map option data to fit in our db
     let isDefaultVariant = false;
@@ -1066,7 +1068,7 @@ const createUpdateProduct = async (product, mode, userId) => {
       productType: product.product_type,
       status: constVer.model.product.STATUS[5],
       tags: product.tags.split(', '),
-      images: [...currentDbProduct.images, ...mappedImages],
+      images: mappedImages,
       options: mappedOptions,
       // isDeleted: false, // for deleted product stay deleted
     };
