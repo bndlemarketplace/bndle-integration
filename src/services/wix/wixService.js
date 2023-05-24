@@ -353,7 +353,7 @@ const createUpdateProduct = async (productId, mode, userId) => {
         // console.log(dbProduct._id);
         await productVariantSync(product, accessToken, dbProduct, mode);
         console.log("🚀 ~ file: wixService.js:369 ~ createUpdateProduct ~ mappedImages:", mappedImages)
-        const productVariantUpdates = ProductVariants.find({ productId: dbProduct._id}).lean();
+        const productVariantUpdates = await ProductVariants.find({ productId: dbProduct._id}).lean();
         console.log("🚀 ~ file: wixService.js:357 ~ createUpdateProduct ~ productVariantUpdates:", productVariantUpdates)
         for (let index = 0; index < productVariantUpdates.length; index++) {
           const element = productVariantUpdates[index];
