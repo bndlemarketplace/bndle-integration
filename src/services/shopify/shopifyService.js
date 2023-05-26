@@ -7,6 +7,8 @@ const cornServices = require('../../cornJob/shopifyCorn');
 const shopifyRequest = require('../../services/shopify/lib/request');
 const LoggerService = require('../../services/logger.service');
 const { Product, User } = require('../../models');
+const axios = require('axios');
+const excelJS = require('exceljs');
 
 // 63e9dd5b4229fe58b04f117c
 const syncAllShopifyProducts = async (vendorId = '', productId = '') => {
@@ -105,6 +107,60 @@ const syncAllShopifyProducts = async (vendorId = '', productId = '') => {
   }
 };
 
+const getPermissionFile = async () => {
+  const permissions = ["write_assigned_fulfillment_orders", "read_assigned_fulfillment_orders", "write_merchant_managed_fulfillment_orders", "read_merchant_managed_fulfillment_orders", "write_orders", "read_orders", "write_products", "read_products", "write_order_edits", "read_order_edits", "write_returns", "read_returns", "read_inventory", "write_inventory"]
+  const users = await User.find({ connectionType: "shopify", isDeleted: false }).lean();
+  for (let index = 0; index < users.length; index++) {
+    const element = users[index];
+    const userPermissions = {}
+    if(element.credentials) {
+      try {
+        const response = await axios({
+          method: 'get',
+          url: `https://${element.credentials.apiKey}:${element.credentials.accessToken}@${element.credentials.shopName}/admin/oauth/access_scopes.json`,
+        });
+        for (let i = 0; i < permissions.length; i++) {
+          const permission = permissions[i];
+          const isAvailable = response.data.access_scopes.find((a) => a.handle === permission);
+          if(isAvailable) {
+            userPermissions[permission] = "Yes"
+          } else {
+            userPermissions[permission] = "No"
+          }
+        }
+      } catch (error) {
+        try {
+          const response = await axios({
+            method: 'get',
+            url: `https://${element.credentials.apiKey}:${element.credentials.accessToken}@${element.credentials.shopName}/admin/oauth/access_scopes.json`,
+            headers: {
+              Authorization: `Bearer`,
+            },
+          });
+          for (let i = 0; i < permissions.length; i++) {
+            const permission = permissions[i];
+            const isAvailable = response.data.access_scopes.find((a) => a.handle === permission);
+            if(isAvailable) {
+              userPermissions[permission] = "Yes"
+            } else {
+              userPermissions[permission] = "No"
+            }
+          }
+        } catch (error) {
+          if(error.response && error.response.data === 401) {
+            userPermissions.comments = "Not Allow to check"
+          } else {
+            userPermissions.comments = (error.response && error.response.data) ? error.response.data.errors : ""
+          }          
+        }
+      }
+      await User.findOneAndUpdate({ _id: element._id }, { $set: { permissions: userPermissions}})
+    }
+  }
+}
+
+
 module.exports = {
   syncAllShopifyProducts,
+  getPermissionFile
 };

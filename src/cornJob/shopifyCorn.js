@@ -19,6 +19,11 @@ const platformServiceFactory = require('../services/fulfilmentPlatformServiceFac
 const { registerAllWebhooksService } = require('../services/vendor/vendorService');
 const { AddJobPublishProductToShopify2 } = require('../lib/jobs/queue/addToQueue');
 var _ = require('lodash');
+const algoliasearch = require('algoliasearch');
+const { convert } = require("html-to-text")
+
+const algoliaClient = algoliasearch('59P69NKTFA', '7965ec017c4d1d1af7547e40edfcd1e9');
+const index = algoliaClient.initIndex('Product');
 
 const locationId = restifyConfig.locationId;
 
@@ -591,7 +596,11 @@ const publishProductToShopify = async (productsId) => {
       let bndleProduct;
       // if product is already pushed to bndle store
       // console.log(JSON.stringify(productObj));
+
+      
+
       if (el.bndleId !== '') {
+        await updateProductAlgolia(productObj, category, el.bndleId)
         console.log(' // if product is already pushed to bndle store');
         // if (productObj.options.length === 0) {
         // }
@@ -714,7 +723,7 @@ const publishProductToShopify = async (productsId) => {
               logger.info('patch called - start to upload images in shopify');
               bndleProduct.images = await updateImagesIfNotUploaded(bndleProduct.id, mappedImages) //patch - sometimes the images are not uploaded in shopify
             }
-            
+            await updateProductAlgolia(productObj, category, bndleProduct.id)
             const updatedProduct = await Product.findOneAndUpdate(
               { _id: el._id },
               { bndleId: bndleProduct.id },
@@ -1504,6 +1513,30 @@ const deleteProductById = async (bndleId) => {
     throw new ApiError(httpStatus.BAD_REQUEST, 'something went wrong with delete product to shopify');
   }
 };
+
+const updateProductAlgolia = async (data, category, bndleId) => {
+  
+  const record = [
+    {
+      name: data.title,
+      description: convert(data.body_html, {}),
+      brand: data.vendor,
+      categories: category,
+      price: data.variants[0].price,
+      image: data.images[0].src,
+      popularity: 21449,
+      objectID: bndleId,
+    },
+  ];
+
+  try {
+    const data = await index.saveObjects(record);
+    // const data = await index.deleteObject('myID1')
+    console.log('🚀 ~ file: algolia.js:21 ~ init ~ data:', data);
+  } catch (error) {
+    console.log('🚀 ~ file: algolia.js:24 ~ init ~ error:', error);
+  }
+}
 
 module.exports = {
   // connectToShopify,
