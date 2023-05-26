@@ -1025,7 +1025,7 @@ const createUpdateProduct = async (product, mode, userId) => {
       product.images.forEach(async (img) => {
         if (img.variant_ids.length === 0) {
           // const Products3url = await s3upload.downloadImgAndUploadToS3(img.src);
-          let oldImg = currentDbProduct.images.findIndex((i) => i.bndleImageId === img.bndleImageId);
+          let oldImg = currentDbProduct.images.findIndex((i) => i.bndleImageId === img.id);
           let mappedImagesIndex = mappedImages.findIndex((i) => i.src === img.src);
           if(mappedImagesIndex === -1) {
             const imgObj = {
