@@ -558,7 +558,7 @@ const createUpdateProduct = async (product, userId) => {
 
   if (userData) {
     // for map image data to fit in our db
-    const mappedImages = [];
+    let mappedImages = [];
     if (product.images.length > 0) {
       // await product.images.forEach((img) => {
       //   const imgObj = {
@@ -586,16 +586,29 @@ const createUpdateProduct = async (product, userId) => {
       // });
 
       product.images.forEach(async (img) => {
-        let oldImg = currentDbProduct.images.findIndex((i) => i.src === img.src);
-          if(oldImg === -1) {
-            const imgObj = {
-              bndleImageId: img.id,
-              bndleProductId: img.product_id,
-              productPlatformSrc: img.src,
-              src: img.src,
-            };
-            mappedImages.push(imgObj);
-          }
+        let oldImg = currentDbProduct.images.findIndex((i) => i.bndleImageId == img.id);
+        let mappedImagesIndex = mappedImages.findIndex((i) => i.src === img.src);
+        if(mappedImagesIndex === -1) {
+          const imgObj = {
+            bndleImageId: img.id,
+            bndleProductId: img.product_id,
+            position: (oldImg > -1) ? currentDbProduct.images[oldImg].position : product.images.length + 1,
+            productPlatformSrc: img.src,
+            src: img.src,
+          };
+          mappedImages.push(imgObj);
+        }
+
+        // let oldImg = currentDbProduct.images.findIndex((i) => i.src === img.src);
+        //   if(oldImg === -1) {
+        //     const imgObj = {
+        //       bndleImageId: img.id,
+        //       bndleProductId: img.product_id,
+        //       productPlatformSrc: img.src,
+        //       src: img.src,
+        //     };
+        //     mappedImages.push(imgObj);
+        //   }
       });
   
       
@@ -635,6 +648,7 @@ const createUpdateProduct = async (product, userId) => {
         return optionObj;
       });
     }
+    mappedImages = mappedImages.sort((a,b) => (a.position > b.position) ? 1 : ((b.position > a.position) ? -1 : 0))
 
     const productObj = {
       venderProductPlatformId: product.id,

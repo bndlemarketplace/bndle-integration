@@ -231,7 +231,7 @@ const createUpdateProduct = async (productId, mode, userId) => {
       // console.log(product)
       // for map image data to fit in our db
       
-        const mappedImages = [];
+        let mappedImages = [];
         if(product.media && product.media.mainMedia && product.media.mainMedia.image && product.media.mainMedia.image.url) {
           let oldImg = currentDbProduct.images.findIndex((i) => i.src === product.media.mainMedia.image.url);
           if(oldImg === -1) {
@@ -365,6 +365,8 @@ const createUpdateProduct = async (productId, mode, userId) => {
             }
           }
         }
+        mappedImages = mappedImages.sort((a,b) => (a.position > b.position) ? 1 : ((b.position > a.position) ? -1 : 0))
+
         console.log("🚀 ~ file: wixService.js:369 ~ createUpdateProduct ~ mappedImages:", mappedImages)
         await Product.findOneAndUpdate({ _id: dbProduct._id}, { $set: { images: mappedImages}})
       } else {
