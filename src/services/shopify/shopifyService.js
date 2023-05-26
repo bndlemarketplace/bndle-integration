@@ -51,9 +51,18 @@ const syncAllShopifyProducts = async (vendorId = '', productId = '') => {
                 // console.log("==dbProduct=",dbProduct)
                 // create product
                 if (dbProduct && (dbProduct.status === 'PUBLISHED' || dbProduct.status === 'ENABLED')) {
-                  await cornServices.createUpdateProduct(product, 'update', vendor._id);
+                  try {
+                    await cornServices.createUpdateProduct(product, 'update', vendor._id);
+                  } catch (error) {
+                    console.log("🚀 ~ file: shopifyService.js:57 ~ syncAllShopifyProducts ~ error:", error)
+                  }
                 } else {
-                  await cornServices.createUpdateProduct(product, 'create', vendor._id);
+                  try {
+                    await cornServices.createUpdateProduct(product, 'create', vendor._id);
+                  } catch (error) {
+                    console.log("🚀 ~ file: shopifyService.js:64 ~ syncAllShopifyProducts ~ error:", error)
+                    
+                  }
                 }
               }
             }

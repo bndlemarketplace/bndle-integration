@@ -22,7 +22,7 @@ var _ = require('lodash');
 const algoliasearch = require('algoliasearch');
 const { convert } = require("html-to-text")
 
-const algoliaClient = algoliasearch('59P69NKTFA', '7965ec017c4d1d1af7547e40edfcd1e9');
+const algoliaClient = algoliasearch(process.env.ALGOLIA_APPLICATION_ID, process.env.ALGOLIA_KEY);
 const index = algoliaClient.initIndex('Product');
 
 const locationId = restifyConfig.locationId;
@@ -1515,7 +1515,7 @@ const deleteProductById = async (bndleId) => {
 };
 
 const updateProductAlgolia = async (data, category, bndleId) => {
-  
+
   const record = [
     {
       name: data.title,
