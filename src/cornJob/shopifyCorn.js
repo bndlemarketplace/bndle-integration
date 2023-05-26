@@ -1081,7 +1081,7 @@ const createUpdateProduct = async (product, mode, userId) => {
       options: mappedOptions,
       // isDeleted: false, // for deleted product stay deleted
     };
-    console.log("🚀 ~ file: shopifyCorn.js:1084 ~ createUpdateProduct ~ productObj.mappedImages:", productObj.mappedImages)
+    console.log("🚀 ~ file: shopifyCorn.js:1084 ~ createUpdateProduct ~ productObj.mappedImages:", mappedImages)
     if (productObj.tags == '') {
       delete productObj.tags == [];
     }
