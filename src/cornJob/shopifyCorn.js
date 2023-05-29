@@ -600,7 +600,7 @@ const publishProductToShopify = async (productsId) => {
       
 
       if (el.bndleId !== '') {
-        await updateProductAlgolia(productObj, category, el.bndleId)
+        // await updateProductAlgolia(productObj, category, el.bndleId)
         console.log(' // if product is already pushed to bndle store');
         // if (productObj.options.length === 0) {
         // }
@@ -723,7 +723,7 @@ const publishProductToShopify = async (productsId) => {
               logger.info('patch called - start to upload images in shopify');
               bndleProduct.images = await updateImagesIfNotUploaded(bndleProduct.id, mappedImages) //patch - sometimes the images are not uploaded in shopify
             }
-            await updateProductAlgolia(productObj, category, bndleProduct.id)
+            // await updateProductAlgolia(productObj, category, bndleProduct.id)
             const updatedProduct = await Product.findOneAndUpdate(
               { _id: el._id },
               { bndleId: bndleProduct.id },
