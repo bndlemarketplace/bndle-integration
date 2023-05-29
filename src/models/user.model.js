@@ -131,6 +131,7 @@ const userSchema = mongoose.Schema(
       clientId:{ type: String, trim: true, index: true, unique: true, sparse: true }, // for squarespace
       urls: {},
     },
+    permissions: {},
     webhookSchema: {
       webhookId: { type: String },
       event: { type: String },

@@ -231,35 +231,75 @@ const createUpdateProduct = async (productId, mode, userId) => {
       // console.log(product)
       // for map image data to fit in our db
       
-        const mappedImages = [];
+        let mappedImages = [];
+        if(product.media && product.media.mainMedia && product.media.mainMedia.image && product.media.mainMedia.image.url) {
+          let oldImg = currentDbProduct.images.findIndex((i) => i.src === product.media.mainMedia.image.url);
+          if(oldImg === -1) {
+            const imgObj = {
+              bndleProductId: product.id,
+              productPlatformSrc: product.media.mainMedia.image.url,
+              src: product.media.mainMedia.image.url,
+            };
+            mappedImages.push(imgObj);
+          }
+        }
+
         if (product.media.items.length > 0) {
           for (let index = 0; index < product.media.items.length; index++) {
             const img = product.media.items[index];
             if (img.image) {
-              const imgObj = {
-                bndleProductId: product.id,
-                productPlatformSrc: img.image ? img.image.url : '',
-              };
-
-              let imageCheck;
-              if (currentDbProduct) {
-                imageCheck = currentDbProduct.images.find(async (currentDbImage) =>
-                  currentDbImage.ProductPlatformSrc === img.image ? img.image.url : ''
-                );
-                if (imageCheck === undefined) {
-                  // const s3url = await s3upload.downloadImgAndUploadToS3(img.image ? img.image.url : '');
-                  imgObj.src = img.image ? img.image.url : '';
-                } else {
-                  imgObj.src = imageCheck.src;
-                }
-              } else {
-                // const s3url = await s3upload.downloadImgAndUploadToS3(img.image ? img.image.url : '');
-                imgObj.src = img.image ? img.image.url : '';
+              let oldImg = currentDbProduct.images.findIndex((i) => i.src === img.image.url);
+              let mppedImg = mappedImages.findIndex((i) => i.src === img.image.url);
+              if(mppedImg === -1) {
+                const imgObj = {
+                  bndleProductId: product.id,
+                  productPlatformSrc: img.image.url,
+                  src: img.image.url,
+                  position: (oldImg > -1) ? currentDbProduct.images[oldImg].position : product.media.items.length + 1,
+                };
+                mappedImages.push(imgObj);
               }
-              mappedImages.push(imgObj);
             }
           }
         }
+
+        // if (product.media.items.length > 0) {
+        //   for (let index = 0; index < product.media.items.length; index++) {
+        //     const img = product.media.items[index];
+        //     if (img.image) {
+        //       const imgObj = {
+        //         bndleProductId: product.id,
+        //         productPlatformSrc: img.image ? img.image.url : '',
+        //       };
+
+        //       let imageCheck;
+        //       if (currentDbProduct) {
+        //         imageCheck = currentDbProduct.images.find(async (currentDbImage) =>
+        //           currentDbImage.ProductPlatformSrc === img.image ? img.image.url : ''
+        //         );
+        //         if (imageCheck === undefined) {
+        //           // const s3url = await s3upload.downloadImgAndUploadToS3(img.image ? img.image.url : '');
+        //           imgObj.src = img.image ? img.image.url : '';
+        //         } else {
+        //           imgObj.src = imageCheck.src;
+        //         }
+        //       } else {
+        //         // const s3url = await s3upload.downloadImgAndUploadToS3(img.image ? img.image.url : '');
+        //         imgObj.src = img.image ? img.image.url : '';
+        //       }
+        //       mappedImages.push(imgObj);
+        //     }
+        //   }
+        // }
+
+
+        // for (let index = 0; index < currentDbProduct.images.length; index++) {
+        //   const element = currentDbProduct.images[index];
+        //   let oldImg = product.media.items.findIndex((i) => i.image && i.image.url === element.src);
+        //   if(oldImg === -1) {
+        //     currentDbProduct.images.splice(index, 1)
+        //   }
+        // }
 
         let mappedOptions = [];
         if (product.productOptions.length > 0) {
@@ -312,6 +352,23 @@ const createUpdateProduct = async (productId, mode, userId) => {
       if (dbProduct) {
         // console.log(dbProduct._id);
         await productVariantSync(product, accessToken, dbProduct, mode);
+        console.log("🚀 ~ file: wixService.js:369 ~ createUpdateProduct ~ mappedImages:", mappedImages)
+        const productVariantUpdates = await ProductVariants.find({ productId: dbProduct._id}).lean();
+        console.log("🚀 ~ file: wixService.js:357 ~ createUpdateProduct ~ productVariantUpdates:", productVariantUpdates)
+        for (let index = 0; index < productVariantUpdates.length; index++) {
+          const element = productVariantUpdates[index];
+          for (let i = 0; i < element.images.length; i++) {
+            const image = element.images[i];
+            const isImageAvailable = mappedImages.findIndex((m) => m.src === image.src)
+            if(isImageAvailable > -1) {
+              mappedImages.splice(isImageAvailable, 1)
+            }
+          }
+        }
+        mappedImages = mappedImages.sort((a,b) => (a.position > b.position) ? 1 : ((b.position > a.position) ? -1 : 0))
+
+        console.log("🚀 ~ file: wixService.js:369 ~ createUpdateProduct ~ mappedImages:", mappedImages)
+        await Product.findOneAndUpdate({ _id: dbProduct._id}, { $set: { images: mappedImages}})
       } else {
         const loggerPayload = {
           title: 'Product publish',

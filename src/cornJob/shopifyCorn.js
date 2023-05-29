@@ -18,6 +18,12 @@ const product = require('../models/product.model');
 const platformServiceFactory = require('../services/fulfilmentPlatformServiceFactory');
 const { registerAllWebhooksService } = require('../services/vendor/vendorService');
 const { AddJobPublishProductToShopify2 } = require('../lib/jobs/queue/addToQueue');
+var _ = require('lodash');
+const algoliasearch = require('algoliasearch');
+const { convert } = require("html-to-text")
+
+const algoliaClient = algoliasearch(process.env.ALGOLIA_APPLICATION_ID, process.env.ALGOLIA_KEY);
+const index = algoliaClient.initIndex('Product');
 
 const locationId = restifyConfig.locationId;
 
@@ -590,7 +596,11 @@ const publishProductToShopify = async (productsId) => {
       let bndleProduct;
       // if product is already pushed to bndle store
       // console.log(JSON.stringify(productObj));
+
+      
+
       if (el.bndleId !== '') {
+        // await updateProductAlgolia(productObj, category, el.bndleId)
         console.log(' // if product is already pushed to bndle store');
         // if (productObj.options.length === 0) {
         // }
@@ -713,7 +723,7 @@ const publishProductToShopify = async (productsId) => {
               logger.info('patch called - start to upload images in shopify');
               bndleProduct.images = await updateImagesIfNotUploaded(bndleProduct.id, mappedImages) //patch - sometimes the images are not uploaded in shopify
             }
-            
+            // await updateProductAlgolia(productObj, category, bndleProduct.id)
             const updatedProduct = await Product.findOneAndUpdate(
               { _id: el._id },
               { bndleId: bndleProduct.id },
@@ -1008,24 +1018,37 @@ const pushProductToShopify = async () => {
 const createUpdateProduct = async (product, mode, userId) => {
   try {
     const userData = await User.findOne({ _id: userId });
-    // const currentDbProduct = await Product.findOne({ venderProductPlatformId: product.id });
+    const currentDbProduct = await Product.findOne({ venderProductPlatformId: product.id }).lean();
     // for map image data to fit in our db
-    const mappedImages = [];
+    let mappedImages = [];
     if (product.images.length > 0) {
-      await product.images.forEach(async (img) => {
+      product.images.forEach(async (img) => {
         if (img.variant_ids.length === 0) {
           // const Products3url = await s3upload.downloadImgAndUploadToS3(img.src);
-          const imgObj = {
-            bndleImageId: img.id,
-            bndleProductId: img.product_id,
-            position: img.position,
-            productPlatformSrc: img.src,
-            src: img.src,
-          };
-          mappedImages.push(imgObj);
+          let oldImg = currentDbProduct.images.findIndex((i) => i.bndleImageId == img.id);
+          let mappedImagesIndex = mappedImages.findIndex((i) => i.src === img.src);
+          if(mappedImagesIndex === -1) {
+            const imgObj = {
+              bndleImageId: img.id,
+              bndleProductId: img.product_id,
+              position: (oldImg > -1) ? currentDbProduct.images[oldImg].position : img.position,
+              productPlatformSrc: img.src,
+              src: img.src,
+            };
+            mappedImages.push(imgObj);
+          }
         }
       });
     }
+
+    // for (let index = 0; index < currentDbProduct.images.length; index++) {
+    //   const element = currentDbProduct.images[index];
+    //   let oldImg = product.images.findIndex((i) => i.src === element.src);
+    //   if(oldImg === -1) {
+    //     currentDbProduct.images.splice(index, 1)
+    //   }
+    // }
+
     // for map option data to fit in our db
     let isDefaultVariant = false;
     let mappedOptions = await product.options.map((option) => {
@@ -1043,6 +1066,9 @@ const createUpdateProduct = async (product, mode, userId) => {
       isDefaultVariant = true;
     }
 
+    mappedImages = mappedImages.sort((a,b) => (a.position > b.position) ? 1 : ((b.position > a.position) ? -1 : 0))
+
+
     // console.log(mappedOptions);
     const productObj = {
       venderProductPlatformId: product.id,
@@ -1058,6 +1084,7 @@ const createUpdateProduct = async (product, mode, userId) => {
       options: mappedOptions,
       // isDeleted: false, // for deleted product stay deleted
     };
+    console.log("🚀 ~ file: shopifyCorn.js:1084 ~ createUpdateProduct ~ productObj.mappedImages:", mappedImages)
     if (productObj.tags == '') {
       delete productObj.tags == [];
     }
@@ -1490,6 +1517,30 @@ const deleteProductById = async (bndleId) => {
     throw new ApiError(httpStatus.BAD_REQUEST, 'something went wrong with delete product to shopify');
   }
 };
+
+const updateProductAlgolia = async (data, category, bndleId) => {
+
+  const record = [
+    {
+      name: data.title,
+      description: convert(data.body_html, {}),
+      brand: data.vendor,
+      categories: category,
+      price: data.variants[0].price,
+      image: data.images[0].src,
+      popularity: 21449,
+      objectID: bndleId,
+    },
+  ];
+
+  try {
+    const data = await index.saveObjects(record);
+    // const data = await index.deleteObject('myID1')
+    console.log('🚀 ~ file: algolia.js:21 ~ init ~ data:', data);
+  } catch (error) {
+    console.log('🚀 ~ file: algolia.js:24 ~ init ~ error:', error);
+  }
+}
 
 module.exports = {
   // connectToShopify,

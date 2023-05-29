@@ -14,6 +14,8 @@ const createJob = async (agenda) => {
   await agenda.every("0 2 * * *", "delete_product_sq"); // runs everyday at 2 am
   await agenda.every("0 1 * * *", "sync_product_shopify"); // runs everyday at 1 am
 
+  await agenda.every("0 0 * * *", "sync_shopify_permission");
+
 };
 
 module.exports = createJob;

@@ -551,40 +551,78 @@ const convertRemoteProductVariantToPlatformProductVariant = async (product, user
 const createUpdateProduct = async (product, userId) => {
   // logger.info(`=====product-woocommerce====, ${JSON.stringify(product)}`);
   const userData = await User.findOne({ _id: userId });
-  const currentDbProduct = await Product.findOne({ venderProductPlatformId: product.id });
+  const currentDbProduct = await Product.findOne({ venderProductPlatformId: product.id }).lean();
 
   // logger.info(`=====currentDbProduct-woocommerce==== ${currentDbProduct}`);
   // logger.info(`=====userData-woocommerce===== ${userData}`);
 
   if (userData) {
     // for map image data to fit in our db
-    const mappedImages = [];
+    let mappedImages = [];
     if (product.images.length > 0) {
-      await product.images.forEach((img) => {
-        const imgObj = {
-          bndleImageId: img.id,
-          bndleProductId: product.id,
-        };
-        let imageCheck;
-        if (currentDbProduct && currentDbProduct.images.length) {
-          imageCheck = currentDbProduct.images.find((currentDbImage) => {
-            return currentDbImage.src === img.src;
-          });
-          if (imageCheck === undefined) {
-            // const s3url = await s3upload.downloadImgAndUploadToS3(img.src);
-            // imgObj.src = s3url;
-            imgObj.src = img.src;
-          } else {
-            imgObj.src = imageCheck.src;
-          }
-        } else {
-          // const s3url = await s3upload.downloadImgAndUploadToS3(img.src);
-          // imgObj.src = s3url;
-          imgObj.src = img.src;
+      // await product.images.forEach((img) => {
+      //   const imgObj = {
+      //     bndleImageId: img.id,
+      //     bndleProductId: product.id,
+      //   };
+      //   let imageCheck;
+      //   if (currentDbProduct && currentDbProduct.images.length) {
+      //     imageCheck = currentDbProduct.images.find((currentDbImage) => {
+      //       return currentDbImage.src === img.src;
+      //     });
+      //     if (imageCheck === undefined) {
+      //       // const s3url = await s3upload.downloadImgAndUploadToS3(img.src);
+      //       // imgObj.src = s3url;
+      //       imgObj.src = img.src;
+      //     } else {
+      //       imgObj.src = imageCheck.src;
+      //     }
+      //   } else {
+      //     // const s3url = await s3upload.downloadImgAndUploadToS3(img.src);
+      //     // imgObj.src = s3url;
+      //     imgObj.src = img.src;
+      //   }
+      //   mappedImages.push(imgObj);
+      // });
+
+      product.images.forEach(async (img) => {
+        let oldImg = currentDbProduct.images.findIndex((i) => i.bndleImageId == img.id);
+        let mappedImagesIndex = mappedImages.findIndex((i) => i.src === img.src);
+        if(mappedImagesIndex === -1) {
+          const imgObj = {
+            bndleImageId: img.id,
+            bndleProductId: img.product_id,
+            position: (oldImg > -1) ? currentDbProduct.images[oldImg].position : product.images.length + 1,
+            productPlatformSrc: img.src,
+            src: img.src,
+          };
+          mappedImages.push(imgObj);
         }
-        mappedImages.push(imgObj);
+
+        // let oldImg = currentDbProduct.images.findIndex((i) => i.src === img.src);
+        //   if(oldImg === -1) {
+        //     const imgObj = {
+        //       bndleImageId: img.id,
+        //       bndleProductId: img.product_id,
+        //       productPlatformSrc: img.src,
+        //       src: img.src,
+        //     };
+        //     mappedImages.push(imgObj);
+        //   }
       });
+  
+      
     }
+
+    for (let index = 0; index < currentDbProduct.images.length; index++) {
+      const element = currentDbProduct.images[index];
+      let oldImg = product.images.findIndex((i) => i.src === element.src);
+      if(oldImg === -1) {
+        currentDbProduct.images.splice(index, 1)
+      }
+    }
+
+    
 
     let mappedOptions = [];
     let optionObj;
@@ -610,6 +648,7 @@ const createUpdateProduct = async (product, userId) => {
         return optionObj;
       });
     }
+    mappedImages = mappedImages.sort((a,b) => (a.position > b.position) ? 1 : ((b.position > a.position) ? -1 : 0))
 
     const productObj = {
       venderProductPlatformId: product.id,

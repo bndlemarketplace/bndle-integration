@@ -92,7 +92,7 @@ const productSchema = mongoose.Schema(
     images: [
       {
         bndleImageId: {
-          typeString: String,
+          type: String,
         },
         bndleProductId: {
           type: String,
