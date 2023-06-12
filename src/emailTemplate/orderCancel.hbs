@@ -11,6 +11,12 @@
     <title>Cancel Email</title>
 </head>
 <style>
+    body {
+        background-color: #ffffff;
+        font-family: "Karla" !important;
+        font-weight: 600 !important;
+    }
+
     .container {
         width: 700px;
         height: 100%;
@@ -42,7 +48,7 @@
     }
 </style>
 
-<body style="background-color: #FFFFFF; font-weight: bold; font-family: karla;">
+<body style="font-family:Karla; font-weight: 600; background-color: #ffffff;">
     <div style=" width: 700px;height: 100%;margin-left: auto;margin-right: auto;">
         <p>Dear {{name}}</p>
         <p>
@@ -55,10 +61,11 @@
                 <p><b>Cancelled Items:</b></p>
             </div>
             <table style="margin-top: 10px;border-collapse: collapse;width: 100%;">
-                <tr class="titles" style="border-top: 1px solid black;border-bottom: 1px solid black;height: 30px;background-color: #a1c29c;">
-                    <th>ITEM</th>
-                    <th>QUANTITY</th>
-                    <th>PRICE</th>
+                <tr class="titles"
+                    style="border-top: 1px solid black;border-bottom: 1px solid black;height: 30px;background-color: #a1c29c;">
+                    <th style="width: 65%;">ITEM</th>
+                    <th style="width: 15%;">QUANTITY</th>
+                    <th style="width: 20%;">PRICE</th>
                 </tr>
                 {{#each products}}
                 <tr class="productsInfo" style="text-align: center;height: 40px;border-bottom: 1px solid black;">
@@ -67,7 +74,7 @@
                     <td>£{{total}}</td>
                 </tr>
                 {{/each}}
-            </table> ​
+            </table> 
         </div>
         <p>A member of our team will be in contact with you soon.</p>
         <p>
