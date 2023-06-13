@@ -62,7 +62,7 @@ const orderShippedEmail = async (to, order, trackingId = '', trackingUrl = '') =
     subtotal: order.subtotal.toFixed(2),
     customerName: order.customerId.firstName,
     discountPercentage: order.discount.percentage,
-    discountAmount: order.discount.discountAmount,
+    discountAmount: (order.discount.discountAmount || 0).toFixed(2),
     productDetails: [],
   };
 
