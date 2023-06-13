@@ -226,7 +226,7 @@ const wixOrderCancel = catchAsync(async (req, res) => {
   let parsedData = JSON.parse(data.data);
   parsedData = JSON.parse(parsedData.data);
   logger.info(`===========wix Order Cancel parsedData=================== ${parsedData}`);
-  await wixService.cancelOrderStatus(parsedData.order);
+  await wixService.cancelOrderStatus(parsedData.order, data.eventType);
   await cornServices.cancelOrderStatus(parsedData.order);
 });
 

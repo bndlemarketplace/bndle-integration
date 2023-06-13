@@ -488,7 +488,8 @@ const updateOrderStatus = async (order) => {
   }
 };
 
-const cancelOrderStatus = async (order) => {
+const cancelOrderStatus = async (order, eventType) => {
+  console.log("🚀 ~ file: wixService.js:492 ~ cancelOrderStatus ~ eventType:", eventType)
   console.log('order.fulfillmentStatus ', order.fulfillmentStatus);
   try {
     // get product by product id
@@ -498,7 +499,7 @@ const cancelOrderStatus = async (order) => {
     // console.log(products);
     status = products.status;
     currentStatus = products.status;
-    if (order.fulfillmentStatus === 'CANCELED') {
+    if (eventType === 'OrderCanceled') {
       status = constVer.model.order.vendorOrderStatus.REQUEST_DECLINED;
       products.status = status;
       await VenderOrder.findOneAndUpdate(
