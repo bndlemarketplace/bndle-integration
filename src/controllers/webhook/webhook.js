@@ -224,10 +224,10 @@ const wixOrderCancel = catchAsync(async (req, res) => {
   const data = jwt.decode(req.body);
   console.log('====body====', data, id);
   let parsedData = JSON.parse(data.data);
-  console.log("🚀 ~ file: webhook.js:227 ~ wixOrderCancel ~ parsedData:", parsedData)
+  let eventType = parsedData.eventType
   parsedData = JSON.parse(parsedData.data);
   logger.info(`===========wix Order Cancel parsedData=================== ${parsedData}`);
-  await wixService.cancelOrderStatus(parsedData.order, data.eventType);
+  await wixService.cancelOrderStatus(parsedData.order, eventType);
   await cornServices.cancelOrderStatus(parsedData.order);
 });
 
