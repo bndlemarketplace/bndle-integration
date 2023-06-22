@@ -600,7 +600,7 @@ const publishProductToShopify = async (productsId) => {
       
 
       if (el.bndleId !== '') {
-        // await updateProductAlgolia(productObj, category, el.bndleId)
+        await updateProductAlgolia(productObj, category, el.bndleId, subCategory)
         console.log(' // if product is already pushed to bndle store');
         // if (productObj.options.length === 0) {
         // }
@@ -723,7 +723,7 @@ const publishProductToShopify = async (productsId) => {
               logger.info('patch called - start to upload images in shopify');
               bndleProduct.images = await updateImagesIfNotUploaded(bndleProduct.id, mappedImages) //patch - sometimes the images are not uploaded in shopify
             }
-            // await updateProductAlgolia(productObj, category, bndleProduct.id)
+            await updateProductAlgolia(productObj, category, bndleProduct.id, subCategory)
             const updatedProduct = await Product.findOneAndUpdate(
               { _id: el._id },
               { bndleId: bndleProduct.id },
@@ -915,6 +915,7 @@ const unpublishProductFromShopify = async (productsId) => {
       if (product.bndleId !== '') {
         const productObj = { status: 'draft' };
         bndleProduct = await client.product.update(product.bndleId, productObj);
+        await deleteProductAlgolia(product.bndleId)
       }
     }
     return true;
@@ -1223,8 +1224,8 @@ const createUpdateProduct = async (product, mode, userId) => {
       await LoggerService.createLogger(loggerPayload);
     }
     if (dbProduct && dbProduct.status === 'PUBLISHED') {
-        AddJobPublishProductToShopify2(dbProduct._id);
-      // publishProductToShopify(dbProduct._id);
+        // AddJobPublishProductToShopify2(dbProduct._id);
+      publishProductToShopify(dbProduct._id);
     }
   } catch (err) {
     console.log(err);
@@ -1518,18 +1519,19 @@ const deleteProductById = async (bndleId) => {
   }
 };
 
-const updateProductAlgolia = async (data, category, bndleId) => {
-
+const updateProductAlgolia = async (data, category, bndleId, subCategory) => {
   const record = [
     {
       name: data.title,
-      description: convert(data.body_html, {}),
       brand: data.vendor,
       categories: category,
+      subCategory: subCategory,
       price: data.variants[0].price,
       image: data.images[0].src,
       popularity: 21449,
       objectID: bndleId,
+      product_type: productType,
+      tags: tags
     },
   ];
 
@@ -1542,6 +1544,10 @@ const updateProductAlgolia = async (data, category, bndleId) => {
   }
 }
 
+const deleteProductAlgolia = async (bndleId) => {
+  await index.deleteObject(bndleId)
+}
+
 module.exports = {
   // connectToShopify,
   pushProductToShopify,
@@ -1552,5 +1558,6 @@ module.exports = {
   updateOrderStatus,
   fulfillmentUpdate,
   deleteProductById,
-  cancelOrderStatus
+  cancelOrderStatus,
+  deleteProductAlgolia
 };

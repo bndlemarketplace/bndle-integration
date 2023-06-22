@@ -8,5 +8,6 @@ router.route('/initialProductSync/shopify').post(controller.initialProductSyncSh
 router.route('/publishProductToShopify').post(controller.publishProductToShopify);
 router.route('/downloadImage').get(image.downloadImgAndUploadToS3)
 router.route('/updateProductManually').post(controller.productUpdateShopify)
+router.route('/delete-algolia-product').post(controller.deleteAlgoliaProduct)
 
 module.exports = router;
