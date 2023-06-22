@@ -600,7 +600,7 @@ const publishProductToShopify = async (productsId) => {
       
 
       if (el.bndleId !== '') {
-        await updateProductAlgolia(productObj, category, el.bndleId, subCategory)
+        await updateProductAlgolia(productObj, category, el.bndleId, subCategory, productType)
         console.log(' // if product is already pushed to bndle store');
         // if (productObj.options.length === 0) {
         // }
@@ -723,7 +723,7 @@ const publishProductToShopify = async (productsId) => {
               logger.info('patch called - start to upload images in shopify');
               bndleProduct.images = await updateImagesIfNotUploaded(bndleProduct.id, mappedImages) //patch - sometimes the images are not uploaded in shopify
             }
-            await updateProductAlgolia(productObj, category, bndleProduct.id, subCategory)
+            await updateProductAlgolia(productObj, category, bndleProduct.id, subCategory, productType)
             const updatedProduct = await Product.findOneAndUpdate(
               { _id: el._id },
               { bndleId: bndleProduct.id },
@@ -1519,28 +1519,30 @@ const deleteProductById = async (bndleId) => {
   }
 };
 
-const updateProductAlgolia = async (data, category, bndleId, subCategory) => {
-  const record = [
-    {
-      name: data.title,
-      brand: data.vendor,
-      categories: category,
-      subCategory: subCategory,
-      price: data.variants[0].price,
-      image: data.images[0].src,
-      popularity: 21449,
-      objectID: bndleId,
-      product_type: productType,
-      tags: tags
-    },
-  ];
-
-  try {
-    const data = await index.saveObjects(record);
-    // const data = await index.deleteObject('myID1')
-    console.log('🚀 ~ file: algolia.js:21 ~ init ~ data:', data);
-  } catch (error) {
-    console.log('🚀 ~ file: algolia.js:24 ~ init ~ error:', error);
+const updateProductAlgolia = async (data, category, bndleId, subCategory, productType) => {
+  if(data.variants.length && data.images.length) {
+    const record = [
+      {
+        name: data.title,
+        brand: data.vendor,
+        categories: category,
+        subCategory: subCategory,
+        price: data.variants[0].price,
+        image: data.images[0].src,
+        popularity: 21449,
+        objectID: bndleId,
+        product_type: productType,
+        tags: data.tags
+      },
+    ];
+  
+    try {
+      const data = await index.saveObjects(record);
+      // const data = await index.deleteObject('myID1')
+      console.log('🚀 ~ file: algolia.js:21 ~ init ~ data:', data);
+    } catch (error) {
+      console.log('🚀 ~ file: algolia.js:24 ~ init ~ error:', error);
+    }
   }
 }
 
