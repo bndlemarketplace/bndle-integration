@@ -600,7 +600,7 @@ const publishProductToShopify = async (productsId) => {
       
 
       if (el.bndleId !== '') {
-        await updateProductAlgolia(productObj, category, el.bndleId, subCategory, productType)
+        await updateProductAlgolia(productObj, category, el.bndleId, subCategory, productType, lifeStage)
         console.log(' // if product is already pushed to bndle store');
         // if (productObj.options.length === 0) {
         // }
@@ -723,7 +723,7 @@ const publishProductToShopify = async (productsId) => {
               logger.info('patch called - start to upload images in shopify');
               bndleProduct.images = await updateImagesIfNotUploaded(bndleProduct.id, mappedImages) //patch - sometimes the images are not uploaded in shopify
             }
-            await updateProductAlgolia(productObj, category, bndleProduct.id, subCategory, productType)
+            await updateProductAlgolia(productObj, category, bndleProduct.id, subCategory, productType, lifeStage)
             const updatedProduct = await Product.findOneAndUpdate(
               { _id: el._id },
               { bndleId: bndleProduct.id },
@@ -1519,7 +1519,7 @@ const deleteProductById = async (bndleId) => {
   }
 };
 
-const updateProductAlgolia = async (data, category, bndleId, subCategory, productType) => {
+const updateProductAlgolia = async (data, category, bndleId, subCategory, productType, lifeStage) => {
   if(data.variants.length && data.images.length) {
     const record = [
       {
@@ -1532,7 +1532,8 @@ const updateProductAlgolia = async (data, category, bndleId, subCategory, produc
         popularity: 21449,
         objectID: bndleId,
         product_type: productType,
-        tags: data.tags
+        tags: data.tags,
+        lifeStage,
       },
     ];
   
@@ -1561,5 +1562,9 @@ module.exports = {
   fulfillmentUpdate,
   deleteProductById,
   cancelOrderStatus,
-  deleteProductAlgolia
+  deleteProductAlgolia,
+  updateProductAlgolia,
+  mapWithBndleVariant,
+  mapOptionWithBndle,
+  mapWeightUnit
 };
