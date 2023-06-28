@@ -1520,30 +1520,43 @@ const deleteProductById = async (bndleId) => {
 };
 
 const updateProductAlgolia = async (data, category, bndleId, subCategory, productType, lifeStage) => {
-  if(data.variants.length && data.images.length) {
-    const record = [
-      {
-        name: data.title,
-        brand: data.vendor,
-        categories: category,
-        subCategory: subCategory,
-        price: data.variants[0].price,
-        image: data.images[0].src,
-        popularity: 21449,
-        objectID: bndleId,
-        product_type: productType,
-        tags: data.tags,
-        lifeStage,
-      },
-    ];
-  
-    try {
-      const data = await index.saveObjects(record);
-      // const data = await index.deleteObject('myID1')
-      console.log('🚀 ~ file: algolia.js:21 ~ init ~ data:', data);
-    } catch (error) {
-      console.log('🚀 ~ file: algolia.js:24 ~ init ~ error:', error);
-    }
+  console.log("🚀 ~ file: shopifyCorn.js:1524 ~ updateProductAlgolia ~ data.variants:", data.variants)
+  const record = [
+    {
+      query: data.title,
+      objectID: data.title,
+      brand: [data.vendor],
+      categories: [category],
+      subCategory: [subCategory],
+      product_type: [productType],
+      lifeStage: [lifeStage],
+    },
+  ];
+
+  const searchRecord = [
+    {
+      name: data.title,
+      brand: data.vendor,
+      categories: category,
+      subCategory: subCategory,
+      price: (data.variants && data.variants.length) ? data.variants[0].price : 0,
+      image: (data.images && data.images.length) ? data.images[0].src : "",
+      popularity: 21449,
+      objectID: bndleId,
+      product_type: productType,
+      tags: data.tags,
+      lifeStage,
+    },
+  ];
+
+  try {
+    const searchIndex = algoliaClient.initIndex('Product_query_suggestions_latest');
+    const data = await index.saveObjects(searchRecord);
+    const searchData = await searchIndex.saveObjects(record);
+    console.log("🚀 ~ file: shopifyCorn.js:1556 ~ updateProductAlgolia ~ searchData:", searchData)
+    console.log('🚀 ~ file: algolia.js:21 ~ init ~ data:', data);
+  } catch (error) {
+    console.log('🚀 ~ file: algolia.js:24 ~ init ~ error:', error);
   }
 }
 
