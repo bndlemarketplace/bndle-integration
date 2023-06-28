@@ -20,7 +20,7 @@ const { registerAllWebhooksService } = require('../services/vendor/vendorService
 const { AddJobPublishProductToShopify2 } = require('../lib/jobs/queue/addToQueue');
 var _ = require('lodash');
 const algoliasearch = require('algoliasearch');
-const { convert } = require("html-to-text")
+const { convert } = require('html-to-text');
 
 const algoliaClient = algoliasearch(process.env.ALGOLIA_APPLICATION_ID, process.env.ALGOLIA_KEY);
 const index = algoliaClient.initIndex('Product');
@@ -88,19 +88,29 @@ const mapOptionWithBndle = async (options, subCat, vendorId) => {
   return { canMap, mappedOption };
 };
 
-const mapWeightUnit = (unit) => { // map units of shopify
+const mapWeightUnit = (unit) => {
+  // map units of shopify
   switch (unit) {
-    case 'GRAMS': return 'g';
-    case 'GRAM': return 'g';
-    case 'KILOGRAMS': return 'kg';
-    case 'KILOGRAM': return 'kg';
-    case 'OUNCES': return 'oz';
-    case 'OUNCE': return 'oz';
-    case 'POUNDS': return 'lb';
-    case 'POUND': return 'lb';
-    default: return '';
+    case 'GRAMS':
+      return 'g';
+    case 'GRAM':
+      return 'g';
+    case 'KILOGRAMS':
+      return 'kg';
+    case 'KILOGRAM':
+      return 'kg';
+    case 'OUNCES':
+      return 'oz';
+    case 'OUNCE':
+      return 'oz';
+    case 'POUNDS':
+      return 'lb';
+    case 'POUND':
+      return 'lb';
+    default:
+      return '';
   }
-}
+};
 
 const mapWithBndleVariant = async (options, subCat, vendorId, vendorOptionMapping) => {
   let subCategory = subCat;
@@ -343,7 +353,7 @@ const updateImagesIfNotUploaded = async (bndleProductId, dbImages) => {
       logger.error(e);
     }
   }
-}
+};
 
 // push product on status change to public
 const publishProductToShopify = async (productsId) => {
@@ -479,61 +489,57 @@ const publishProductToShopify = async (productsId) => {
       const lifeStage = el.lifeStage; // ? el.lifeStage : 'Newborn';
       // console.log(3);
 
-        // console.log("====category==",category,productType)
+      // console.log("====category==",category,productType)
+      await Category.updateOne(
+        { 'secondaryCategories.tertiaryCategories.tertiaryCategory': el.productCategory },
+        { $inc: { 'secondaryCategories.$[y].tertiaryCategories.$[xxx].count': 1 } },
+        { arrayFilters: [{ 'y.secondaryCategory': el.subCategory }, { 'xxx.tertiaryCategory': el.productCategory }] }
+      );
+      const categoryData = await Category.aggregate([
+        {
+          $unwind: '$secondaryCategories',
+        },
+        {
+          $match: {
+            primaryCategory: el.category,
+            'secondaryCategories.secondaryCategory': el.subCategory,
+          },
+        },
+        {
+          $project: {
+            data: '$secondaryCategories',
+          },
+        },
+        {
+          $unwind: '$data',
+        },
+      ]);
+      const isExist = categoryData[0].data.tertiaryCategories.some((t) => t.count > 0);
+      if (isExist) {
         await Category.updateOne(
-          { 'secondaryCategories.tertiaryCategories.tertiaryCategory': el.productCategory },
-          { $inc: { 'secondaryCategories.$[y].tertiaryCategories.$[xxx].count': 1 } },
-          { arrayFilters: [
-            { 'y.secondaryCategory': el.subCategory },
-            { 'xxx.tertiaryCategory': el.productCategory },
-          ]
-        }
+          {
+            secondaryCategories: { $exists: true },
+            'secondaryCategories.secondaryCategory': el.subCategory,
+            'secondaryCategories.tertiaryCategories.tertiaryCategory': el.productCategory,
+          },
+          {
+            $set: { 'secondaryCategories.$[xxx].count': 1 },
+          },
+          { arrayFilters: [{ 'xxx.secondaryCategory': el.subCategory }] }
         );
-        const categoryData = await Category.aggregate([
+      } else {
+        await Category.updateOne(
           {
-            $unwind: '$secondaryCategories',
+            secondaryCategories: { $exists: true },
+            'secondaryCategories.secondaryCategory': el.subCategory,
+            'secondaryCategories.tertiaryCategories.tertiaryCategory': el.productCategory,
           },
           {
-            $match: {
-              primaryCategory: el.category,
-              'secondaryCategories.secondaryCategory': el.subCategory,
-            },
+            $set: { 'secondaryCategories.$[xxx].count': 0 },
           },
-          {
-            $project: {
-              data: '$secondaryCategories',
-            },
-          },
-          {
-            $unwind: '$data',
-          },
-        ]);
-        const isExist = categoryData[0].data.tertiaryCategories.some((t) => t.count > 0);
-        if (isExist) {
-          await Category.updateOne(
-            {
-              secondaryCategories: { $exists: true },
-              'secondaryCategories.secondaryCategory': el.subCategory,
-              'secondaryCategories.tertiaryCategories.tertiaryCategory': el.productCategory,
-            },
-            {
-              $set: { 'secondaryCategories.$[xxx].count': 1 },
-            },
-            { arrayFilters: [{ 'xxx.secondaryCategory': el.subCategory }] }
-          );
-        } else {
-          await Category.updateOne(
-            {
-              secondaryCategories: { $exists: true },
-              'secondaryCategories.secondaryCategory': el.subCategory,
-              'secondaryCategories.tertiaryCategories.tertiaryCategory': el.productCategory,
-            },
-            {
-              $set: { 'secondaryCategories.$[xxx].count': 0 },
-            },
-            { arrayFilters: [{ 'xxx.secondaryCategory': el.subCategory }] }
-          );
-        }
+          { arrayFilters: [{ 'xxx.secondaryCategory': el.subCategory }] }
+        );
+      }
       const productObj = {
         title: `${el.title}`,
         body_html: el.description,
@@ -597,10 +603,8 @@ const publishProductToShopify = async (productsId) => {
       // if product is already pushed to bndle store
       // console.log(JSON.stringify(productObj));
 
-      
-
       if (el.bndleId !== '') {
-        await updateProductAlgolia(productObj, category, el.bndleId, subCategory, productType, lifeStage)
+        await updateProductAlgolia(productObj, category, el.bndleId, subCategory, productType, lifeStage, mappedOptionTags);
         console.log(' // if product is already pushed to bndle store');
         // if (productObj.options.length === 0) {
         // }
@@ -628,9 +632,9 @@ const publishProductToShopify = async (productsId) => {
             // console.log(5);
             logger.info(`${bndleProduct.title} product updated`);
             console.log(JSON.stringify(bndleProduct));
-            if(bndleProduct && bndleProduct.images.length !== mappedImages.length) {
+            if (bndleProduct && bndleProduct.images.length !== mappedImages.length) {
               logger.info('patch called - start to upload images in shopify');
-              bndleProduct.images = await updateImagesIfNotUploaded(bndleProduct.id, mappedImages) //patch - sometimes the images are not uploaded in shopify
+              bndleProduct.images = await updateImagesIfNotUploaded(bndleProduct.id, mappedImages); //patch - sometimes the images are not uploaded in shopify
             }
 
             const updatedProduct = await Product.findOneAndUpdate({ _id: el._id }, { bndleId: bndleProduct.id });
@@ -719,11 +723,19 @@ const publishProductToShopify = async (productsId) => {
             logger.info(`${bndleProduct.title} product created`);
             // console.log(bndleProduct.id);
             // console.log({ product_listing: { product_id: bndleProduct.id } });
-            if(bndleProduct && bndleProduct.images.length !== mappedImages.length) {
+            if (bndleProduct && bndleProduct.images.length !== mappedImages.length) {
               logger.info('patch called - start to upload images in shopify');
-              bndleProduct.images = await updateImagesIfNotUploaded(bndleProduct.id, mappedImages) //patch - sometimes the images are not uploaded in shopify
+              bndleProduct.images = await updateImagesIfNotUploaded(bndleProduct.id, mappedImages); //patch - sometimes the images are not uploaded in shopify
             }
-            await updateProductAlgolia(productObj, category, bndleProduct.id, subCategory, productType, lifeStage)
+            await updateProductAlgolia(
+              productObj,
+              category,
+              bndleProduct.id,
+              subCategory,
+              productType,
+              lifeStage,
+              mappedOptionTags
+            );
             const updatedProduct = await Product.findOneAndUpdate(
               { _id: el._id },
               { bndleId: bndleProduct.id },
@@ -861,7 +873,7 @@ const unpublishProductFromShopify = async (productsId) => {
           },
         ]);
         const isExist = secondaryCatData[0].data.tertiaryCategories.some((t) => t.count > 0);
-        console.log("==isExist===",isExist)
+        console.log('==isExist===', isExist);
         if (isExist) {
           await Category.updateOne(
             {
@@ -898,7 +910,11 @@ const unpublishProductFromShopify = async (productsId) => {
             },
           },
         ]);
-        const count = await Product.countDocuments({ subCategory: product.subCategory, status: 'PUBLISHED', isDeleted: false });
+        const count = await Product.countDocuments({
+          subCategory: product.subCategory,
+          status: 'PUBLISHED',
+          isDeleted: false,
+        });
         if (secondaryCatData[0].secondaryCategories.count > 0) {
           await Category.updateOne(
             {
@@ -915,7 +931,7 @@ const unpublishProductFromShopify = async (productsId) => {
       if (product.bndleId !== '') {
         const productObj = { status: 'draft' };
         bndleProduct = await client.product.update(product.bndleId, productObj);
-        await deleteProductAlgolia(product.bndleId)
+        await deleteProductAlgolia(product.bndleId);
       }
     }
     return true;
@@ -1028,11 +1044,11 @@ const createUpdateProduct = async (product, mode, userId) => {
           // const Products3url = await s3upload.downloadImgAndUploadToS3(img.src);
           let oldImg = currentDbProduct.images.findIndex((i) => i.bndleImageId == img.id);
           let mappedImagesIndex = mappedImages.findIndex((i) => i.src === img.src);
-          if(mappedImagesIndex === -1) {
+          if (mappedImagesIndex === -1) {
             const imgObj = {
               bndleImageId: img.id,
               bndleProductId: img.product_id,
-              position: (oldImg > -1) ? currentDbProduct.images[oldImg].position : img.position,
+              position: oldImg > -1 ? currentDbProduct.images[oldImg].position : img.position,
               productPlatformSrc: img.src,
               src: img.src,
             };
@@ -1067,8 +1083,7 @@ const createUpdateProduct = async (product, mode, userId) => {
       isDefaultVariant = true;
     }
 
-    mappedImages = mappedImages.sort((a,b) => (a.position > b.position) ? 1 : ((b.position > a.position) ? -1 : 0))
-
+    mappedImages = mappedImages.sort((a, b) => (a.position > b.position ? 1 : b.position > a.position ? -1 : 0));
 
     // console.log(mappedOptions);
     const productObj = {
@@ -1085,7 +1100,7 @@ const createUpdateProduct = async (product, mode, userId) => {
       options: mappedOptions,
       // isDeleted: false, // for deleted product stay deleted
     };
-    console.log("🚀 ~ file: shopifyCorn.js:1084 ~ createUpdateProduct ~ productObj.mappedImages:", mappedImages)
+    console.log('🚀 ~ file: shopifyCorn.js:1084 ~ createUpdateProduct ~ productObj.mappedImages:', mappedImages);
     if (productObj.tags == '') {
       delete productObj.tags == [];
     }
@@ -1112,7 +1127,7 @@ const createUpdateProduct = async (product, mode, userId) => {
       );
     }
     if (dbProduct) {
-      console.log("4 db product id", dbProduct._id);
+      console.log('4 db product id', dbProduct._id);
       // for create variant of product
       if (product.variants.length > 0) {
         product.variants.forEach(async (variant) => {
@@ -1199,15 +1214,25 @@ const createUpdateProduct = async (product, mode, userId) => {
             //   variantObj.isDefault = true;
             //   variantObj.isEnable = true;
             // }
-            
-            if(JSON.parse(process.env.PRICE_NOT_TO_UPDATE_VENDORS).indexOf(userId.toString()) > -1) {
-              console.log("5 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------")
-              console.log("🚀 ~ file: shopifyCorn.js:1177 ~ product.variants.forEach ~ JSON.parse(process.env.PRICE_NOT_TO_UPDATE_VENDORS):", JSON.parse(process.env.PRICE_NOT_TO_UPDATE_VENDORS), product.title)
-              console.log("🚀 ~ file: shopifyCorn.js:1178 ~ product.variants.forEach ~ userId:", userId.toString(), JSON.parse(process.env.PRICE_NOT_TO_UPDATE_VENDORS).indexOf(userId.toString()))
+
+            if (JSON.parse(process.env.PRICE_NOT_TO_UPDATE_VENDORS).indexOf(userId.toString()) > -1) {
+              console.log(
+                '5 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------'
+              );
+              console.log(
+                '🚀 ~ file: shopifyCorn.js:1177 ~ product.variants.forEach ~ JSON.parse(process.env.PRICE_NOT_TO_UPDATE_VENDORS):',
+                JSON.parse(process.env.PRICE_NOT_TO_UPDATE_VENDORS),
+                product.title
+              );
+              console.log(
+                '🚀 ~ file: shopifyCorn.js:1178 ~ product.variants.forEach ~ userId:',
+                userId.toString(),
+                JSON.parse(process.env.PRICE_NOT_TO_UPDATE_VENDORS).indexOf(userId.toString())
+              );
               delete variantObj.price;
             }
           }
-          
+
           await ProductVariants.findOneAndUpdate({ venderProductPlatformVariantId: variant.id }, variantObj, {
             upsert: true,
             new: true,
@@ -1224,7 +1249,7 @@ const createUpdateProduct = async (product, mode, userId) => {
       await LoggerService.createLogger(loggerPayload);
     }
     if (dbProduct && dbProduct.status === 'PUBLISHED') {
-        // AddJobPublishProductToShopify2(dbProduct._id);
+      // AddJobPublishProductToShopify2(dbProduct._id);
       publishProductToShopify(dbProduct._id);
     }
   } catch (err) {
@@ -1233,13 +1258,13 @@ const createUpdateProduct = async (product, mode, userId) => {
 };
 
 const orderCancel = async (products) => {
-  const allProducts = []
+  const allProducts = [];
   for (let index = 0; index < products.product.length; index++) {
     const element = products.product[index];
     let discount = 0;
-      if(products.discount && products.discount.percentage) {
-        discount = (((element.productTotal || 0) * 100)/products.discount.percentage)/100
-      }
+    if (products.discount && products.discount.percentage) {
+      discount = ((element.productTotal || 0) * 100) / products.discount.percentage / 100;
+    }
     allProducts.push({
       name: element.productRef.title,
       quantity: element.quantity,
@@ -1252,55 +1277,62 @@ const orderCancel = async (products) => {
     products.orderCode,
     allProducts
   );
-  return
+  return;
 };
 
 const cancelOrderStatus = async (order, id) => {
   try {
-    let orderData = await VendorOrder.findOne({ venderPlatformOrderId: order.id }).populate({
-      path: 'product.productRef',
-    }).populate({
-      path: 'customerId',
-    }).lean();
-    await orderCancel(orderData)
+    let orderData = await VendorOrder.findOne({ venderPlatformOrderId: order.id })
+      .populate({
+        path: 'product.productRef',
+      })
+      .populate({
+        path: 'customerId',
+      })
+      .lean();
+    await orderCancel(orderData);
   } catch (error) {
     console.log(error);
   }
-}
+};
 
 const updateOrderStatus = async (order, id) => {
   let logs = [];
   try {
     console.log(JSON.stringify(order));
-    logs.push({ S: `Step 1: Webhook Received with payload ${JSON.stringify(order)}` })
+    logs.push({ S: `Step 1: Webhook Received with payload ${JSON.stringify(order)}` });
     const platform = platformServiceFactory();
     // get product by product id
     let status;
     let currentStatus;
-    let products = await VendorOrder.findOne({ venderPlatformOrderId: order.id })
+    let products = await VendorOrder.findOne({ venderPlatformOrderId: order.id });
     if (products === null) {
-      logs.push({ E: `Step 2: venderPlatformOrderId not found` })
-      LoggerService.insertLog(order.id, {
-        webHookData: order,
-        logType : 'ORDER_UPDATE_WEBHOOK',
-        status : 'ERROR',
-      }, logs);
+      logs.push({ E: `Step 2: venderPlatformOrderId not found` });
+      LoggerService.insertLog(
+        order.id,
+        {
+          webHookData: order,
+          logType: 'ORDER_UPDATE_WEBHOOK',
+          status: 'ERROR',
+        },
+        logs
+      );
       return true;
     }
 
-    logs.push({ S: `Step 2: venderPlatformOrderId found with status ${products.status}` })
+    logs.push({ S: `Step 2: venderPlatformOrderId found with status ${products.status}` });
     status = products.status;
     currentStatus = products.status;
     products = JSON.parse(JSON.stringify(products));
 
     // client for get fulfillment status of that user
     const userData = await User.findById(id);
-    logs.push({ S: `Step 3: User Data found ${JSON.stringify(userData)}` })
+    logs.push({ S: `Step 3: User Data found ${JSON.stringify(userData)}` });
     // const yolo =
     // console.log(order.id, '----------------');
     const data = await platform.webhooks.fulfillments(userData, order.id);
 
-    console.log("updateOrderStatus data:", data);
+    console.log('updateOrderStatus data:', data);
     if (data[0].status === 'on_hold') {
       console.log('inside on hold');
       status = constVer.model.order.vendorOrderStatus.ON_HOLD;
@@ -1316,11 +1348,11 @@ const updateOrderStatus = async (order, id) => {
       products.trackingUrl = order.fulfillments[0].tracking_url;
       products.shippingDate = order.fulfillments[0].updated_at;
 
-      logs.push({ S: `Step 4: Webhook received with fulfilled status` })
+      logs.push({ S: `Step 4: Webhook received with fulfilled status` });
     }
     if (order.fulfillment_status === 'partial') {
       status = constVer.model.order.vendorOrderStatus.PARTIALLY_SHIPPED;
-      logs.push({ S: `Step 4: Webhook received with partial status` })
+      logs.push({ S: `Step 4: Webhook received with partial status` });
     }
 
     // if order cenacle
@@ -1369,12 +1401,12 @@ const updateOrderStatus = async (order, id) => {
       products.statusHistory.push(statusHistoryObj);
     }
 
-    logs.push({ S: `Step 5: VendorOrder update with ${JSON.stringify(products)}` })
+    logs.push({ S: `Step 5: VendorOrder update with ${JSON.stringify(products)}` });
     const vendorOrderData = await VendorOrder.findOneAndUpdate({ venderPlatformOrderId: order.id }, products, {
       new: true,
     });
     // console.log('++++++++++++++++++++++++');
-    console.log("vendorOrderData :",vendorOrderData);
+    console.log('vendorOrderData :', vendorOrderData);
     if (products.status !== currentStatus) {
       await updateMainOrderStatus(vendorOrderData);
     }
@@ -1393,18 +1425,26 @@ const updateOrderStatus = async (order, id) => {
       const email = orderData.customerId.email;
       await emailService.orderShippedEmail(email, orderData, vendorOrderData.trackingId);
     }
-    LoggerService.insertLog(order.id, {
-      webHookData: order,
-      logType : 'ORDER_UPDATE_WEBHOOK',
-      status : 'SUCCESS',
-    }, logs);
+    LoggerService.insertLog(
+      order.id,
+      {
+        webHookData: order,
+        logType: 'ORDER_UPDATE_WEBHOOK',
+        status: 'SUCCESS',
+      },
+      logs
+    );
     return true;
   } catch (err) {
-    LoggerService.insertLog(order.id, {
-      webHookData: order,
-      logType : 'ORDER_UPDATE_WEBHOOK',
-      status : `ERROR ${JSON.stringify(err.message)}`,
-    }, logs);
+    LoggerService.insertLog(
+      order.id,
+      {
+        webHookData: order,
+        logType: 'ORDER_UPDATE_WEBHOOK',
+        status: `ERROR ${JSON.stringify(err.message)}`,
+      },
+      logs
+    );
     console.log(err);
   }
 };
@@ -1519,8 +1559,31 @@ const deleteProductById = async (bndleId) => {
   }
 };
 
-const updateProductAlgolia = async (data, category, bndleId, subCategory, productType, lifeStage) => {
-  console.log("🚀 ~ file: shopifyCorn.js:1524 ~ updateProductAlgolia ~ data.variants:", data.variants)
+const updateProductAlgolia = async (data, category, bndleId, subCategory, productType, lifeStage, mappedOptionTags) => {
+  console.log("🚀 ~ file: shopifyCorn.js:1563 ~ updateProductAlgolia ~ mappedOptionTags:", mappedOptionTags)
+  console.log('🚀 ~ file: shopifyCorn.js:1524 ~ updateProductAlgolia ~ data.variants:', data.variants);
+
+  const size = [];
+  const colors = [];
+  const age = [];
+
+  for (let index = 0; index < mappedOptionTags.length; index++) {
+    const element = mappedOptionTags[index];
+    switch (element.split('_')[0]) {
+      case 'Color':
+        colors.push(element.split('_')[1]);
+        break;
+      case 'Size':
+        size.push(element.split('_')[1]);
+        break;
+      case 'Age':
+        age.push(element.split('_')[1]);
+        break;
+      default:
+        break;
+    }
+  }
+
   const record = [
     {
       query: data.title,
@@ -1539,13 +1602,16 @@ const updateProductAlgolia = async (data, category, bndleId, subCategory, produc
       brand: data.vendor,
       categories: category,
       subCategory: subCategory,
-      price: (data.variants && data.variants.length) ? data.variants[0].price : 0,
-      image: (data.images && data.images.length) ? data.images[0].src : "",
+      price: data.variants && data.variants.length ? data.variants[0].price : 0,
+      image: data.images && data.images.length ? data.images[0].src : '',
       popularity: 21449,
       objectID: bndleId,
       product_type: productType,
       tags: data.tags,
       lifeStage,
+      size,
+      colors,
+      age
     },
   ];
 
@@ -1553,16 +1619,16 @@ const updateProductAlgolia = async (data, category, bndleId, subCategory, produc
     const searchIndex = algoliaClient.initIndex('Product_query_suggestions_latest');
     const data = await index.saveObjects(searchRecord);
     const searchData = await searchIndex.saveObjects(record);
-    console.log("🚀 ~ file: shopifyCorn.js:1556 ~ updateProductAlgolia ~ searchData:", searchData)
+    console.log('🚀 ~ file: shopifyCorn.js:1556 ~ updateProductAlgolia ~ searchData:', searchData);
     console.log('🚀 ~ file: algolia.js:21 ~ init ~ data:', data);
   } catch (error) {
     console.log('🚀 ~ file: algolia.js:24 ~ init ~ error:', error);
   }
-}
+};
 
 const deleteProductAlgolia = async (bndleId) => {
-  await index.deleteObject(bndleId)
-}
+  await index.deleteObject(bndleId);
+};
 
 module.exports = {
   // connectToShopify,
@@ -1579,5 +1645,5 @@ module.exports = {
   updateProductAlgolia,
   mapWithBndleVariant,
   mapOptionWithBndle,
-  mapWeightUnit
+  mapWeightUnit,
 };
