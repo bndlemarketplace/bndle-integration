@@ -604,7 +604,7 @@ const publishProductToShopify = async (productsId) => {
       // console.log(JSON.stringify(productObj));
 
       if (el.bndleId !== '') {
-        await updateProductAlgolia(productObj, category, el.bndleId, subCategory, productType, lifeStage, mappedOptionTags);
+        await updateProductAlgolia(productObj, category, el.bndleId, subCategory, productType, lifeStage, mappedOptionTags, el.createdAt);
         console.log(' // if product is already pushed to bndle store');
         // if (productObj.options.length === 0) {
         // }
@@ -734,7 +734,8 @@ const publishProductToShopify = async (productsId) => {
               subCategory,
               productType,
               lifeStage,
-              mappedOptionTags
+              mappedOptionTags,
+              el.createdAt
             );
             const updatedProduct = await Product.findOneAndUpdate(
               { _id: el._id },
@@ -1559,7 +1560,7 @@ const deleteProductById = async (bndleId) => {
   }
 };
 
-const updateProductAlgolia = async (data, category, bndleId, subCategory, productType, lifeStage, mappedOptionTags) => {
+const updateProductAlgolia = async (data, category, bndleId, subCategory, productType, lifeStage, mappedOptionTags, createdAt) => {
   console.log("🚀 ~ file: shopifyCorn.js:1563 ~ updateProductAlgolia ~ mappedOptionTags:", mappedOptionTags)
   console.log('🚀 ~ file: shopifyCorn.js:1524 ~ updateProductAlgolia ~ data.variants:', data.variants);
 
@@ -1611,7 +1612,8 @@ const updateProductAlgolia = async (data, category, bndleId, subCategory, produc
       lifeStage,
       size,
       colors,
-      age
+      age,
+      createdAt
     },
   ];
 

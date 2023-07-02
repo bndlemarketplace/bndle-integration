@@ -297,7 +297,7 @@ const updateProductToAlgolia = async (req, res) => {
       }
 
       if (el.bndleId !== '') {
-        await cornServices.updateProductAlgolia(productObj, category, el.bndleId, subCategory, productType, lifeStage, mappedOptionTags);
+        await cornServices.updateProductAlgolia(productObj, category, el.bndleId, subCategory, productType, lifeStage, mappedOptionTags, el.createdAt);
       }
     } catch (error) {
       console.log('🚀 ~ file: productController.js:303 ~ updateProductToAlgolia ~ error:', error);
