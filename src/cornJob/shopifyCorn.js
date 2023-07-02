@@ -1614,7 +1614,7 @@ const updateProductAlgolia = async (data, category, bndleId, subCategory, produc
       size,
       colors,
       age,
-      createdAt
+      createdAt : new Date(createdAt).getTime()
     },
   ];
 
