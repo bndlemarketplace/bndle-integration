@@ -1561,6 +1561,7 @@ const deleteProductById = async (bndleId) => {
 };
 
 const updateProductAlgolia = async (data, category, bndleId, subCategory, productType, lifeStage, mappedOptionTags, createdAt) => {
+  console.log("🚀 ~ file: shopifyCorn.js:1564 ~ updateProductAlgolia ~ createdAt:", createdAt)
   console.log("🚀 ~ file: shopifyCorn.js:1563 ~ updateProductAlgolia ~ mappedOptionTags:", mappedOptionTags)
   console.log('🚀 ~ file: shopifyCorn.js:1524 ~ updateProductAlgolia ~ data.variants:', data.variants);
 
