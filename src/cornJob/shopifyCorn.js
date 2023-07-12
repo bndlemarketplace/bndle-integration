@@ -813,7 +813,7 @@ const unpublishProductFromShopify = async (productsId) => {
     for (let productIndex = 0; productIndex < products.length; productIndex++) {
       const product = products[productIndex];
 
-      if (product.category !== 'Support') {
+      if (product.category !== 'Services and Expertise') {
         const categoryData = await Category.aggregate([
           {
             $unwind: '$secondaryCategories',
@@ -1561,10 +1561,6 @@ const deleteProductById = async (bndleId) => {
 };
 
 const updateProductAlgolia = async (data, category, bndleId, subCategory, productType, lifeStage, mappedOptionTags, createdAt) => {
-  console.log("🚀 ~ file: shopifyCorn.js:1564 ~ updateProductAlgolia ~ createdAt:", createdAt)
-  console.log("🚀 ~ file: shopifyCorn.js:1563 ~ updateProductAlgolia ~ mappedOptionTags:", mappedOptionTags)
-  console.log('🚀 ~ file: shopifyCorn.js:1524 ~ updateProductAlgolia ~ data.variants:', data.variants);
-
   const size = [];
   const colors = [];
   const age = [];
@@ -1622,8 +1618,6 @@ const updateProductAlgolia = async (data, category, bndleId, subCategory, produc
     const searchIndex = algoliaClient.initIndex('Product_query_suggestions_latest');
     const data = await index.saveObjects(searchRecord);
     const searchData = await searchIndex.saveObjects(record);
-    console.log('🚀 ~ file: shopifyCorn.js:1556 ~ updateProductAlgolia ~ searchData:', searchData);
-    console.log('🚀 ~ file: algolia.js:21 ~ init ~ data:', data);
   } catch (error) {
     console.log('🚀 ~ file: algolia.js:24 ~ init ~ error:', error);
   }

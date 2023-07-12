@@ -127,7 +127,6 @@ const updateProductToAlgolia = async (req, res) => {
   const product = await Product.find({ status: 'PUBLISHED' }, { isDeleted: false });
 
   for (let element = 0; element < product.length; element++) {
-    console.log('🚀 ~ file: productController.js:129 ~ updateProductToAlgolia ~ element:', element);
     try {
       const el = product[element];
       const user = await User.findOne({ _id: el.vendorId });
@@ -297,6 +296,8 @@ const updateProductToAlgolia = async (req, res) => {
       }
 
       if (el.bndleId !== '') {
+        console.log("🚀 ~ file: productController.js:300 ~ updateProductToAlgolia ~ el.bndleId:", el.bndleId)
+        console.log("🚀 ~ file: productController.js:301 ~ updateProductToAlgolia ~ category:", category)
         await cornServices.updateProductAlgolia(productObj, category, el.bndleId, subCategory, productType, lifeStage, mappedOptionTags, el.createdAt);
       }
     } catch (error) {
