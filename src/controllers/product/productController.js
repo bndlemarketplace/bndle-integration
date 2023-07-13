@@ -124,7 +124,7 @@ const deleteAlgoliaProduct = async (req, res) => {
 };
 
 const updateProductToAlgolia = async (req, res) => {
-  const product = await Product.find({ status: 'PUBLISHED' }, { isDeleted: false });
+  const product = await Product.find({ status: 'PUBLISHED', isDeleted: false });
 
   for (let element = 0; element < product.length; element++) {
     try {
