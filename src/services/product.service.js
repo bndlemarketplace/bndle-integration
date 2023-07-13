@@ -3,7 +3,7 @@ const cornServices = require('../cornJob/shopifyCorn');
 const axios = require('axios');
 
 const categoryUpdateHelper = async (product) => {
-  if (product.category !== 'Support') {
+  if (product.category !== 'Services and Expertise') {
     const count = await Product.countDocuments({
       category: product.category,
       subCategory: product.subCategory,
