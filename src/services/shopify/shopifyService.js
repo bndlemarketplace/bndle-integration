@@ -9,6 +9,9 @@ const LoggerService = require('../../services/logger.service');
 const { Product, User } = require('../../models');
 const axios = require('axios');
 const excelJS = require('exceljs');
+const algoliasearch = require('algoliasearch');
+const algoliaClient = algoliasearch(process.env.ALGOLIA_APPLICATION_ID, process.env.ALGOLIA_KEY);
+const index = algoliaClient.initIndex('Product');
 
 // 63e9dd5b4229fe58b04f117c
 const syncAllShopifyProducts = async (vendorId = '', productId = '') => {
@@ -160,8 +163,27 @@ const getPermissionFile = async () => {
   }
 }
 
+const syncAlgoliaProduct = async () => {
+  let hits = [];
+  // Get all records as an iterator
+  await index.browseObjects({
+    batch: (batch) => {
+      hits = hits.concat(batch);
+    },
+  });
+
+  for (let index = 0; index < hits.length; index++) {
+    const element = hits[index];
+    const product = await Product.findOne({ bndleId: element.objectID, status: "PUBLISHED"})
+    if(!product) {
+      await index.deleteObject(element.objectID);
+    }
+  }
+}
+
 
 module.exports = {
   syncAllShopifyProducts,
-  getPermissionFile
+  getPermissionFile,
+  syncAlgoliaProduct
 };

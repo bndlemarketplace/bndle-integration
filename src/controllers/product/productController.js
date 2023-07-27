@@ -8,6 +8,9 @@ const { User, Product, Mapping, ProductVariants } = require('../../models');
 const shopifyRequest = require('../../services/shopify/lib/request');
 const { syncAllShopifyProducts } = require('../../services/shopify/shopifyService');
 const restifyConfig = require('../../config/restifyConfig');
+const algoliasearch = require('algoliasearch');
+const algoliaClient = algoliasearch(process.env.ALGOLIA_APPLICATION_ID, process.env.ALGOLIA_KEY);
+const index = algoliaClient.initIndex('Product');
 
 const initialProductSyncShopify = catchAsync(async (req, res) => {
   const vendorId = req.body.vendorID;
@@ -296,9 +299,16 @@ const updateProductToAlgolia = async (req, res) => {
       }
 
       if (el.bndleId !== '') {
-        console.log("🚀 ~ file: productController.js:300 ~ updateProductToAlgolia ~ el.bndleId:", el.bndleId)
-        console.log("🚀 ~ file: productController.js:301 ~ updateProductToAlgolia ~ category:", category)
-        await cornServices.updateProductAlgolia(productObj, category, el.bndleId, subCategory, productType, lifeStage, mappedOptionTags, el.createdAt);
+        await cornServices.updateProductAlgolia(
+          productObj,
+          category,
+          el.bndleId,
+          subCategory,
+          productType,
+          lifeStage,
+          mappedOptionTags,
+          el.createdAt
+        );
       }
     } catch (error) {
       console.log('🚀 ~ file: productController.js:303 ~ updateProductToAlgolia ~ error:', error);
@@ -307,10 +317,22 @@ const updateProductToAlgolia = async (req, res) => {
   return res.status(200).jsend.success({ message: 'success' });
 };
 
+const getProductToAlgolia = async (req, res) => {
+  let hits = [];
+  // Get all records as an iterator
+  await index.browseObjects({
+    batch: (batch) => {
+      hits = hits.concat(batch);
+    },
+  });
+  return res.status(200).jsend.success(hits);
+};
+
 module.exports = {
   initialProductSyncShopify,
   publishProductToShopify,
   productUpdateShopify,
   deleteAlgoliaProduct,
   updateProductToAlgolia,
+  getProductToAlgolia,
 };
