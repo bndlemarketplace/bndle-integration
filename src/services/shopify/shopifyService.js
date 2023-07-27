@@ -10,8 +10,80 @@ const { Product, User } = require('../../models');
 const axios = require('axios');
 const excelJS = require('exceljs');
 
-// 63e9dd5b4229fe58b04f117c
+const getAllProducts = async (params, vendor, allProducts = []) => {
+  try {
+    const tmpClient = new Shopify({
+      shopName: vendor.credentials.shopName,
+      accessToken: vendor.credentials.accessToken,
+      apiVersion: '2022-10',
+    });
+    const products = await tmpClient.product.list(params);
+
+    console.log("🚀 ~ file: shopifyService.js:26 ~ getAllProducts ~ products.length:", products.length)
+    if (products && products.length) {
+      allProducts = [...allProducts, ...products];
+    }
+
+    if (products.nextPageParameters) {
+      params = products.nextPageParameters;
+      return await getAllProducts(params, vendor, allProducts);
+    } else {
+      return allProducts;
+    }
+  } catch (error) {
+    console.log('🚀 ~ file: shopifyService.js:34 ~ getAllProducts ~ error:', error);
+    return allProducts;
+  }
+};
+
 const syncAllShopifyProducts = async (vendorId = '', productId = '') => {
+  try {
+    const allVendors = vendorId
+      ? await User.find(
+          { _id: vendorId, connectionType: constVer.model.product.productSourceEnum[1] },
+          { credentials: 1, name: 1, connectionType: 1 }
+        ).lean()
+      : await User.find(
+          { connectionType: constVer.model.product.productSourceEnum[1] },
+          { credentials: 1, name: 1, connectionType: 1 }
+        ).lean();
+
+    console.log('🚀 ~ file: shopifyService.js:52 ~ syncAllShopifyProducts ~ allVendors:', allVendors.length);
+    for (let i = 0; i < allVendors.length; i++) {
+      let vendor = allVendors[i];
+      console.log('🚀 ~ file: shopifyService.js:53 ~ syncAllShopifyProducts ~ i:', i, vendor._id);
+      if (vendor.credentials) {
+        const products = await getAllProducts({ limit: 100 }, vendor);
+        console.log('🚀 ~ file: shopifyService.js:61 ~ syncAllShopifyProducts ~ products:', products.length);
+        if (products && products.length) {
+          let promises = []
+          for (let index = 0; index < products.length; index++) {
+            let product = products[index];
+            promises.push(cornServices.createUpdateProduct(product, 'update', vendor._id, true));
+            // try {
+            //   // const dbProduct = await Product.findOne({ venderProductPlatformId: product.id });
+            //   // console.log("==dbProduct=",dbProduct)
+            //   // create product
+            //   if (dbProduct && (dbProduct.status === 'PUBLISHED' || dbProduct.status === 'ENABLED')) {
+            //     promises.push(cornServices.createUpdateProduct(product, 'update', vendor._id, true));
+            //   } else {
+            //     // await cornServices.createUpdateProduct(product, 'create', vendor._id);
+            //   }
+            // } catch (productError) {
+            //   console.log('🚀 ~ file: shopifyService.js:60 ~ productError:', productError);
+            // }
+          }
+
+          await Promise.allSettled(promises);
+        }
+      }
+    }
+  } catch (error) {}
+};
+
+// 63e9dd5b4229fe58b04f117c
+const syncAllShopifyProductsOld = async (vendorId = '', productId = '') => {
+  console.log('🚀 ~ file: shopifyService.js:18 ~ syncAllShopifyProducts ~ vendorId:', vendorId);
   console.log('===sync_product_shopify==');
   try {
     const allVendors = vendorId
@@ -24,7 +96,8 @@ const syncAllShopifyProducts = async (vendorId = '', productId = '') => {
           { credentials: 1, name: 1, connectionType: 1 }
         ).lean();
 
-    let vendor;    
+    let vendor;
+    console.log('🚀 ~ file: shopifyService.js:33 ~ syncAllShopifyProducts ~ allVendors.length:', allVendors.length);
     for (let i = 0; i < allVendors.length; i++) {
       vendor = allVendors[i];
       console.log('start =========================================================> 1 =  vendor email=', i);
@@ -43,10 +116,8 @@ const syncAllShopifyProducts = async (vendorId = '', productId = '') => {
               // console.log('products',products, products.length);
               if (products && products.length) {
                 let product;
-                console.log("2 nextPageParameters==>>", products.nextPageParameters)
                 for (let index = 0; index < products.length; index++) {
                   product = products[index];
-                  console.log(' 3 product==>>', product.title, product.id);
                   try {
                     const dbProduct = await Product.findOne({ venderProductPlatformId: product.id });
                     // console.log("==dbProduct=",dbProduct)
@@ -57,7 +128,7 @@ const syncAllShopifyProducts = async (vendorId = '', productId = '') => {
                       // await cornServices.createUpdateProduct(product, 'create', vendor._id);
                     }
                   } catch (productError) {
-                    console.log("🚀 ~ file: shopifyService.js:60 ~ productError:", productError)
+                    console.log('🚀 ~ file: shopifyService.js:60 ~ productError:', productError);
                   }
                 }
               }
@@ -109,12 +180,27 @@ const syncAllShopifyProducts = async (vendorId = '', productId = '') => {
 };
 
 const getPermissionFile = async () => {
-  const permissions = ["write_assigned_fulfillment_orders", "read_assigned_fulfillment_orders", "write_merchant_managed_fulfillment_orders", "read_merchant_managed_fulfillment_orders", "write_orders", "read_orders", "write_products", "read_products", "write_order_edits", "read_order_edits", "write_returns", "read_returns", "read_inventory", "write_inventory"]
-  const users = await User.find({ connectionType: "shopify", isDeleted: false }).lean();
+  const permissions = [
+    'write_assigned_fulfillment_orders',
+    'read_assigned_fulfillment_orders',
+    'write_merchant_managed_fulfillment_orders',
+    'read_merchant_managed_fulfillment_orders',
+    'write_orders',
+    'read_orders',
+    'write_products',
+    'read_products',
+    'write_order_edits',
+    'read_order_edits',
+    'write_returns',
+    'read_returns',
+    'read_inventory',
+    'write_inventory',
+  ];
+  const users = await User.find({ connectionType: 'shopify', isDeleted: false }).lean();
   for (let index = 0; index < users.length; index++) {
     const element = users[index];
-    const userPermissions = {}
-    if(element.credentials) {
+    const userPermissions = {};
+    if (element.credentials) {
       try {
         const response = await axios({
           method: 'get',
@@ -123,10 +209,10 @@ const getPermissionFile = async () => {
         for (let i = 0; i < permissions.length; i++) {
           const permission = permissions[i];
           const isAvailable = response.data.access_scopes.find((a) => a.handle === permission);
-          if(isAvailable) {
-            userPermissions[permission] = "Yes"
+          if (isAvailable) {
+            userPermissions[permission] = 'Yes';
           } else {
-            userPermissions[permission] = "No"
+            userPermissions[permission] = 'No';
           }
         }
       } catch (error) {
@@ -141,27 +227,45 @@ const getPermissionFile = async () => {
           for (let i = 0; i < permissions.length; i++) {
             const permission = permissions[i];
             const isAvailable = response.data.access_scopes.find((a) => a.handle === permission);
-            if(isAvailable) {
-              userPermissions[permission] = "Yes"
+            if (isAvailable) {
+              userPermissions[permission] = 'Yes';
             } else {
-              userPermissions[permission] = "No"
+              userPermissions[permission] = 'No';
             }
           }
         } catch (error) {
-          if(error.response && error.response.data === 401) {
-            userPermissions.comments = "Not Allow to check"
+          if (error.response && error.response.data === 401) {
+            userPermissions.comments = 'Not Allow to check';
           } else {
-            userPermissions.comments = (error.response && error.response.data) ? error.response.data.errors : ""
-          }          
+            userPermissions.comments = error.response && error.response.data ? error.response.data.errors : '';
+          }
         }
       }
-      await User.findOneAndUpdate({ _id: element._id }, { $set: { permissions: userPermissions}})
+      await User.findOneAndUpdate({ _id: element._id }, { $set: { permissions: userPermissions } });
     }
   }
-}
+};
 
+const syncAlgoliaProduct = async () => {
+  let hits = [];
+  // Get all records as an iterator
+  await index.browseObjects({
+    batch: (batch) => {
+      hits = hits.concat(batch);
+    },
+  });
+
+  for (let index = 0; index < hits.length; index++) {
+    const element = hits[index];
+    const product = await Product.findOne({ bndleId: element.objectID, status: 'PUBLISHED' });
+    if (!product) {
+      await index.deleteObject(element.objectID);
+    }
+  }
+};
 
 module.exports = {
   syncAllShopifyProducts,
-  getPermissionFile
+  getPermissionFile,
+  syncAlgoliaProduct,
 };

@@ -1033,10 +1033,15 @@ const pushProductToShopify = async () => {
   return tmpproduct;
 };
 
-const createUpdateProduct = async (product, mode, userId) => {
+const createUpdateProduct = async (product, mode, userId, isFromSync) => {
   try {
     const userData = await User.findOne({ _id: userId });
     const currentDbProduct = await Product.findOne({ venderProductPlatformId: product.id }).lean();
+    if (currentDbProduct && (currentDbProduct.status === 'PUBLISHED' || currentDbProduct.status === 'ENABLED')) {
+      mode = "update"
+    } else if(isFromSync) {
+      return;
+    }
     // for map image data to fit in our db
     let mappedImages = [];
     if (product.images.length > 0) {
@@ -1101,7 +1106,6 @@ const createUpdateProduct = async (product, mode, userId) => {
       options: mappedOptions,
       // isDeleted: false, // for deleted product stay deleted
     };
-    console.log('🚀 ~ file: shopifyCorn.js:1084 ~ createUpdateProduct ~ productObj.mappedImages:', mappedImages);
     if (productObj.tags == '') {
       delete productObj.tags == [];
     }
@@ -1128,7 +1132,6 @@ const createUpdateProduct = async (product, mode, userId) => {
       );
     }
     if (dbProduct) {
-      console.log('4 db product id', dbProduct._id);
       // for create variant of product
       if (product.variants.length > 0) {
         product.variants.forEach(async (variant) => {
