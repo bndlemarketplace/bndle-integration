@@ -80,7 +80,9 @@ module.exports = async (agenda) => {
                 vendorId: 1, // Add vendorId to the projection
                 bndleId: 1,
                 images: 1,
-                options: 1
+                options: 1,
+                productCategory: 1,
+                category: 1
               }
             },
             {
@@ -110,6 +112,8 @@ module.exports = async (agenda) => {
                 images: 1,
                 options: 1,
                 variants: 1,
+                productCategory: 1,
+                category: 1,
                 standardShipping: { $arrayElemAt: ["$vendor.standardShipping", 0] } // Add standardShipping to the projection
               }
             },
@@ -161,6 +165,8 @@ module.exports = async (agenda) => {
             xml += `<g:country>GB</g:country>`
             xml += `<g:service>Standard</g:service>`
             xml += `<g:price>${product?.standardShipping?.price}GBP</g:price>`
+            xml += `<g:product_type>${product?.productCategory}GBP</g:product_type>`
+            xml += `<g:google_product_category>${product?.category}GBP</g:google_product_category>`
             xml += `</g:shipping>`
             xml += '</item>';
           }
