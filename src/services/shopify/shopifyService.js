@@ -9,6 +9,9 @@ const LoggerService = require('../../services/logger.service');
 const { Product, User } = require('../../models');
 const axios = require('axios');
 const excelJS = require('exceljs');
+const algoliasearch = require('algoliasearch');
+const algoliaClient = algoliasearch(process.env.ALGOLIA_APPLICATION_ID, process.env.ALGOLIA_KEY);
+const index = algoliaClient.initIndex('Product');
 
 const getAllProducts = async (params, vendor, allProducts = []) => {
   try {
