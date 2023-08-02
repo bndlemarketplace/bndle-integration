@@ -94,79 +94,83 @@ router.route('/generate').get(async (req, res) => {
   getProductCount().then(async count => {
     let skip = 0;
     while (skip < count) {
-      let products = await Product.aggregate([
-        {
-          $match: {
-            status: 'PUBLISHED',
-            isDeleted: false
+        let products = await Product.aggregate([
+          {
+            $match: {
+              status: 'PUBLISHED',
+              isDeleted: false
+            },
           },
-        },
-        {
-          $project: {
-            _id: 1,
-            title: 1,
-            description: 1,
-            vendorName: 1,
-            vendorId: 1, // Add vendorId to the projection
-            bndleId: 1,
-            images: 1,
-            options: 1
+          {
+            $project: {
+              _id: 1,
+              title: 1,
+              description: 1,
+              vendorName: 1,
+              vendorId: 1, // Add vendorId to the projection
+              bndleId: 1,
+              images: 1,
+              options: 1,
+              productCategory: 1,
+              category: 1
+            }
+          },
+          {
+            $lookup: {
+              from: "productvariants",
+              localField: "_id",
+              foreignField: "productId",
+              as: "variants"
+            }
+          },
+          {
+            $lookup: {
+              from: "users",
+              localField: "vendorId",
+              foreignField: "_id",
+              as: "vendor"
+            }
+          },
+          {
+            $project: {
+              _id: 1,
+              title: 1,
+              description: 1,
+              vendorName: { $arrayElemAt: ['$vendor.name', 0] },
+              vendorId: 1,
+              bndleId: 1,
+              images: 1,
+              options: 1,
+              variants: 1,
+              productCategory: 1,
+              category: 1,
+              standardShipping: { $arrayElemAt: ["$vendor.standardShipping", 0] } // Add standardShipping to the projection
+            }
+          },
+          {
+            $match: {
+              description: { $type: "string", $nin: ["", null] },
+              bndleId: { $exists: true, $ne: "" },
+              vendorName: { $type: "string", $nin: ["", null] },
+              // options: {
+              //   $elemMatch: {
+              //     name: "Color"
+              //   }
+              // },
+              // "variants.sku": { $exists: true, $nin: ["", null] }
+            }
+          },
+          {
+            $skip: skip
+          },
+          {
+            $limit: batchSize
           }
-        },
-        {
-          $lookup: {
-            from: "productvariants",
-            localField: "_id",
-            foreignField: "productId",
-            as: "variants"
-          }
-        },
-        {
-          $lookup: {
-            from: "users",
-            localField: "vendorId",
-            foreignField: "_id",
-            as: "vendor"
-          }
-        },
-        {
-          $project: {
-            _id: 1,
-            title: 1,
-            description: 1,
-            vendorName: { $arrayElemAt: ['$vendor.name', 0] },
-            vendorId: 1,
-            bndleId: 1,
-            images: 1,
-            options: 1,
-            variants: 1,
-            standardShipping: { $arrayElemAt: ["$vendor.standardShipping", 0] } // Add standardShipping to the projection
-          }
-        },
-        {
-          $match: {
-            description: { $type: "string", $nin: ["", null] },
-            bndleId: { $exists: true, $ne: "" },
-            vendorName: { $type: "string", $nin: ["", null] },
-            // options: {
-            //   $elemMatch: {
-            //     name: "Color"
-            //   }
-            // },
-            // "variants.sku": { $exists: true, $nin: ["", null] }
-          }
-        },
-        {
-          $skip: skip
-        },
-        {
-          $limit: batchSize
-        }
-      ]);
+        ]);
 
 
 
-
+      
       console.log("🚀 ~ file: routes.js:165 ~ getProductCount ~ products:", products.length)
       for (let product of products) {
 
@@ -194,6 +198,8 @@ router.route('/generate').get(async (req, res) => {
         xml += `<g:country>GB</g:country>`
         xml += `<g:service>Standard</g:service>`
         xml += `<g:price>${product?.standardShipping?.price}GBP</g:price>`
+        xml += `<g:product_type>${product?.productCategory}GBP</g:product_type>`
+        xml += `<g:google_product_category>${product?.category}GBP</g:google_product_category>`
         xml += `</g:shipping>`
         xml += '</item>';
       }
