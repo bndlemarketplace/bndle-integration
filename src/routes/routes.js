@@ -195,7 +195,7 @@ router.route('/generate').get(async (req, res) => {
           xml += `<g:identifier_exists>no</g:identifier_exists>`;
         }
         xml += `<g:product_type>${encode(product.productCategory, { level: 'xml' })}</g:product_type>`
-        xml += `<g:google_product_category>${product?.category}GBP</g:google_product_category>`
+        xml += `<g:google_product_category>${product?.category}</g:google_product_category>`
         xml += `<g:shipping>`
         xml += `<g:country>GB</g:country>`
         xml += `<g:service>Standard</g:service>`
