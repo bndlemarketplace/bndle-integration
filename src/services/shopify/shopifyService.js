@@ -258,9 +258,12 @@ const syncAlgoliaProduct = async () => {
     },
   });
 
+  console.log("🚀 ~ file: shopifyService.js:262 ~ syncAlgoliaProduct ~ hits:", hits.length)
   for (let index = 0; index < hits.length; index++) {
     const element = hits[index];
+    console.log("🚀 ~ file: shopifyService.js:264 ~ syncAlgoliaProduct ~ element:", element.name)
     const product = await Product.findOne({ bndleId: element.objectID, status: 'PUBLISHED' });
+    console.log("🚀 ~ file: shopifyService.js:266 ~ syncAlgoliaProduct ~ product:", product._id)
     if (!product) {
       await index.deleteObject(element.objectID);
     }
