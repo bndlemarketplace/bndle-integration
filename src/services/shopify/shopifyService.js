@@ -11,7 +11,6 @@ const axios = require('axios');
 const excelJS = require('exceljs');
 const algoliasearch = require('algoliasearch');
 const algoliaClient = algoliasearch(process.env.ALGOLIA_APPLICATION_ID, process.env.ALGOLIA_KEY);
-const index = algoliaClient.initIndex('Product');
 
 const getAllProducts = async (params, vendor, allProducts = []) => {
   try {
@@ -265,6 +264,8 @@ const syncAlgoliaProduct = async () => {
       const product = await Product.findOne({ bndleId: element.objectID, status: 'PUBLISHED', isDeleted : false });
       if (!product) {
         console.log("🚀 ~ file: shopifyService.js:266 ~ syncAlgoliaProduct ~ product:", product)
+        console.log("🚀 ~ file: shopifyService.js:269 ~ syncAlgoliaProduct ~ element.objectID:", element.objectID)
+        const index = algoliaClient.initIndex('Product');
         await index.deleteObject(element.objectID);
       }
     
