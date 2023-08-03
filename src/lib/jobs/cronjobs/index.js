@@ -6,5 +6,6 @@ module.exports = (agenda) => ({
   syncWooCommerceProduct : require("./syncWooCommerceProduct")(agenda),
   syncWixProduct : require("./syncWixProduct")(agenda),
   syncSquareSpaceProduct : require("./syncSquareSpaceProduct")(agenda),
-  syncShopifyPermission: require("./syncShopifyPermission")(agenda)
+  syncShopifyPermission: require("./syncShopifyPermission")(agenda),
+  syncAlgoliaProduct: require("./syncAlgoliaProduct")(agenda),
 });
