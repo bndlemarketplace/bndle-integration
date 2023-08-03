@@ -82,7 +82,8 @@ module.exports = async (agenda) => {
                 images: 1,
                 options: 1,
                 productCategory: 1,
-                category: 1
+                category: 1,
+                subCategory: 1
               }
             },
             {
@@ -114,6 +115,7 @@ module.exports = async (agenda) => {
                 variants: 1,
                 productCategory: 1,
                 category: 1,
+                subCategory: 1,
                 standardShipping: { $arrayElemAt: ["$vendor.standardShipping", 0] } // Add standardShipping to the projection
               }
             },
@@ -161,7 +163,7 @@ module.exports = async (agenda) => {
               xml += `<g:identifier_exists>no</g:identifier_exists>`;
             }
             xml += `<g:product_type>${encode(product.productCategory, { level: 'xml' })}</g:product_type>`
-            xml += `<g:google_product_category>${product?.category}</g:google_product_category>`
+            xml += `<g:google_product_category>${product?.category} &gt; ${encode(product.subCategory, { level: 'xml' })}</g:google_product_category>`
             xml += `<g:shipping>`
             xml += `<g:country>GB</g:country>`
             xml += `<g:service>Standard</g:service>`
