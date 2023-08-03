@@ -251,6 +251,7 @@ const getPermissionFile = async () => {
 const syncAlgoliaProduct = async () => {
   let hits = [];
   // Get all records as an iterator
+  const index = algoliaClient.initIndex('Product');
   await index.browseObjects({
     batch: (batch) => {
       hits = hits.concat(batch);
@@ -265,7 +266,7 @@ const syncAlgoliaProduct = async () => {
       if (!product) {
         console.log("🚀 ~ file: shopifyService.js:266 ~ syncAlgoliaProduct ~ product:", product)
         console.log("🚀 ~ file: shopifyService.js:269 ~ syncAlgoliaProduct ~ element.objectID:", element.objectID)
-        const index = algoliaClient.initIndex('Product');
+        
         await index.deleteObject(element.objectID);
       }
     
