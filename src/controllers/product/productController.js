@@ -11,6 +11,7 @@ const restifyConfig = require('../../config/restifyConfig');
 const algoliasearch = require('algoliasearch');
 const algoliaClient = algoliasearch(process.env.ALGOLIA_APPLICATION_ID, process.env.ALGOLIA_KEY);
 const index = algoliaClient.initIndex('Product');
+const { syncAlgoliaProduct } = require('../../services/shopify/shopifyService');
 
 const initialProductSyncShopify = catchAsync(async (req, res) => {
   const vendorId = req.body.vendorID;
@@ -128,6 +129,7 @@ const deleteAlgoliaProduct = async (req, res) => {
 
 const updateProductToAlgolia = async (req, res) => {
   const product = await Product.find({ status: 'PUBLISHED', isDeleted: false });
+  console.log("🚀 ~ file: productController.js:132 ~ updateProductToAlgolia ~ product:", product.length)
 
   for (let element = 0; element < product.length; element++) {
     try {
@@ -319,12 +321,14 @@ const updateProductToAlgolia = async (req, res) => {
 
 const getProductToAlgolia = async (req, res) => {
   let hits = [];
-  // Get all records as an iterator
-  await index.browseObjects({
-    batch: (batch) => {
-      hits = hits.concat(batch);
-    },
-  });
+  // // Get all records as an iterator
+  // await index.browseObjects({
+  //   batch: (batch) => {
+  //     hits = hits.concat(batch);
+  //   },
+  // });
+
+  await syncAlgoliaProduct()
   return res.status(200).jsend.success(hits);
 };
 

@@ -252,6 +252,7 @@ const syncAlgoliaProduct = async () => {
   let hits = [];
   // Get all records as an iterator
   const index = algoliaClient.initIndex('Product');
+
   await index.browseObjects({
     batch: (batch) => {
       hits = hits.concat(batch);
@@ -259,17 +260,13 @@ const syncAlgoliaProduct = async () => {
   });
 
   console.log("🚀 ~ file: shopifyService.js:262 ~ syncAlgoliaProduct ~ hits:", hits.length)
-  for (let index = 0; index < hits.length; index++) {
-    const element = hits[index];
-      console.log("🚀 ~ file: shopifyService.js:264 ~ syncAlgoliaProduct ~ element:", element.name)
-      const product = await Product.findOne({ bndleId: element.objectID, status: 'PUBLISHED', isDeleted : false });
-      if (!product) {
-        console.log("🚀 ~ file: shopifyService.js:266 ~ syncAlgoliaProduct ~ product:", product)
-        console.log("🚀 ~ file: shopifyService.js:269 ~ syncAlgoliaProduct ~ element.objectID:", element.objectID)
-        
-        await index.deleteObject(element.objectID);
-      }
-    
+  for (let i = 0; i < hits.length; i++) {
+    const element = hits[i];
+    const product = await Product.findOne({ bndleId: element.objectID, status: 'PUBLISHED', isDeleted : false });
+    if (!product) {
+      console.log("🚀 ~ file: shopifyService.js:269 ~ syncAlgoliaProduct ~ element.objectID:", element.objectID)
+      await index.deleteObject(element.objectID.toString());
+    }
   }
 };
 
