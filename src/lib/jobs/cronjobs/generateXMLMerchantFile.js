@@ -4,6 +4,8 @@ const logger = require('../../../config/logger');
 const fs = require('fs');
 const { encode } = require('html-entities');
 const path = require('path');
+const { calculateCategory } = require("../../../services/product.service");
+
 module.exports = async (agenda) => {
   agenda.define('generate_xml_merchant_file', {
     concurrency: 4, lockLifetime: 1 * 60 * 1000, priority: 1,
@@ -163,6 +165,9 @@ module.exports = async (agenda) => {
               xml += `<g:identifier_exists>no</g:identifier_exists>`;
             }
             xml += `<g:product_type>${encode(product.productCategory, { level: 'xml' })}</g:product_type>`
+            if(calculateCategory(product.category, product.subCategory, product.productCategory)) {
+              xml += `<g:google_product_category>${calculateCategory(product.category, product.subCategory, product.productCategory)}</g:google_product_category>`
+            }
             // xml += `<g:google_product_category>${product?.category} &gt; ${encode(product.subCategory, { level: 'xml' })}</g:google_product_category>`
             xml += `<g:shipping>`
             xml += `<g:country>GB</g:country>`

@@ -1,6 +1,8 @@
 const {Product, Category, ProductVariants } = require('../models');
 const cornServices = require('../cornJob/shopifyCorn');
 const axios = require('axios');
+const constVer = require('../config/constant');
+const { encode } = require('html-entities');
 
 const categoryUpdateHelper = async (product) => {
   if (product.category !== 'Services and Expertise') {
@@ -140,6 +142,29 @@ const deleteProduct = async (productId, userId) => {
   // return res.status(httpStatus.OK).jsend.success({ message: 'Product deleted successfully.' });
 };
 
+const calculateCategory = (category, secondCategory, thirdCategory) => {
+  let gCategory = ''
+  if(constVer.category[category] && constVer.category[category][secondCategory] && constVer.category[category][secondCategory][thirdCategory]) {
+    gCategory = constVer.category[category][secondCategory][thirdCategory];
+  }
+
+  if(!gCategory) {
+    return '';
+  }
+
+  // ${product?.category} &gt; ${encode(product.subCategory, { level: 'xml' })}
+
+  let gCategoryArr = gCategory.split(",")
+  if(gCategoryArr.length > 1) {
+    gCategory = `${encode(gCategoryArr[0], { level: 'xml' })} &gt; ${encode(gCategoryArr[1], { level: 'xml' })}`
+  } else if(gCategoryArr.length === 1) {
+    gCategory = `${encode(gCategoryArr[0], { level: 'xml' })}`
+  }
+
+  return gCategory;
+}
+
 module.exports = {
   deleteProduct,
+  calculateCategory
 };
