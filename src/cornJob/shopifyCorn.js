@@ -1036,7 +1036,10 @@ const pushProductToShopify = async () => {
 const createUpdateProduct = async (product, mode, userId, isFromSync) => {
   try {
     const userData = await User.findOne({ _id: userId });
-    const currentDbProduct = await Product.findOne({ venderProductPlatformId: product.id }).lean();
+    const currentDbProduct = await Product.findOne({ venderProductPlatformId: product.id, isDeleted: false }).lean();
+    if(!currentDbProduct) {
+      return;
+    }
     if (currentDbProduct && (currentDbProduct.status === 'PUBLISHED' || currentDbProduct.status === 'ENABLED')) {
       mode = "update"
     } else if(isFromSync) {
