@@ -5,7 +5,7 @@ const logger = require('../config/logger');
 const ApiError = require('../utils/ApiError');
 const constVer = require('../config/constant');
 const User = require('../models/user.model');
-const { Product, ProductVariants, Mapping, Category } = require('../models');
+const { Product, ProductVariants, Mapping, Category, UserProductHistory } = require('../models');
 const restifyConfig = require('../config/restifyConfig');
 const LoggerService = require('../services/logger.service');
 const { s3Url } = require('../config/restifyConfig');
@@ -1631,6 +1631,7 @@ const updateProductAlgolia = async (data, category, bndleId, subCategory, produc
 
 const deleteProductAlgolia = async (bndleId) => {
   await index.deleteObject(bndleId);
+  await UserProductHistory.deleteMany({ bndleId: element.objectID.toString()})
 };
 
 module.exports = {

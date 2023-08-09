@@ -6,7 +6,7 @@ const ApiError = require('../../utils/ApiError');
 const cornServices = require('../../cornJob/shopifyCorn');
 const shopifyRequest = require('../../services/shopify/lib/request');
 const LoggerService = require('../../services/logger.service');
-const { Product, User } = require('../../models');
+const { Product, User, UserProductHistory } = require('../../models');
 const axios = require('axios');
 const excelJS = require('exceljs');
 const algoliasearch = require('algoliasearch');
@@ -266,6 +266,7 @@ const syncAlgoliaProduct = async () => {
     if (!product) {
       console.log("🚀 ~ file: shopifyService.js:269 ~ syncAlgoliaProduct ~ element.objectID:", element.objectID)
       await index.deleteObject(element.objectID.toString());
+      await UserProductHistory.deleteMany({ bndleId: element.objectID.toString()})
     }
   }
 };
