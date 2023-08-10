@@ -7,3 +7,4 @@ module.exports.VenderOrder = require('./vendorOrder.model');
 module.exports.Order = require('./order.model');
 module.exports.Customer = require('./customer.model');
 module.exports.Category = require('./category.model');
+module.exports.UserProductHistory = require('./userProductHistory.model');
