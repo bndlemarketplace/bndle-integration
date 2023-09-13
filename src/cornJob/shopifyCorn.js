@@ -610,11 +610,10 @@ const publishProductToShopify = async (productsId) => {
         try {
           shopifyProduct = await client.product.delete(el.bndleId)
           console.log("🚀 ~ file: shopifyCorn.js:636 ~ publishProductToShopify ~ productVariantResponse:", shopifyProduct)
-          el.bndleId = ''
         } catch (error) {
           console.log("🚀 ~ file: shopifyCorn.js:614 ~ publishProductToShopify ~ error:", error)
         }
-       
+        el.bndleId = ''
       }
 
       if (el.bndleId !== '') {
