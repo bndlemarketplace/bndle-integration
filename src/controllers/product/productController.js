@@ -106,24 +106,24 @@ const productUpdateShopify = async (req, res) => {
 };
 
 const deleteAlgoliaProduct = async (req, res) => {
-  const dbProducts = await Product.find({
-    status: 'PUBLISHED',
-  }).lean();
-  console.log('🚀 ~ file: productController.js:107 ~ deleteAlgoliaProduct ~ dbProducts.length:', dbProducts.length);
-  for (let index = 0; index < dbProducts.length; index++) {
-    try {
-      console.log('🚀 ~ file: productController.js:108 ~ deleteAlgoliaProduct ~ index:', index);
-      const element = dbProducts[index];
-      if (element.bndleId) {
-        await cornServices.deleteProductAlgolia(element.bndleId);
-      }
-    } catch (error) {
-      console.log('🚀 ~ file: productController.js:113 ~ deleteAlgoliaProduct ~ error:', error);
-    }
-  }
+  // const dbProducts = await Product.find({
+  //   status: 'PUBLISHED',
+  // }).lean();
+  // console.log('🚀 ~ file: productController.js:107 ~ deleteAlgoliaProduct ~ dbProducts.length:', dbProducts.length);
+  // for (let index = 0; index < dbProducts.length; index++) {
+  //   try {
+  //     console.log('🚀 ~ file: productController.js:108 ~ deleteAlgoliaProduct ~ index:', index);
+  //     const element = dbProducts[index];
+  //     if (element.bndleId) {
+  //       await cornServices.deleteProductAlgolia(element.bndleId);
+  //     }
+  //   } catch (error) {
+  //     console.log('🚀 ~ file: productController.js:113 ~ deleteAlgoliaProduct ~ error:', error);
+  //   }
+  // }
 
-  // await cornServices.deleteProductAlgolia("8195892183205")
-  // await syncAllShopifyProducts()
+  // // await cornServices.deleteProductAlgolia("8195892183205")
+  await syncAllShopifyProducts("63db65052a56eeb2609cbed8")
   return res.status(200).jsend.success({ message: 'success' });
 };
 

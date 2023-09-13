@@ -602,6 +602,20 @@ const publishProductToShopify = async (productsId) => {
       let bndleProduct;
       // if product is already pushed to bndle store
       // console.log(JSON.stringify(productObj));
+      shopifyProduct = await client.product.get(el.bndleId)
+      console.log("🚀 ~ file: shopifyCorn.js:630 ~ publishProductToShopify ~ shopifyProduct:", shopifyProduct)
+      const isDefaultVariantExits = shopifyProduct.variants.find((v) => v.title.indexOf("Default") > -1);
+      const isDefaultVariantExitsInCurrent = productObj.variants.find((v) => v.title.indexOf("Default") > -1);
+      if(isDefaultVariantExits && !isDefaultVariantExitsInCurrent) {
+        try {
+          shopifyProduct = await client.product.delete(el.bndleId)
+          console.log("🚀 ~ file: shopifyCorn.js:636 ~ publishProductToShopify ~ productVariantResponse:", shopifyProduct)
+          el.bndleId = ''
+        } catch (error) {
+          console.log("🚀 ~ file: shopifyCorn.js:614 ~ publishProductToShopify ~ error:", error)
+        }
+       
+      }
 
       if (el.bndleId !== '') {
         await updateProductAlgolia(productObj, category, el.bndleId, subCategory, productType, lifeStage, mappedOptionTags, el.createdAt);
@@ -1091,9 +1105,12 @@ const createUpdateProduct = async (product, mode, userId, isFromSync) => {
       mappedOptions = [];
       isDefaultVariant = true;
     }
-
+    
+    if(!isDefaultVariant) {
+      await ProductVariants.findOneAndDelete({ productId: currentDbProduct._id, isDefault: true })
+    }
     mappedImages = mappedImages.sort((a, b) => (a.position > b.position ? 1 : b.position > a.position ? -1 : 0));
-
+    
     // console.log(mappedOptions);
     const productObj = {
       venderProductPlatformId: product.id,
@@ -1130,7 +1147,7 @@ const createUpdateProduct = async (product, mode, userId, isFromSync) => {
     if (mode === 'update') {
       dbProduct = await Product.findOneAndUpdate(
         { venderProductPlatformId: productObj.venderProductPlatformId },
-        { images: productObj.images }
+        { images: productObj.images, options: mappedOptions }
         // { upsert: true, new: true } // if by any chance we miss create webhook
       );
     }
@@ -1169,7 +1186,8 @@ const createUpdateProduct = async (product, mode, userId, isFromSync) => {
           });
 
           let variantObj;
-          if (mode === 'create') {
+          const dbVariant = await ProductVariants.findOne({ venderProductPlatformVariantId: variant.id, productId: dbProduct._id }).lean()
+          if (mode === 'create' || !dbVariant) {
             variantObj = {
               productId: dbProduct._id,
               venderProductPlatformVariantId: variant.id,
@@ -1187,7 +1205,7 @@ const createUpdateProduct = async (product, mode, userId, isFromSync) => {
               images: mappedVariantImages,
               isDeleted: false,
               isDefault: false,
-              isEnable: false,
+              isEnable: (!dbVariant) ? true : false,
             };
             if (isDefaultVariant === true) {
               variantObj.title = product.title;
@@ -1196,7 +1214,7 @@ const createUpdateProduct = async (product, mode, userId, isFromSync) => {
             }
           }
 
-          if (mode === 'update') {
+          if (mode === 'update' && dbVariant) {
             variantObj = {
               // productId: dbProduct._id,
               // venderProductPlatformVariantId: variant.id,
@@ -1240,7 +1258,8 @@ const createUpdateProduct = async (product, mode, userId, isFromSync) => {
             }
           }
 
-          await ProductVariants.findOneAndUpdate({ venderProductPlatformVariantId: variant.id }, variantObj, {
+          console.log("🚀 ~ file: shopifyCorn.js:1244 ~ product.variants.forEach ~ variantObj:", variantObj)
+          await ProductVariants.findOneAndUpdate({ venderProductPlatformVariantId: variant.id, productId: dbProduct._id }, variantObj, {
             upsert: true,
             new: true,
           });
