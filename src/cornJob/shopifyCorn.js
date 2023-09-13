@@ -1113,7 +1113,7 @@ const createUpdateProduct = async (product, mode, userId, isFromSync) => {
       isDefaultVariant = true;
     }
     
-    if(!isDefaultVariant) {
+    if(!isDefaultVariant && currentDbProduct) {
       await ProductVariants.findOneAndDelete({ productId: currentDbProduct._id, isDefault: true })
     }
     mappedImages = mappedImages.sort((a, b) => (a.position > b.position ? 1 : b.position > a.position ? -1 : 0));
