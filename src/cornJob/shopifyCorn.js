@@ -600,21 +600,25 @@ const publishProductToShopify = async (productsId) => {
       // console.log(JSON.stringify(productObj));
 
       let bndleProduct;
-      // if product is already pushed to bndle store
-      // console.log(JSON.stringify(productObj));
-      shopifyProduct = await client.product.get(el.bndleId)
-      console.log("🚀 ~ file: shopifyCorn.js:630 ~ publishProductToShopify ~ shopifyProduct:", shopifyProduct)
-      const isDefaultVariantExits = shopifyProduct.variants.find((v) => v.title.indexOf("Default") > -1);
-      const isDefaultVariantExitsInCurrent = productObj.variants.find((v) => v.title.indexOf("Default") > -1);
-      if(isDefaultVariantExits && !isDefaultVariantExitsInCurrent) {
-        try {
-          shopifyProduct = await client.product.delete(el.bndleId)
-          console.log("🚀 ~ file: shopifyCorn.js:636 ~ publishProductToShopify ~ productVariantResponse:", shopifyProduct)
-        } catch (error) {
-          console.log("🚀 ~ file: shopifyCorn.js:614 ~ publishProductToShopify ~ error:", error)
+      try {
+        let shopifyProduct = await client.product.get(el.bndleId)
+        console.log("🚀 ~ file: shopifyCorn.js:630 ~ publishProductToShopify ~ shopifyProduct:", shopifyProduct)
+        const isDefaultVariantExits = shopifyProduct.variants.find((v) => v.title.indexOf("Default") > -1);
+        const isDefaultVariantExitsInCurrent = productObj.variants.find((v) => v.title.indexOf("Default") > -1);
+        if(isDefaultVariantExits && !isDefaultVariantExitsInCurrent) {
+          try {
+            shopifyProduct = await client.product.delete(el.bndleId)
+            console.log("🚀 ~ file: shopifyCorn.js:636 ~ publishProductToShopify ~ productVariantResponse:", shopifyProduct)
+          } catch (error) {
+            console.log("🚀 ~ file: shopifyCorn.js:614 ~ publishProductToShopify ~ error:", error)
+          }
+          el.bndleId = ''
         }
+      } catch (error) {
+        console.log("🚀 ~ file: shopifyCorn.js:606 ~ publishProductToShopify ~ error:", error)
         el.bndleId = ''
       }
+      // if product is already pushed to bndle store
 
       if (el.bndleId !== '') {
         await updateProductAlgolia(productObj, category, el.bndleId, subCategory, productType, lifeStage, mappedOptionTags, el.createdAt);
@@ -723,9 +727,10 @@ const publishProductToShopify = async (productsId) => {
           });
       } else {
         console.log(' // if product is already pushed to bndle store if not ..................');
+        delete productObj.id;
         const product = { product: productObj };
         // console.log(JSON.stringify(product), '****************/////////////////**********************');
-
+        
         client.product
           .create(productObj)
           .then(async (bndleProduct) => {
