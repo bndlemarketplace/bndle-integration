@@ -730,8 +730,11 @@ const publishProductToShopify = async (productsId) => {
       } else {
         console.log(' // if product is already pushed to bndle store if not ..................');
         delete productObj.id;
+        for (let index = 0; index < productObj.variants.length; index++) {
+          delete productObj.variants[index].id;
+        }
         const product = { product: productObj };
-        // console.log(JSON.stringify(product), '****************/////////////////**********************');
+        console.log(JSON.stringify(product), '****************/////////////////**********************');
         
         client.product
           .create(productObj)
@@ -1160,8 +1163,10 @@ const createUpdateProduct = async (product, mode, userId, isFromSync) => {
     }
     if (dbProduct) {
       // for create variant of product
+      console.log("🚀 ~ file: shopifyCorn.js:1181 ~ awaitdbProduct.options.forEach ~ dbProduct.options:", dbProduct.options)
       if (product.variants.length > 0) {
         product.variants.forEach(async (variant) => {
+          console.log("-----------------", variant)
           // map option that matches our db
           const mappedOption = [];
           await dbProduct.options.forEach((el) => {
