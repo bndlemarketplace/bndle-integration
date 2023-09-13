@@ -600,26 +600,6 @@ const publishProductToShopify = async (productsId) => {
       // console.log(JSON.stringify(productObj));
 
       let bndleProduct;
-      // try {
-      //   let shopifyProduct = await client.product.get(el.bndleId)
-      //   console.log("🚀 ~ file: shopifyCorn.js:630 ~ publishProductToShopify ~ shopifyProduct:", shopifyProduct)
-      //   const isDefaultVariantExits = shopifyProduct.variants.find((v) => v.title.indexOf("Default") > -1);
-      //   console.log("🚀 ~ file: shopifyCorn.js:607 ~ publishProductToShopify ~ isDefaultVariantExits:", isDefaultVariantExits)
-      //   const isDefaultVariantExitsInCurrent = productObj.variants.find((v) => v.title.indexOf("Default") > -1);
-      //   console.log("🚀 ~ file: shopifyCorn.js:609 ~ publishProductToShopify ~ isDefaultVariantExitsInCurrent:", isDefaultVariantExitsInCurrent)
-      //   if(isDefaultVariantExits && !isDefaultVariantExitsInCurrent) {
-      //     try {
-      //       shopifyProduct = await client.product.delete(el.bndleId)
-      //       console.log("🚀 ~ file: shopifyCorn.js:636 ~ publishProductToShopify ~ productVariantResponse:", shopifyProduct)
-      //     } catch (error) {
-      //       console.log("🚀 ~ file: shopifyCorn.js:614 ~ publishProductToShopify ~ error:", error)
-      //     }
-      //     el.bndleId = ''
-      //   }
-      // } catch (error) {
-      //   console.log("🚀 ~ file: shopifyCorn.js:606 ~ publishProductToShopify ~ error:", error)
-      //   el.bndleId = ''
-      // }
       // if product is already pushed to bndle store
 
       if (el.bndleId !== '') {
@@ -1164,6 +1144,14 @@ const createUpdateProduct = async (product, mode, userId, isFromSync) => {
     if (dbProduct) {
       // for create variant of product
       console.log("🚀 ~ file: shopifyCorn.js:1181 ~ awaitdbProduct.options.forEach ~ dbProduct.options:", dbProduct.options)
+      const dbProductVariant = await ProductVariants.find({ productId: currentDbProduct._id }).lean();
+      for (let index = 0; index < dbProductVariant.length; index++) {
+        const element = dbProductVariant[index];
+        const isExist = product.variants.find((v) => v.id == element.venderProductPlatformVariantId);
+        if(!isExist) {
+          await ProductVariants.findOneAndDelete({ venderProductPlatformVariantId: element.venderProductPlatformVariantId })
+        }
+      }
       if (product.variants.length > 0) {
         product.variants.forEach(async (variant) => {
           console.log("-----------------", variant)
