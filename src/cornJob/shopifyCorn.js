@@ -1054,8 +1054,8 @@ const pushProductToShopify = async () => {
 const createUpdateProduct = async (product, mode, userId, isFromSync) => {
   try {
     const userData = await User.findOne({ _id: userId });
-    const currentDbProduct = await Product.findOne({ venderProductPlatformId: product.id, isDeleted: false }).lean();
-    if(!currentDbProduct) {
+    const currentDbProduct = await Product.findOne({ venderProductPlatformId: product.id }).lean();
+    if(currentDbProduct && currentDbProduct.isDeleted) {
       return;
     }
     if (currentDbProduct && (currentDbProduct.status === 'PUBLISHED' || currentDbProduct.status === 'ENABLED')) {
@@ -1063,6 +1063,7 @@ const createUpdateProduct = async (product, mode, userId, isFromSync) => {
     } else if(isFromSync) {
       return;
     }
+    console.log("----------- Start Sync ------------")
     // for map image data to fit in our db
     let mappedImages = [];
     if (product.images.length > 0) {
