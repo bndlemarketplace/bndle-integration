@@ -600,26 +600,26 @@ const publishProductToShopify = async (productsId) => {
       // console.log(JSON.stringify(productObj));
 
       let bndleProduct;
-      try {
-        let shopifyProduct = await client.product.get(el.bndleId)
-        console.log("🚀 ~ file: shopifyCorn.js:630 ~ publishProductToShopify ~ shopifyProduct:", shopifyProduct)
-        const isDefaultVariantExits = shopifyProduct.variants.find((v) => v.title.indexOf("Default") > -1);
-        console.log("🚀 ~ file: shopifyCorn.js:607 ~ publishProductToShopify ~ isDefaultVariantExits:", isDefaultVariantExits)
-        const isDefaultVariantExitsInCurrent = productObj.variants.find((v) => v.title.indexOf("Default") > -1);
-        console.log("🚀 ~ file: shopifyCorn.js:609 ~ publishProductToShopify ~ isDefaultVariantExitsInCurrent:", isDefaultVariantExitsInCurrent)
-        if(isDefaultVariantExits && !isDefaultVariantExitsInCurrent) {
-          try {
-            shopifyProduct = await client.product.delete(el.bndleId)
-            console.log("🚀 ~ file: shopifyCorn.js:636 ~ publishProductToShopify ~ productVariantResponse:", shopifyProduct)
-          } catch (error) {
-            console.log("🚀 ~ file: shopifyCorn.js:614 ~ publishProductToShopify ~ error:", error)
-          }
-          el.bndleId = ''
-        }
-      } catch (error) {
-        console.log("🚀 ~ file: shopifyCorn.js:606 ~ publishProductToShopify ~ error:", error)
-        el.bndleId = ''
-      }
+      // try {
+      //   let shopifyProduct = await client.product.get(el.bndleId)
+      //   console.log("🚀 ~ file: shopifyCorn.js:630 ~ publishProductToShopify ~ shopifyProduct:", shopifyProduct)
+      //   const isDefaultVariantExits = shopifyProduct.variants.find((v) => v.title.indexOf("Default") > -1);
+      //   console.log("🚀 ~ file: shopifyCorn.js:607 ~ publishProductToShopify ~ isDefaultVariantExits:", isDefaultVariantExits)
+      //   const isDefaultVariantExitsInCurrent = productObj.variants.find((v) => v.title.indexOf("Default") > -1);
+      //   console.log("🚀 ~ file: shopifyCorn.js:609 ~ publishProductToShopify ~ isDefaultVariantExitsInCurrent:", isDefaultVariantExitsInCurrent)
+      //   if(isDefaultVariantExits && !isDefaultVariantExitsInCurrent) {
+      //     try {
+      //       shopifyProduct = await client.product.delete(el.bndleId)
+      //       console.log("🚀 ~ file: shopifyCorn.js:636 ~ publishProductToShopify ~ productVariantResponse:", shopifyProduct)
+      //     } catch (error) {
+      //       console.log("🚀 ~ file: shopifyCorn.js:614 ~ publishProductToShopify ~ error:", error)
+      //     }
+      //     el.bndleId = ''
+      //   }
+      // } catch (error) {
+      //   console.log("🚀 ~ file: shopifyCorn.js:606 ~ publishProductToShopify ~ error:", error)
+      //   el.bndleId = ''
+      // }
       // if product is already pushed to bndle store
 
       if (el.bndleId !== '') {
