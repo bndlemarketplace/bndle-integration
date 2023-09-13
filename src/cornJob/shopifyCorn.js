@@ -604,7 +604,9 @@ const publishProductToShopify = async (productsId) => {
         let shopifyProduct = await client.product.get(el.bndleId)
         console.log("🚀 ~ file: shopifyCorn.js:630 ~ publishProductToShopify ~ shopifyProduct:", shopifyProduct)
         const isDefaultVariantExits = shopifyProduct.variants.find((v) => v.title.indexOf("Default") > -1);
+        console.log("🚀 ~ file: shopifyCorn.js:607 ~ publishProductToShopify ~ isDefaultVariantExits:", isDefaultVariantExits)
         const isDefaultVariantExitsInCurrent = productObj.variants.find((v) => v.title.indexOf("Default") > -1);
+        console.log("🚀 ~ file: shopifyCorn.js:609 ~ publishProductToShopify ~ isDefaultVariantExitsInCurrent:", isDefaultVariantExitsInCurrent)
         if(isDefaultVariantExits && !isDefaultVariantExitsInCurrent) {
           try {
             shopifyProduct = await client.product.delete(el.bndleId)
