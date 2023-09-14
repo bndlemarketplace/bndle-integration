@@ -601,7 +601,6 @@ const publishProductToShopify = async (productsId) => {
 
       let bndleProduct;
       // if product is already pushed to bndle store
-      // console.log(JSON.stringify(productObj));
 
       if (el.bndleId !== '') {
         await updateProductAlgolia(productObj, category, el.bndleId, subCategory, productType, lifeStage, mappedOptionTags, el.createdAt);
@@ -710,9 +709,13 @@ const publishProductToShopify = async (productsId) => {
           });
       } else {
         console.log(' // if product is already pushed to bndle store if not ..................');
+        delete productObj.id;
+        for (let index = 0; index < productObj.variants.length; index++) {
+          delete productObj.variants[index].id;
+        }
         const product = { product: productObj };
-        // console.log(JSON.stringify(product), '****************/////////////////**********************');
-
+        console.log(JSON.stringify(product), '****************/////////////////**********************');
+        
         client.product
           .create(productObj)
           .then(async (bndleProduct) => {
@@ -1036,8 +1039,8 @@ const pushProductToShopify = async () => {
 const createUpdateProduct = async (product, mode, userId, isFromSync) => {
   try {
     const userData = await User.findOne({ _id: userId });
-    const currentDbProduct = await Product.findOne({ venderProductPlatformId: product.id, isDeleted: false }).lean();
-    if(!currentDbProduct) {
+    const currentDbProduct = await Product.findOne({ venderProductPlatformId: product.id }).lean();
+    if(currentDbProduct && currentDbProduct.isDeleted) {
       return;
     }
     if (currentDbProduct && (currentDbProduct.status === 'PUBLISHED' || currentDbProduct.status === 'ENABLED')) {
@@ -1045,6 +1048,7 @@ const createUpdateProduct = async (product, mode, userId, isFromSync) => {
     } else if(isFromSync) {
       return;
     }
+    console.log("----------- Start Sync ------------")
     // for map image data to fit in our db
     let mappedImages = [];
     if (product.images.length > 0) {
@@ -1091,9 +1095,12 @@ const createUpdateProduct = async (product, mode, userId, isFromSync) => {
       mappedOptions = [];
       isDefaultVariant = true;
     }
-
+    
+    if(!isDefaultVariant && currentDbProduct) {
+      await ProductVariants.findOneAndDelete({ productId: currentDbProduct._id, isDefault: true })
+    }
     mappedImages = mappedImages.sort((a, b) => (a.position > b.position ? 1 : b.position > a.position ? -1 : 0));
-
+    
     // console.log(mappedOptions);
     const productObj = {
       venderProductPlatformId: product.id,
@@ -1130,14 +1137,24 @@ const createUpdateProduct = async (product, mode, userId, isFromSync) => {
     if (mode === 'update') {
       dbProduct = await Product.findOneAndUpdate(
         { venderProductPlatformId: productObj.venderProductPlatformId },
-        { images: productObj.images }
-        // { upsert: true, new: true } // if by any chance we miss create webhook
+        { images: productObj.images, options: mappedOptions },
+        { new: true } // if by any chance we miss create webhook
       );
     }
     if (dbProduct) {
       // for create variant of product
+      console.log("🚀 ~ file: shopifyCorn.js:1181 ~ awaitdbProduct.options.forEach ~ dbProduct.options:", dbProduct.options)
+      const dbProductVariant = await ProductVariants.find({ productId: currentDbProduct._id }).lean();
+      for (let index = 0; index < dbProductVariant.length; index++) {
+        const element = dbProductVariant[index];
+        const isExist = product.variants.find((v) => v.id == element.venderProductPlatformVariantId);
+        if(!isExist) {
+          await ProductVariants.findOneAndDelete({ venderProductPlatformVariantId: element.venderProductPlatformVariantId })
+        }
+      }
       if (product.variants.length > 0) {
         product.variants.forEach(async (variant) => {
+          console.log("-----------------", variant)
           // map option that matches our db
           const mappedOption = [];
           await dbProduct.options.forEach((el) => {
@@ -1169,7 +1186,8 @@ const createUpdateProduct = async (product, mode, userId, isFromSync) => {
           });
 
           let variantObj;
-          if (mode === 'create') {
+          const dbVariant = await ProductVariants.findOne({ venderProductPlatformVariantId: variant.id, productId: dbProduct._id }).lean()
+          if (mode === 'create' || !dbVariant) {
             variantObj = {
               productId: dbProduct._id,
               venderProductPlatformVariantId: variant.id,
@@ -1187,7 +1205,7 @@ const createUpdateProduct = async (product, mode, userId, isFromSync) => {
               images: mappedVariantImages,
               isDeleted: false,
               isDefault: false,
-              isEnable: false,
+              isEnable: (!dbVariant) ? true : false,
             };
             if (isDefaultVariant === true) {
               variantObj.title = product.title;
@@ -1196,7 +1214,7 @@ const createUpdateProduct = async (product, mode, userId, isFromSync) => {
             }
           }
 
-          if (mode === 'update') {
+          if (mode === 'update' && dbVariant) {
             variantObj = {
               // productId: dbProduct._id,
               // venderProductPlatformVariantId: variant.id,
@@ -1240,7 +1258,8 @@ const createUpdateProduct = async (product, mode, userId, isFromSync) => {
             }
           }
 
-          await ProductVariants.findOneAndUpdate({ venderProductPlatformVariantId: variant.id }, variantObj, {
+          console.log("🚀 ~ file: shopifyCorn.js:1244 ~ product.variants.forEach ~ variantObj:", variantObj)
+          await ProductVariants.findOneAndUpdate({ venderProductPlatformVariantId: variant.id, productId: dbProduct._id }, variantObj, {
             upsert: true,
             new: true,
           });
