@@ -153,7 +153,7 @@ module.exports = async (agenda) => {
             xml += `<g:image_link>${getImage(product)}</g:image_link>`;
             xml += `<g:condition>new</g:condition>`;
             xml += `<g:availability>in_stock</g:availability>`;
-            xml += `<g:price>${product?.variants[0]?.price} GBP</g:price>`;
+            xml += `<g:price>${(product && product?.variants && product?.variants.length && product?.variants[0] && product?.variants[0]?.price) ? product?.variants[0]?.price : 0} GBP</g:price>`;
             xml += "<g:age_group>newborn</g:age_group>"
             xml += "<g:gender>unisex</g:gender>"
             xml += `<g:color>Black/White/Grey/Green/Blue/Pink</g:color>`

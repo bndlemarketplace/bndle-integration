@@ -186,11 +186,11 @@ router.route('/generate').get(async (req, res) => {
         xml += `<g:image_link>${getImage(product)}</g:image_link>`;
         xml += `<g:condition>new</g:condition>`;
         xml += `<g:availability>in_stock</g:availability>`;
-        xml += `<g:price>${product?.variants[0]?.price} GBP</g:price>`;
+        xml += `<g:price>${(product && product?.variants && product?.variants.length && product?.variants[0] && product?.variants[0]?.price) ? product?.variants[0]?.price : 0} GBP</g:price>`;
         xml += "<g:age_group>newborn</g:age_group>"
         xml += "<g:gender>unisex</g:gender>"
         xml += `<g:color>Black/White/Grey/Green/Blue/Pink</g:color>`
-        if(product?.variants[0] && product?.variants[0]?.sku) {
+        if(product && product?.variants && product?.variants[0] && product?.variants[0]?.sku) {
           xml += `<g:mpn>${(product?.variants[0] && product?.variants[0]?.sku) ? product?.variants[0]?.sku : "bndle01"}</g:mpn>`
           xml += `<g:brand>${encode(product.vendorName, { level: 'xml' })}</g:brand>`;
           xml += `<g:identifier_exists>yes</g:identifier_exists>`;
