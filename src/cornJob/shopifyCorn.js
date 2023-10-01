@@ -1097,7 +1097,7 @@ const createUpdateProduct = async (product, mode, userId, isFromSync) => {
     }
     
     if(!isDefaultVariant && currentDbProduct) {
-      await ProductVariants.findOneAndDelete({ productId: currentDbProduct._id, isDefault: true })
+      await ProductVariants.findOneAndUpdate({ productId: currentDbProduct._id, isDefault: true }, { $set: { isDeleted: true }})
     }
     mappedImages = mappedImages.sort((a, b) => (a.position > b.position ? 1 : b.position > a.position ? -1 : 0));
     
@@ -1149,7 +1149,7 @@ const createUpdateProduct = async (product, mode, userId, isFromSync) => {
         const element = dbProductVariant[index];
         const isExist = product.variants.find((v) => v.id == element.venderProductPlatformVariantId);
         if(!isExist) {
-          await ProductVariants.findOneAndDelete({ venderProductPlatformVariantId: element.venderProductPlatformVariantId })
+          await ProductVariants.findOneAndUpdate({ venderProductPlatformVariantId: element.venderProductPlatformVariantId }, { $set: { isDeleted: true }})
         }
       }
       if (product.variants.length > 0) {
@@ -1618,7 +1618,18 @@ const updateProductAlgolia = async (data, category, bndleId, subCategory, produc
       lifeStage: [lifeStage],
     },
   ];
-
+  let imgURL = '';
+  if(data.images && data.images.length) {
+    imgURL = data.images[0].src;
+  } else if(data.variants && data.variants.length) {
+    for (let index = 0; index < data.variants.length; index++) {
+      const element = data.variants[index];
+      if(!imgURL && element.images.length) {
+        imgURL = element.images[0].src
+      }
+    }
+  }
+  console.log("🚀 ~ file: shopifyCorn.js:1630 ~ updateProductAlgolia ~ data.images:", imgURL)
   const searchRecord = [
     {
       name: data.title,
@@ -1626,7 +1637,7 @@ const updateProductAlgolia = async (data, category, bndleId, subCategory, produc
       categories: category,
       subCategory: subCategory,
       price: data.variants && data.variants.length ? data.variants[0].price : 0,
-      image: data.images && data.images.length ? data.images[0].src : '',
+      image: imgURL,
       popularity: 21449,
       objectID: bndleId,
       product_type: productType,
