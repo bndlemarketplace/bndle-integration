@@ -222,6 +222,7 @@ const updateProductToAlgolia = async (req, res) => {
           weight: variant.weight,
           weight_unit: cornServices.mapWeightUnit(variant.weightUnit),
           inventory_management: 'shopify',
+          images: variant.images
         };
 
         if (variant.bndleVariantId !== undefined && variant.bndleVariantId !== '') {

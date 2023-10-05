@@ -452,6 +452,7 @@ const publishProductToShopify = async (productsId) => {
           weight: variant.weight,
           weight_unit: mapWeightUnit(variant.weightUnit),
           inventory_management: 'shopify',
+          images: variant.images
         };
         // console.log(el.options);
         if (variant.bndleVariantId !== undefined && variant.bndleVariantId !== '') {
