@@ -419,6 +419,15 @@ const publishProductToShopify = async (productsId) => {
       const variantArray = [];
       for (let variantIndexFor = 0; variantIndexFor < variants.length; variantIndexFor++) {
         const variant = variants[variantIndexFor];
+
+        // Add Image
+        if(!mappedImages.length && variant.images.length) {
+          mappedImages.push({
+            position: image.position,
+            src: variant.images[0].src,
+          })
+        }
+
         //variant can map or not
         let canMap;
         // console.log(2);
