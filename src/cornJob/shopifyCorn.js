@@ -423,7 +423,7 @@ const publishProductToShopify = async (productsId) => {
         // Add Image
         if(!mappedImages.length && variant.images.length) {
           mappedImages.push({
-            position: image.position,
+            position: 1,
             src: variant.images[0].src,
           })
         }
@@ -1057,6 +1057,10 @@ const createUpdateProduct = async (product, mode, userId, isFromSync) => {
       mode = "update"
     } else if(isFromSync) {
       return;
+    }
+
+    if(!currentDbProduct) {
+      return
     }
     console.log("----------- Start Sync ------------")
     // for map image data to fit in our db
