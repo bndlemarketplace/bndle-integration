@@ -1675,7 +1675,7 @@ const updateProductAlgolia = async (data, category, bndleId, subCategory, produc
 
 const deleteProductAlgolia = async (bndleId) => {
   await index.deleteObject(bndleId);
-  await UserProductHistory.deleteMany({ bndleId: element.objectID.toString()})
+  await UserProductHistory.deleteMany({ bndleId: bndleId })
 };
 
 module.exports = {
