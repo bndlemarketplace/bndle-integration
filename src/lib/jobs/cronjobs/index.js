@@ -8,4 +8,5 @@ module.exports = (agenda) => ({
   syncSquareSpaceProduct : require("./syncSquareSpaceProduct")(agenda),
   syncShopifyPermission: require("./syncShopifyPermission")(agenda),
   syncAlgoliaProduct: require("./syncAlgoliaProduct")(agenda),
+  removeOldMessage: require("./removeOldMessage")(agenda),
 });
