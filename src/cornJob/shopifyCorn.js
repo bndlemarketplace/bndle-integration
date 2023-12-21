@@ -1060,7 +1060,7 @@ const createUpdateProduct = async (product, mode, userId, isFromSync) => {
     }
 
     if(!currentDbProduct) {
-      return
+      mode = "create"
     }
     console.log("----------- Start Sync ------------")
     // for map image data to fit in our db
