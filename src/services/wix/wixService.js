@@ -204,6 +204,7 @@ const getWixProductById = async (access_token, id) => {
       return response.data;
     })
     .catch((error) => {
+      console.log("🚀 ~ file: wixService.js:207 ~ getWixProductById ~ error:", error)
       // handle error
       logger.error(`getWixProductsById-error ${error}`);
       throw new ApiError(httpStatus.NOT_FOUND, error.message);
