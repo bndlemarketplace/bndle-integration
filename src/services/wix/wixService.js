@@ -228,7 +228,7 @@ const createUpdateProduct = async (productId, mode, userId) => {
       let accessToken = data.access_token;
       let product = await getWixProductById(accessToken, productId);
       product = product.product;
-      // console.log(product)
+      console.log(JSON.stringify(product))
       // for map image data to fit in our db
       
         let mappedImages = [];
