@@ -740,7 +740,8 @@ async function productVariantSync(product, accessToken, dbProduct, mode) {
                     variantObj = {
                       productId: dbProduct._id,
                       venderProductPlatformVariantId: variantEl.id,
-                      price: variantEl.variant.priceData.price,
+                      price: variantEl.variant.priceData.discountedPrice || variantEl.variant.priceData.price,
+                      comparePrice: variantEl.variant.priceData.price,
                       // options: mappedOption,
                       // sku: variantEl.variant.sku,
                       title: title,
@@ -755,7 +756,8 @@ async function productVariantSync(product, accessToken, dbProduct, mode) {
                     variantObj = {
                       productId: dbProduct._id,
                       venderProductPlatformVariantId: variantEl.id,
-                      price: variantEl.variant.priceData.price,
+                      price: variantEl.variant.priceData.discountedPrice || variantEl.variant.priceData.price,
+                      comparePrice: variantEl.variant.priceData.price,
                       options: mappedOption,
                       sku: variantEl.variant.sku,
                       title: title,
@@ -785,7 +787,8 @@ async function productVariantSync(product, accessToken, dbProduct, mode) {
           variantObj = {
             productId: dbProduct._id,
             venderProductPlatformVariantId: variantEl.id,
-            price: variantEl.variant.priceData.price,
+            price: variantEl.variant.priceData.discountedPrice || variantEl.variant.priceData.price,
+            comparePrice: variantEl.variant.priceData.price,
             // options: mappedOption,
             // sku: variantEl.variant.sku,
             // title: title,
@@ -800,7 +803,8 @@ async function productVariantSync(product, accessToken, dbProduct, mode) {
           variantObj = {
             productId: dbProduct._id,
             venderProductPlatformVariantId: '00000000-0000-0000-0000-000000000000',
-            price: variantEl.variant.priceData.price,
+            price: variantEl.variant.priceData.discountedPrice || variantEl.variant.priceData.price,
+            comparePrice: variantEl.variant.priceData.price,
             options: [],
             sku: variantEl.variant.sku,
             title: '',
