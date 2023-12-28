@@ -662,7 +662,7 @@ async function productVariantSync(product, accessToken, dbProduct, mode) {
   try {
     // console.log(product);
     let variant = product.variants;
-    // console.log("🚀 ~ file: wixService.js:607 ~ productVariantSync ~ variant:", variant)
+    console.log("🚀 ~ file: wixService.js:607 ~ productVariantSync ~ variant:", JSON.stringify(variant))
     let variantObj;
 
     // console.log(variant);
