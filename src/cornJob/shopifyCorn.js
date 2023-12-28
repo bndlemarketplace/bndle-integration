@@ -1069,7 +1069,10 @@ const createUpdateProduct = async (product, mode, userId, isFromSync) => {
       product.images.forEach(async (img) => {
         if (img.variant_ids.length === 0) {
           // const Products3url = await s3upload.downloadImgAndUploadToS3(img.src);
-          let oldImg = currentDbProduct.images.findIndex((i) => i.bndleImageId == img.id);
+          let oldImg = -1;
+          if(currentDbProduct) {
+            oldImg = currentDbProduct.images.findIndex((i) => i.bndleImageId == img.id);
+          }
           let mappedImagesIndex = mappedImages.findIndex((i) => i.src === img.src);
           if (mappedImagesIndex === -1) {
             const imgObj = {
@@ -1158,7 +1161,7 @@ const createUpdateProduct = async (product, mode, userId, isFromSync) => {
     if (dbProduct) {
       // for create variant of product
       console.log("🚀 ~ file: shopifyCorn.js:1181 ~ awaitdbProduct.options.forEach ~ dbProduct.options:", dbProduct.options)
-      const dbProductVariant = await ProductVariants.find({ productId: currentDbProduct._id }).lean();
+      const dbProductVariant = await ProductVariants.find({ productId: dbProduct._id }).lean();
       for (let index = 0; index < dbProductVariant.length; index++) {
         const element = dbProductVariant[index];
         const isExist = product.variants.find((v) => v.id == element.venderProductPlatformVariantId);
