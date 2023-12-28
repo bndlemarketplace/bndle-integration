@@ -1674,6 +1674,7 @@ const updateProductAlgolia = async (data, category, bndleId, subCategory, produc
 
   try {
     const searchIndex = algoliaClient.initIndex('Product_query_suggestions_latest');
+    console.log("🚀 ~ file: shopifyCorn.js:1678 ~ updateProductAlgolia ~ searchRecord:", searchRecord)
     const data = await index.saveObjects(searchRecord);
     const searchData = await searchIndex.saveObjects(record);
   } catch (error) {
