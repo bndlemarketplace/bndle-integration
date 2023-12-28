@@ -192,13 +192,8 @@ const wixProduct = async (accessToken, id) => {
 const getWixProductById = async (access_token, id) => {
   return await axios({
     method: 'get',
-    url: `${WIX_API_URL}/${id}`,
-    headers: { 'Content-Type': 'application/json', Authorization: access_token },
-    data: {
-      includeVariants: true,
-      // includeHiddenProducts: true,
-      includeMerchantSpecificData: true,
-    },
+    url: `${WIX_API_URL}/${id}?includeMerchantSpecificData=true&includeVariants=true`,
+    headers: { 'Content-Type': 'application/json', Authorization: access_token }
   })
     .then(async (response) => {
       return response.data;
