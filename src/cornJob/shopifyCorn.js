@@ -1658,7 +1658,7 @@ const updateProductAlgolia = async (data, category, bndleId, subCategory, produc
       categories: category,
       subCategory: subCategory,
       price: data.variants && data.variants.length ? data.variants[0].price : 0,
-      comparePrice: data.variants && data.variants.length ? data.variants[0].comparePrice : 0,
+      comparePrice: data.variants && data.variants.length ? data.variants[0].compare_at_price : 0,
       image: imgURL,
       popularity: 21449,
       objectID: bndleId,
