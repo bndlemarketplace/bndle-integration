@@ -64,3 +64,34 @@
 #            --deployment-group-name ${{ matrix.deploy-group }} \
 #            --file-exists-behavior OVERWRITE \
 #            --s3-location bucket=${{ matrix.s3-bucket }},key=${{ matrix.s3-filename }}.zip,bundleType=zip \
+
+name: Deploy on Stage
+
+on:
+  push:
+    branches: [ stage ]
+
+jobs:
+  Deploy:
+    name: Deploy to EC2
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v2 
+      - name: Build & Deploy
+        env:
+            PRIVATE_KEY: ${{ secrets.STAGE_SSH_PRIVATE_KEY }}
+            HOSTNAME: ${{secrets.STAGE_SSH_HOST}}
+            USER_NAME: ${{secrets.USER_NAME}}
+      
+        run: |
+          echo "$PRIVATE_KEY" > private_key && chmod 600 private_key
+          ssh -o StrictHostKeyChecking=no -i private_key ${USER_NAME}@${HOSTNAME} '
+
+              # Now we have got the access of EC2 and we will start the deploy .
+              cd /home/ubuntu/bndle/bndle-integration &&
+              sudo git checkout stage &&
+              sudo git pull &&
+              sudo npm i --legacy-peer-deps &&
+              pm2 restart 11
+              '
