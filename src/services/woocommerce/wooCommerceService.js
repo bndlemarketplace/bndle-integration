@@ -440,6 +440,7 @@ const convertRemoteProductVariantToPlatformProductVariant = async (product, user
               productId: dbProduct._id,
               venderProductPlatformVariantId: variant.id,
               price: variant.price ? variant.price : 0,
+              comparePrice: variant.regular_price || 0,
               options: mappedOptions,
               sku: variant.sku ? variant.sku : '',
               title: title,
@@ -470,6 +471,7 @@ const convertRemoteProductVariantToPlatformProductVariant = async (product, user
               productId: dbProduct._id,
               venderProductPlatformVariantId: variant.id,
               price: variant.price ? variant.price : 0,
+              comparePrice: variant.regular_price || 0,
               title: title,
               // options: mappedOptions,
               // sku: variant.sku ? variant.sku : '',
@@ -506,7 +508,7 @@ const convertRemoteProductVariantToPlatformProductVariant = async (product, user
             isDeleted: false,
             isCompatible: true,
             isEnable: true,
-
+            comparePrice: product.regular_price,
             variantType: product.type,
           };
           const findVariants = await ProductVariants.find({ productId: dbProduct._id });
@@ -520,6 +522,7 @@ const convertRemoteProductVariantToPlatformProductVariant = async (product, user
             productId: dbProduct._id,
             // venderProductPlatformVariantId: variant.id,
             price: product.price ? product.price : 0,
+            comparePrice: product.regular_price || 0,
             // options: [],
             // sku: product.sku ? product.sku : '',
             // title: product.title,

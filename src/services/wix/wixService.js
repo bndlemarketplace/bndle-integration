@@ -192,18 +192,14 @@ const wixProduct = async (accessToken, id) => {
 const getWixProductById = async (access_token, id) => {
   return await axios({
     method: 'get',
-    url: `${WIX_API_URL}/${id}`,
-    headers: { 'Content-Type': 'application/json', Authorization: access_token },
-    data: {
-      includeVariants: true,
-      // includeHiddenProducts: true,
-      includeMerchantSpecificData: true,
-    },
+    url: `${WIX_API_URL}/${id}?includeMerchantSpecificData=true&includeVariants=true`,
+    headers: { 'Content-Type': 'application/json', Authorization: access_token }
   })
     .then(async (response) => {
       return response.data;
     })
     .catch((error) => {
+      console.log("🚀 ~ file: wixService.js:207 ~ getWixProductById ~ error:", error)
       // handle error
       logger.error(`getWixProductsById-error ${error}`);
       throw new ApiError(httpStatus.NOT_FOUND, error.message);
@@ -228,7 +224,7 @@ const createUpdateProduct = async (productId, mode, userId) => {
       let accessToken = data.access_token;
       let product = await getWixProductById(accessToken, productId);
       product = product.product;
-      // console.log(product)
+      console.log(JSON.stringify(product))
       // for map image data to fit in our db
       
         let mappedImages = [];
@@ -662,7 +658,7 @@ async function productVariantSync(product, accessToken, dbProduct, mode) {
   try {
     // console.log(product);
     let variant = product.variants;
-    // console.log("🚀 ~ file: wixService.js:607 ~ productVariantSync ~ variant:", variant)
+    console.log("🚀 ~ file: wixService.js:607 ~ productVariantSync ~ variant:", JSON.stringify(variant))
     let variantObj;
 
     // console.log(variant);
@@ -740,7 +736,8 @@ async function productVariantSync(product, accessToken, dbProduct, mode) {
                     variantObj = {
                       productId: dbProduct._id,
                       venderProductPlatformVariantId: variantEl.id,
-                      price: variantEl.variant.priceData.price,
+                      price: variantEl.variant.priceData.discountedPrice || variantEl.variant.priceData.price,
+                      comparePrice: variantEl.variant.priceData.price,
                       // options: mappedOption,
                       // sku: variantEl.variant.sku,
                       title: title,
@@ -755,7 +752,8 @@ async function productVariantSync(product, accessToken, dbProduct, mode) {
                     variantObj = {
                       productId: dbProduct._id,
                       venderProductPlatformVariantId: variantEl.id,
-                      price: variantEl.variant.priceData.price,
+                      price: variantEl.variant.priceData.discountedPrice || variantEl.variant.priceData.price,
+                      comparePrice: variantEl.variant.priceData.price,
                       options: mappedOption,
                       sku: variantEl.variant.sku,
                       title: title,
@@ -785,7 +783,8 @@ async function productVariantSync(product, accessToken, dbProduct, mode) {
           variantObj = {
             productId: dbProduct._id,
             venderProductPlatformVariantId: variantEl.id,
-            price: variantEl.variant.priceData.price,
+            price: variantEl.variant.priceData.discountedPrice || variantEl.variant.priceData.price,
+            comparePrice: variantEl.variant.priceData.price,
             // options: mappedOption,
             // sku: variantEl.variant.sku,
             // title: title,
@@ -800,7 +799,8 @@ async function productVariantSync(product, accessToken, dbProduct, mode) {
           variantObj = {
             productId: dbProduct._id,
             venderProductPlatformVariantId: '00000000-0000-0000-0000-000000000000',
-            price: variantEl.variant.priceData.price,
+            price: variantEl.variant.priceData.discountedPrice || variantEl.variant.priceData.price,
+            comparePrice: variantEl.variant.priceData.price,
             options: [],
             sku: variantEl.variant.sku,
             title: '',

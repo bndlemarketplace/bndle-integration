@@ -446,6 +446,7 @@ const publishProductToShopify = async (productsId) => {
         }
         // console.log(variant.options);
         const variantPrice = variant.price ? variant.price : 0;
+        const compare_at_price = variant.comparePrice ? variant.comparePrice : 0;
         const option1 = variant.options[0] ? variant.options[0].value : null;
         const option2 = variant.options[1] ? variant.options[1].value : null;
         const option3 = variant.options[2] ? variant.options[2].value : null;
@@ -453,6 +454,7 @@ const publishProductToShopify = async (productsId) => {
           mongoVariantId: variant._id,
           title: variant.title,
           price: variantPrice,
+          compare_at_price: compare_at_price,
           sku: variant.sku,
           inventory_quantity: variant.openingQuantity,
           option1,
@@ -1209,6 +1211,7 @@ const createUpdateProduct = async (product, mode, userId, isFromSync) => {
               productId: dbProduct._id,
               venderProductPlatformVariantId: variant.id,
               price: variant.price,
+              comparePrice: variant.compare_at_price,
               position: variant.position,
               options: mappedOption,
               venderSku: variant.sku,
@@ -1236,6 +1239,7 @@ const createUpdateProduct = async (product, mode, userId, isFromSync) => {
               // productId: dbProduct._id,
               // venderProductPlatformVariantId: variant.id,
               price: variant.price,
+              comparePrice: variant.compare_at_price,
               // position: variant.position,
               // options: mappedOption,
               // venderSku: variant.sku,
@@ -1654,6 +1658,7 @@ const updateProductAlgolia = async (data, category, bndleId, subCategory, produc
       categories: category,
       subCategory: subCategory,
       price: data.variants && data.variants.length ? data.variants[0].price : 0,
+      comparePrice: data.variants && data.variants.length ? data.variants[0].compare_at_price : 0,
       image: imgURL,
       popularity: 21449,
       objectID: bndleId,
@@ -1669,6 +1674,7 @@ const updateProductAlgolia = async (data, category, bndleId, subCategory, produc
 
   try {
     const searchIndex = algoliaClient.initIndex('Product_query_suggestions_latest');
+    console.log("🚀 ~ file: shopifyCorn.js:1678 ~ updateProductAlgolia ~ searchRecord:", searchRecord)
     const data = await index.saveObjects(searchRecord);
     const searchData = await searchIndex.saveObjects(record);
   } catch (error) {

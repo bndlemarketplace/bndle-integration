@@ -25,6 +25,10 @@ const productVariant = mongoose.Schema(
     price: {
       type: Number,
     },
+    comparePrice: {
+      type: Number,
+      default: 0
+    },
     sku: {
       type: String,
       default: '',
