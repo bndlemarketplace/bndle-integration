@@ -83,15 +83,20 @@ jobs:
             PRIVATE_KEY: ${{ secrets.PROD_SSH_PRIVATE_KEY }}
             HOSTNAME: ${{secrets.PROD_SSH_HOST}}
             USER_NAME: ${{secrets.USER_NAME}}
-      
+
         run: |
           echo "$PRIVATE_KEY" > private_key && chmod 600 private_key
-          ssh -o StrictHostKeyChecking=no -i private_key ${USER_NAME}@${HOSTNAME} '
 
-              # Now we have got the access of EC2 and we will start the deploy .
-              cd /home/ubuntu/bndle/bndle-integration &&
+          # Create the ~/.ssh directory if it doesn't exist
+          mkdir -p "$HOME/.ssh"
+
+          # Add the SSH host key to known_hosts
+          ssh-keyscan -t rsa "${HOSTNAME}" >> "$HOME/.ssh/known_hosts"
+
+          ssh -i private_key ${USER_NAME}@${HOSTNAME} '
+           cd /home/ubuntu/bndle/bndle-integration &&
               sudo git checkout master &&
               sudo git pull &&
               sudo npm i --legacy-peer-deps &&
               pm2 restart 1
-              '
+          '
