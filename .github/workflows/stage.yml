@@ -106,27 +106,9 @@ jobs:
     runs-on: ubuntu-latest
     needs: Deploy
     steps:
-    - uses: actions/checkout@v2
-    - name: Slack Notification
-      uses: slackapi/slack-github-action@v1.24.0
+    - uses: 8398a7/action-slack@v3
       with:
-        update-ts: ${{ steps.slack.outputs.ts }}
-        payload: |
-          {
-            "text": "Deployment finished for Bndle Integration (Completed)",
-            "attachments": [
-              {
-                "color": "28a745",
-                "fields": [
-                  {
-                    "title": "Status",
-                    "short": true,
-                    "value": "Completed"
-                  }
-                ]
-              }
-            ]
-          }
+        status: ${{ job.status }}
+        fields: repo,message,commit,author
       env:
         SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
-        SLACK_WEBHOOK_TYPE: INCOMING_WEBHOOK
