@@ -6,6 +6,8 @@ const ApiError = require('../../utils/ApiError');
 const cornServices = require('../../cornJob/shopifyCorn');
 const shopifyRequest = require('../../services/shopify/lib/request');
 const LoggerService = require('../../services/logger.service');
+const restifyConfig = require('../../config/restifyConfig');
+
 const { Product, User, UserProductHistory } = require('../../models');
 const axios = require('axios');
 const excelJS = require('exceljs');
@@ -17,7 +19,7 @@ const getAllProducts = async (params, vendor, allProducts = []) => {
     const tmpClient = new Shopify({
       shopName: vendor.credentials.shopName,
       accessToken: vendor.credentials.accessToken,
-      apiVersion: '2022-10',
+      apiVersion: restifyConfig.shopifyConfig.apiVersion,
     });
     const products = await tmpClient.product.list(params);
 
@@ -107,7 +109,7 @@ const syncAllShopifyProductsOld = async (vendorId = '', productId = '') => {
         const tmpClient = new Shopify({
           shopName: vendor.credentials.shopName,
           accessToken: vendor.credentials.accessToken,
-          apiVersion: '2022-10',
+          apiVersion: restifyConfig.shopifyConfig.apiVersion,
         });
         (async () => {
           let params = { limit: 10 };
