@@ -1,8 +1,9 @@
 const vendorModel = require('../../../models/vendor.model');
 const userModel = require('../../../models/user.model');
 const shopifyRequest = require('./request');
+const restifyConfig = require('../../../config/restifyConfig')
 // tmp
-apiVersion = '2022-07';
+apiVersion = restifyConfig.shopifyConfig.apiVersion;
 class Webhooks {
   constructor() {}
 

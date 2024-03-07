@@ -177,7 +177,7 @@ const initialProductSync = async (userId) => {
     const tmpClient = new Shopify({
       shopName: userData.credentials.shopName,
       accessToken: userData.credentials.accessToken,
-      apiVersion: '2022-10',
+      apiVersion: restifyConfig.shopifyConfig.apiVersion,
     });
     (async () => {
       let params = { limit: 10 };
