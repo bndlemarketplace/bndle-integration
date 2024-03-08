@@ -1616,7 +1616,7 @@ const updateProductAlgolia = async (data, category, bndleId, subCategory, produc
   const size = [];
   const colors = [];
   const age = [];
-
+  const tags = [...data.tags]
   for (let index = 0; index < mappedOptionTags.length; index++) {
     const element = mappedOptionTags[index];
     switch (element.split('_')[0]) {
@@ -1660,14 +1660,15 @@ const updateProductAlgolia = async (data, category, bndleId, subCategory, produc
   const algoliaPrice = data.variants && data.variants.length ? data.variants[0].price : 0;
   const algoliaComparePrice = data.variants && data.variants.length ? data.variants[0].compare_at_price : 0;
   if(algoliaComparePrice && algoliaPrice < algoliaComparePrice) {
-    const tagIndex = checkedDiscountTagAdded(data.tags);
+    const tagIndex = checkedDiscountTagAdded(tags);
     if(tagIndex === -1) {
-      data.tags.push("BNDLE_DISCOUNT")
+      tags.push("BNDLE_DISCOUNT")
     }
   } else {
-    const tagIndex = checkedDiscountTagAdded(data.tags);
-    data.tags.splice(tagIndex, 1);
+    const tagIndex = checkedDiscountTagAdded(tags);
+    tags.splice(tagIndex, 1);
   }
+    console.log("🚀 ~ updateProductAlgolia ~ tags:", tags)
 
   const searchRecord = [
     {
@@ -1681,7 +1682,7 @@ const updateProductAlgolia = async (data, category, bndleId, subCategory, produc
       popularity: 21449,
       objectID: bndleId,
       product_type: productType,
-      tags: data.tags,
+      tags: tags,
       lifeStage,
       size,
       colors,
