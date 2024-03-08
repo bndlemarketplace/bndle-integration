@@ -1608,7 +1608,7 @@ const deleteProductById = async (bndleId) => {
 
 const checkedDiscountTagAdded = (tags) => {
   let tagIndex = -1;
-  tagIndex = tags.findIndex((t) = t === 'BNDLE_DISCOUNT');
+  tagIndex = tags.findIndex((t) => t === 'BNDLE_DISCOUNT');
   return tagIndex
 }
 
