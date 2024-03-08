@@ -1666,7 +1666,9 @@ const updateProductAlgolia = async (data, category, bndleId, subCategory, produc
     }
   } else {
     const tagIndex = checkedDiscountTagAdded(tags);
-    tags.splice(tagIndex, 1);
+    if(tagIndex > -1) {
+      tags.splice(tagIndex, 1);
+    }
   }
     console.log("🚀 ~ updateProductAlgolia ~ tags:", tags)
 
