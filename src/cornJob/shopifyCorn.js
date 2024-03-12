@@ -1606,11 +1606,17 @@ const deleteProductById = async (bndleId) => {
   }
 };
 
+const checkedDiscountTagAdded = (tags) => {
+  let tagIndex = -1;
+  tagIndex = tags.findIndex((t) => t === 'BNDLE_DISCOUNT');
+  return tagIndex
+}
+
 const updateProductAlgolia = async (data, category, bndleId, subCategory, productType, lifeStage, mappedOptionTags, createdAt) => {
   const size = [];
   const colors = [];
   const age = [];
-
+  const tags = [...data.tags]
   for (let index = 0; index < mappedOptionTags.length; index++) {
     const element = mappedOptionTags[index];
     switch (element.split('_')[0]) {
@@ -1651,19 +1657,34 @@ const updateProductAlgolia = async (data, category, bndleId, subCategory, produc
     }
   }
   console.log("🚀 ~ file: shopifyCorn.js:1630 ~ updateProductAlgolia ~ data.images:", imgURL)
+  const algoliaPrice = data.variants && data.variants.length ? data.variants[0].price : 0;
+  const algoliaComparePrice = data.variants && data.variants.length ? data.variants[0].compare_at_price : 0;
+  if(algoliaComparePrice && algoliaPrice < algoliaComparePrice) {
+    const tagIndex = checkedDiscountTagAdded(tags);
+    if(tagIndex === -1) {
+      tags.push("BNDLE_DISCOUNT")
+    }
+  } else {
+    const tagIndex = checkedDiscountTagAdded(tags);
+    if(tagIndex > -1) {
+      tags.splice(tagIndex, 1);
+    }
+  }
+    console.log("🚀 ~ updateProductAlgolia ~ tags:", tags)
+
   const searchRecord = [
     {
       name: data.title,
       brand: data.vendor,
       categories: category,
       subCategory: subCategory,
-      price: data.variants && data.variants.length ? data.variants[0].price : 0,
-      comparePrice: data.variants && data.variants.length ? data.variants[0].compare_at_price : 0,
+      price: algoliaPrice,
+      comparePrice: algoliaComparePrice,
       image: imgURL,
       popularity: 21449,
       objectID: bndleId,
       product_type: productType,
-      tags: data.tags,
+      tags: tags,
       lifeStage,
       size,
       colors,
