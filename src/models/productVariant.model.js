@@ -129,6 +129,12 @@ productVariant.index({ sku: 1 });
 // add plugin that converts mongoose to json
 productVariant.plugin(toJSON);
 
+productVariant.pre('save', async function (next) {
+  const variant = this;
+  variant.bndleVariantId = variant.bndleVariantId.toString();
+  next();
+});
+
 /**
  * @typedef Token
  */
