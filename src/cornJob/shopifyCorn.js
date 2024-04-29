@@ -1128,7 +1128,7 @@ const createUpdateProduct = async (product, mode, userId, isFromSync) => {
       title: product.title,
       description: product.body_html,
       vendorId: userId,
-      vendorName: userData.name,
+      vendorName: userData ? userData.name : product.vendorName,
       productType: product.product_type,
       status: constVer.model.product.STATUS[5],
       tags: product.tags.split(', '),
