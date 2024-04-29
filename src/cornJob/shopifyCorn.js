@@ -1049,6 +1049,7 @@ const pushProductToShopify = async () => {
 };
 
 const createUpdateProduct = async (product, mode, userId, isFromSync) => {
+  console.log("🚀 ~ createUpdateProduct ~ product:", JSON.stringify(product));
   try {
     const userData = await User.findOne({ _id: userId });
     const currentDbProduct = await Product.findOne({ venderProductPlatformId: product.id }).lean();
