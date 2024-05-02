@@ -160,6 +160,10 @@ const productSchema = mongoose.Schema(
       type: Boolean,
       default: false,
     },
+    isGiftProduct: {
+      type: Boolean,
+      default: false,
+    },
     // VAT: {
     //   type: Number,
     // },
