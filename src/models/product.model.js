@@ -164,6 +164,10 @@ const productSchema = mongoose.Schema(
       type: Boolean,
       default: false,
     },
+    isSpotLightProduct: {
+      type: Boolean,
+      default: false,
+    },
     // VAT: {
     //   type: Number,
     // },

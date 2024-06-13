@@ -615,7 +615,7 @@ const publishProductToShopify = async (productsId) => {
       // if product is already pushed to bndle store
 
       if (el.bndleId !== '') {
-        await updateProductAlgolia(productObj, category, el.bndleId, subCategory, productType, lifeStage, mappedOptionTags, el.createdAt);
+        await updateProductAlgolia(productObj, category, el.bndleId, subCategory, productType, lifeStage, mappedOptionTags, el.createdAt, el.isSpotLightProduct);
         console.log(' // if product is already pushed to bndle store');
         // if (productObj.options.length === 0) {
         // }
@@ -750,7 +750,8 @@ const publishProductToShopify = async (productsId) => {
               productType,
               lifeStage,
               mappedOptionTags,
-              el.createdAt
+              el.createdAt,
+              el.isSpotLightProduct
             );
             const updatedProduct = await Product.findOneAndUpdate(
               { _id: el._id },
@@ -1613,7 +1614,7 @@ const checkedDiscountTagAdded = (tags) => {
   return tagIndex
 }
 
-const updateProductAlgolia = async (data, category, bndleId, subCategory, productType, lifeStage, mappedOptionTags, createdAt) => {
+const updateProductAlgolia = async (data, category, bndleId, subCategory, productType, lifeStage, mappedOptionTags, createdAt, isSpotLightProduct) => {
   const size = [];
   const colors = [];
   const age = [];
@@ -1670,6 +1671,10 @@ const updateProductAlgolia = async (data, category, bndleId, subCategory, produc
     if(tagIndex > -1) {
       tags.splice(tagIndex, 1);
     }
+  }
+
+  if(isSpotLightProduct) {
+    tags.push("SPOT_LIGHT_PRODUCT")
   }
     console.log("🚀 ~ updateProductAlgolia ~ tags:", tags)
 
