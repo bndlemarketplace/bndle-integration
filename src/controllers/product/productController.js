@@ -310,7 +310,8 @@ const updateProductToAlgolia = async (req, res) => {
           productType,
           lifeStage,
           mappedOptionTags,
-          el.createdAt
+          el.createdAt,
+          el.isSpotLightProduct
         );
       }
     } catch (error) {
