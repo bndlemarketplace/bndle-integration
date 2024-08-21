@@ -60,7 +60,7 @@ const mapOptionWithBndle = async (options, subCat, vendorId) => {
       } else {
         optionObj = {};
         optionObj.values = [];
-        optionObj.name = vendorOptionMapping[vendorOptionIndex].bundleOptionName;
+        optionObj.name = vendorOptionMapping[vendorOptionIndex].bundleOptionName.replaceAll('/', '_');
         // console.log(vendorOptionMapping);
         // console.log(vendorOptionIndex, '======================');
 
@@ -78,7 +78,7 @@ const mapOptionWithBndle = async (options, subCat, vendorId) => {
     } else {
       optionObj = {};
       optionObj.values = [];
-      optionObj.name = option.name;
+      optionObj.name = option.name.replaceAll('/', '_');
       await option.values.forEach((value) => {
         optionObj.values.push(value);
       });
@@ -597,6 +597,10 @@ const publishProductToShopify = async (productsId) => {
           },
         ],
       };
+      for (let index = 0; index < productObj.tags.length; index++) {
+        const element = productObj.tags[index];
+        productObj.tags[index] = productObj.tags[index].replaceAll("/", "_")
+      }
       console.log(productObj.tags);
       if (el.vendorName === undefined || el.vendorName === '') {
         if (user.brandName == '') {
