@@ -376,7 +376,7 @@ const convertRemoteProductVariantToPlatformProductVariant = async (product, user
       if (variants.length > 0) {
         for (let index = 0; index < variants.length; index++) {
           const variant = variants[index];
-          console.log("🚀 ~ file: wooCommerceService.js:372 ~ convertRemoteProductVariantToPlatformProductVariant ~ variant:", variant.stock_quantity)
+          console.log("🚀 ~ file: wooCommerceService.js:372 ~ convertRemoteProductVariantToPlatformProductVariant ~ variant:", product.name, variant.stock_quantity)
           let mappedOptions = [];
           if (variant.attributes.length > 0) {
             for (let index = 0; index < variant.attributes.length; index++) {
@@ -490,7 +490,7 @@ const convertRemoteProductVariantToPlatformProductVariant = async (product, user
         }
       } else {
         if (dbProduct.status === 'IMPORTED') {
-          console.log('IMPORTED---->>', product);
+          console.log('IMPORTED---->>', product.name, product.stock_quantity);
           platformProductVariant = {
             productId: dbProduct._id,
             // venderProductPlatformVariantId: variant.id,
