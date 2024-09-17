@@ -363,7 +363,6 @@ const convertRemoteOrderToPlatformOrder = async (order) => {
 };
 
 const convertRemoteProductVariantToPlatformProductVariant = async (product, userData, dbProduct) => {
-  console.log("🚀 ~ convertRemoteProductVariantToPlatformProductVariant ~ product:", product.title)
   try {
    return axios({
       method: 'get',
