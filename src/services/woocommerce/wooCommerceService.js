@@ -490,7 +490,7 @@ const convertRemoteProductVariantToPlatformProductVariant = async (product, user
         }
       } else {
         if (dbProduct.status === 'IMPORTED') {
-          console.log('update---->>');
+          console.log('IMPORTED---->>', product);
           platformProductVariant = {
             productId: dbProduct._id,
             // venderProductPlatformVariantId: variant.id,
