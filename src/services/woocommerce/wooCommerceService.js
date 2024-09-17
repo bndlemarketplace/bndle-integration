@@ -132,7 +132,6 @@ const convertRemoteProductToPlatformProduct = async (products, userData) => {
         mappedImages.push(imgObj);
       });
 
-      console.log('===mappedImages==>>', mappedImages);
       let mappedOptions = [];
       if (product.attributes.length > 0) {
         mappedOptions = await product.attributes.map((option) => {
@@ -364,6 +363,7 @@ const convertRemoteOrderToPlatformOrder = async (order) => {
 };
 
 const convertRemoteProductVariantToPlatformProductVariant = async (product, userData, dbProduct) => {
+  console.log("🚀 ~ convertRemoteProductVariantToPlatformProductVariant ~ product:", product.title)
   try {
    return axios({
       method: 'get',
@@ -372,13 +372,12 @@ const convertRemoteProductVariantToPlatformProductVariant = async (product, user
     }).then(async (response) => {
       // handle success
       let variants = response.data;
-      console.log("🚀 ~ file: wooCommerceService.js:367 ~ convertRemoteProductVariantToPlatformProductVariant ~ variants:", variants)
       let platformProductVariant;
 
       if (variants.length > 0) {
         for (let index = 0; index < variants.length; index++) {
           const variant = variants[index];
-          console.log("🚀 ~ file: wooCommerceService.js:372 ~ convertRemoteProductVariantToPlatformProductVariant ~ variant:", variant)
+          console.log("🚀 ~ file: wooCommerceService.js:372 ~ convertRemoteProductVariantToPlatformProductVariant ~ variant:", variant.stock_quantity)
           let mappedOptions = [];
           if (variant.attributes.length > 0) {
             for (let index = 0; index < variant.attributes.length; index++) {
