@@ -123,7 +123,7 @@ const deleteAlgoliaProduct = async (req, res) => {
   // }
 
   // // await cornServices.deleteProductAlgolia("8195892183205")
-  await syncAllShopifyProducts("63db65052a56eeb2609cbed8")
+  await syncAllShopifyProducts("633bd36a84763eba86fa46f4")
   return res.status(200).jsend.success({ message: 'success' });
 };
 
