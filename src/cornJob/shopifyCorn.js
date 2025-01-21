@@ -311,6 +311,7 @@ const initialProductSync = async (userId) => {
                   variantObj.isEnable = true;
                 }
 
+                console.log("🚀 ~ product.variants.forEach ~ variantObj:", variant.id, variantObj.options)
                 await ProductVariants.findOneAndUpdate({ venderProductPlatformVariantId: variant.id }, variantObj, {
                   upsert: true,
                   new: true,
@@ -405,7 +406,7 @@ const publishProductToShopify = async (productsId) => {
         mappedOptionWithBndle = mapOptions;
       }
       // console.log(mappedOptionWithBndle, '....................');
-      mappedOptionWithBndle.forEach((option) => {
+      (mappedOptionWithBndle || []).forEach((option) => {
         // console.log(mappedOptionWithBndle);
         option.values.forEach((value) => {
           mappedOptionTags.push(`${option.name}_${value}`);
