@@ -33,6 +33,10 @@ const client = new Shopify(restifyConfig.shopifyConfig);
 const mapOptionWithBndle = async (options, subCat, vendorId) => {
   let subCategory = subCat;
   const subcatArray = ['Maternity', 'Shoes'];
+  const subArray = ['Footwear'];
+  if (subArray.includes(subCategory)) {
+    subCategory = 'Shoes';
+  }
   if (!subcatArray.includes(subCategory)) {
     subCategory = 'Others';
   }
@@ -116,6 +120,10 @@ const mapWithBndleVariant = async (options, subCat, vendorId, vendorOptionMappin
   let subCategory = subCat;
   // console.log('===options, subCat, vendorOptionMapping==', options, subCat, vendorOptionMapping);
   const subcatArray = ['Maternity', 'Shoes'];
+  const subArray = ['Footwear'];
+  if (subArray.includes(subCategory)) {
+    subCategory = 'Shoes';
+  }
   if (!subcatArray.includes(subCategory)) {
     subCategory = 'Others';
   }
