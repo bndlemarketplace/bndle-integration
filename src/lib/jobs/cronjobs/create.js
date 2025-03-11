@@ -12,7 +12,7 @@ const createJob = async (agenda) => {
 
   // await agenda.every("0 0 * * *", "sync_shopify_permission");
 
-  // await agenda.every("0 3 * * *", "sync_algolia_product");
+  await agenda.every("0 3 * * *", "sync_algolia_product");
 
   await agenda.every("0 0 * * *", "remove_old_messages");
 

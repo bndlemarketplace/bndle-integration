@@ -105,6 +105,12 @@ const productUpdateShopify = async (req, res) => {
   }
 };
 
+const syncAllProducts = async (req, res) => {
+  await syncAllShopifyProducts()
+  return res.status(200).jsend.success({ message: 'success' });
+}
+
+
 const deleteAlgoliaProduct = async (req, res) => {
   // const dbProducts = await Product.find({
   //   status: 'PUBLISHED',
@@ -123,7 +129,6 @@ const deleteAlgoliaProduct = async (req, res) => {
   // }
 
   // // await cornServices.deleteProductAlgolia("8195892183205")
-  await syncAllShopifyProducts("633bd36a84763eba86fa46f4")
   return res.status(200).jsend.success({ message: 'success' });
 };
 
@@ -341,4 +346,5 @@ module.exports = {
   deleteAlgoliaProduct,
   updateProductToAlgolia,
   getProductToAlgolia,
+  syncAllProducts
 };

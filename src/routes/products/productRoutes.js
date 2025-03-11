@@ -11,5 +11,6 @@ router.route('/updateProductManually').post(controller.productUpdateShopify)
 router.route('/delete-algolia-product').post(controller.deleteAlgoliaProduct)
 router.route('/update-algolia-product').post(controller.updateProductToAlgolia)
 router.route('/get-algolia-product').get(controller.getProductToAlgolia)
+router.route('/sync/all').get(controller.syncAllProducts);
 
 module.exports = router;
